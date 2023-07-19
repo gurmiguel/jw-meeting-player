@@ -1,0 +1,7 @@
+.container {
+  @apply z-10 fixed bottom-3 left-1/2 transform -translate-x-1/2 bg-zinc-950 flex justify-between gap-2 p-2 rounded-md
+}
+
+.controlButton {
+  @apply p-2 hover:opacity-70 transition-opacity;
+}
