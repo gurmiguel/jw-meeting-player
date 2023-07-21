@@ -4,6 +4,7 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   registerTwoWayEvent('start')
   registerTwoWayEvent('playerControl')
   registerTwoWayEvent('stop')
+  registerTwoWayEvent('setSpeed')
 
   function registerTwoWayEvent<E extends EventNames, Payload = Parameters<PlayerBridge[E]>[0]>(
     eventName: E,
@@ -27,5 +28,9 @@ export namespace PlayerEvents {
 
   export interface PlayerControl {
     action: 'play' | 'pause'
+  }
+
+  export interface SetSpeed {
+    speed: number
   }
 }

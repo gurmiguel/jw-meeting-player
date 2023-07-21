@@ -1,7 +1,15 @@
 .container {
-  @apply z-10 fixed bottom-3 left-1/2 transform -translate-x-1/2 bg-zinc-950 flex justify-between gap-2 p-2 rounded-md
+  @apply bg-zinc-950 flex justify-between gap-2 p-2 rounded-md
+}
+
+.absoluteCenter {
+  @apply z-10 fixed bottom-3 left-1/2 transform -translate-x-1/2
 }
 
 .controlButton {
   @apply p-2 hover:opacity-70 transition-opacity;
+}
+
+.speedsButton {
+  @apply w-[5.5ch] text-right
 }

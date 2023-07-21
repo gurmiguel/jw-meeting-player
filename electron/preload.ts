@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('bridge', {
   ...eventHandler('player', 'start'),
   ...eventHandler('player', 'playerControl'),
   ...eventHandler('player', 'stop'),
+  ...eventHandler('player', 'setSpeed'),
 })
 
 contextBridge.exposeInMainWorld('common', <CommonBridge>{

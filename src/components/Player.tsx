@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { PlayerEvents } from '../../electron/events/player'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
+import { DEFAULT_SPEED } from '../../constants'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
   timestamp: number
@@ -10,6 +11,8 @@ function Player() {
   const player = useRef<HTMLVideoElement & HTMLAudioElement>(null)
 
   const [media, setMedia] = useState<MediaItem>()
+
+  const [currentSpeed, setCurrentSpeed] = useState(DEFAULT_SPEED)
 
   useBridgeEventHandler('start', (_, { type, file }) => {
     setMedia({ type, file, timestamp: Date.now() })
@@ -28,7 +31,19 @@ function Player() {
 
   useBridgeEventHandler('stop', () => {
     setMedia(undefined)
+    setCurrentSpeed(DEFAULT_SPEED)
   }, [])
+
+  useBridgeEventHandler('setSpeed', (_, { speed }) => {
+    console.log('set speed', speed)
+    setCurrentSpeed(speed)
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!player.current) return
+
+    player.current.playbackRate = currentSpeed
+  }, [currentSpeed])
 
   return (
     <div className="dark:bg-black flex-1 w-full h-full">

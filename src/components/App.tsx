@@ -4,6 +4,7 @@ import { TitleBar } from './TitleBar/TitleBar'
 import { PlayerEvents } from '../../electron/events/player'
 import { MediaControls } from './MediaControls/MediaControls'
 import { FeedbackScreen } from './FeedbackScreen/FeedbackScreen'
+import { delay } from '../lib/utils'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
   thumbnail: string
@@ -27,8 +28,14 @@ function App() {
     { type: 'video', file: '/public/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=3' },
   ], [])
 
-  const createMediaOpenerHandler = (type: PlayerEvents.Start['type'], file: string): MouseEventHandler => e => {
+  const createMediaOpenerHandler = (type: PlayerEvents.Start['type'], file: string): MouseEventHandler => async (e) => {
     e.preventDefault()
+
+    bridge.stop()
+    setPlayStatus('pause')
+    setPlaying(false)
+
+    await delay()
 
     bridge.start({ type, file })
     setPlayStatus('play')
@@ -56,7 +63,11 @@ function App() {
     bridge.playerControl({ action: 'play' })
     setPlayStatus('play')
   }
-
+  
+  function handleSetSpeed(speed: number) {
+    bridge.setSpeed({ speed })
+  }
+  
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (!e.data.type) return
@@ -96,6 +107,7 @@ function App() {
           onStop={handleStop}
           onPlay={handlePlay}
           onPause={handlePause}
+          onSetSpeed={handleSetSpeed}
         />
 
         {feedbackSourceId && playing && (
