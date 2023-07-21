@@ -1,0 +1,56 @@
+import { useEffect, useRef, useState } from 'react'
+
+interface Props {
+  sourceId: string
+}
+
+const ASPECT_RATIO = 16 / 9
+const height = 270
+const width = height * ASPECT_RATIO
+
+export function FeedbackScreen({ sourceId }: Props) {
+  const video = useRef<HTMLVideoElement>(null)
+
+  const [stream, setStream] = useState<MediaStream>()
+
+  useEffect(() => {
+    if (!sourceId) return
+
+    navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        // @ts-ignore
+        mandatory: {
+          chromeMediaSource: 'desktop',
+          chromeMediaSourceId: sourceId,
+          minWidth: width,
+          maxWidth: width,
+          minHeight: height,
+          maxHeight: height,
+        }
+      }
+    }).then(stream => {
+      setStream(stream)
+    })
+    
+    return () => {
+      setStream(undefined)
+    }
+  }, [sourceId])
+
+  useEffect(() => {
+    if (!video.current || !stream) return
+
+    video.current.srcObject = stream
+  }, [stream])
+
+  return (
+    <div className="fixed bottom-2 right-2 rounded-md bg-black overflow-hidden" style={{ width: width, height }}>
+      <video
+        ref={video}
+        onLoadedMetadata={() => video.current?.play()}
+        className="block w-full h-full object-contain"
+      />
+    </div>
+  )
+}

@@ -5,11 +5,16 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   registerTwoWayEvent('playerControl')
   registerTwoWayEvent('stop')
 
-  function registerTwoWayEvent<E extends EventNames>(eventName: E) {
-    ipcMain.on(`player:${eventName}`, (event, payload: Parameters<PlayerBridge[E]>[0]) => {
+  function registerTwoWayEvent<E extends EventNames, Payload = Parameters<PlayerBridge[E]>[0]>(
+    eventName: E,
+    mainHandler?: (payload: Payload) => void,
+  ) {
+    ipcMain.on(`player:${eventName}`, (event, payload: Payload) => {
       const { sender } = event
       const target = [main, player].find(win => win.webContents.id !== sender.id)!
       target.webContents.send(`player:${eventName}`, payload)
+
+      mainHandler?.(payload)
     })
   }
 }

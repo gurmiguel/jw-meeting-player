@@ -1,8 +1,9 @@
 import { addDays, format as formatDate, startOfWeek } from 'date-fns'
-import { Children, MouseEventHandler, useMemo, useState } from 'react'
+import { Children, MouseEventHandler, useEffect, useMemo, useState } from 'react'
 import { TitleBar } from './TitleBar/TitleBar'
 import { PlayerEvents } from '../../electron/events/player'
 import { MediaControls } from './MediaControls/MediaControls'
+import { FeedbackScreen } from './FeedbackScreen/FeedbackScreen'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
   thumbnail: string
@@ -11,6 +12,8 @@ type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
 function App() {
   const [playing, setPlaying] = useState(false)
   const [playStatus, setPlayStatus] = useState<'play' | 'pause'>()
+
+  const [feedbackSourceId, setFeedbackSourceId] = useState<string>()
 
   const currentWeekStart = useMemo(() => {
     const today = new Date()
@@ -54,6 +57,21 @@ function App() {
     setPlayStatus('play')
   }
 
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (!e.data.type) return
+
+      switch (e.data.type) {
+        case 'set-feedback-source':
+          setFeedbackSourceId(e.data.sourceId)
+          break
+      }
+    }
+
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [])
+
   return (
     <>
       <TitleBar title={document.title} />
@@ -79,6 +97,12 @@ function App() {
           onPlay={handlePlay}
           onPause={handlePause}
         />
+
+        {feedbackSourceId && playing && (
+          <FeedbackScreen
+            sourceId={feedbackSourceId}
+          />
+        )}
       </div>
     </>
   )

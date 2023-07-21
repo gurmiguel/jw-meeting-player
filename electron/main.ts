@@ -1,7 +1,7 @@
 import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen } from 'electron'
 import path from 'node:path'
-import { attachEvents } from './events'
 import { titleBar } from '../constants'
+import { attachEvents } from './events'
 
 // The built directory structure
 //
@@ -23,7 +23,9 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 Menu.setApplicationMenu(null)
 
-function createWindows() {
+async function createWindows() {
+  const mainDisplay = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+  
   mainWindow = new BrowserWindow({
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
@@ -32,6 +34,8 @@ function createWindows() {
     },
     width: 1200,
     height: 900,
+    x: mainDisplay?.bounds.x,
+    y: mainDisplay?.bounds.y,
     titleBarStyle: 'hidden',
     titleBarOverlay: titleBar
   })
@@ -40,8 +44,6 @@ function createWindows() {
 
   const displays = screen.getAllDisplays()
 
-  const mainWindowBounds = mainWindow.getBounds()
-  const mainDisplay = screen.getDisplayNearestPoint(mainWindowBounds)
   const playerDisplay = displays.find(display => display.id !== mainDisplay.id)
   
   playerWindow = new BrowserWindow({
@@ -73,8 +75,8 @@ function createWindows() {
   })
 
   if (VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(VITE_DEV_SERVER_URL)
-    playerWindow.loadURL(VITE_DEV_SERVER_URL + 'player.html');
+    await mainWindow.loadURL(VITE_DEV_SERVER_URL)
+    await playerWindow.loadURL(VITE_DEV_SERVER_URL + 'player.html');
 
     [mainWindow, playerWindow].forEach(win => {
       win.setThumbarButtons([
@@ -88,12 +90,15 @@ function createWindows() {
 
     globalShortcut.register('CmdOrCtrl+Shift+I', () => {
       BrowserWindow.getFocusedWindow()?.webContents.openDevTools()
+      BrowserWindow.getFocusedWindow()?.webContents.devToolsWebContents?.focus()
     })
   } else {
     // win.loadFile('dist/index.html')
-    mainWindow.loadFile(path.join(process.env.DIST, 'index.html'))
-    playerWindow.loadFile(path.join(process.env.DIST, 'player.html'))
+    await mainWindow.loadFile(path.join(process.env.DIST, 'index.html'))
+    await playerWindow.loadFile(path.join(process.env.DIST, 'player.html'))
   }
+
+  mainWindow.webContents.send('set-feedback-source', { sourceId: playerWindow.getMediaSourceId() })
 
   attachEvents(mainWindow, playerWindow)
 }
@@ -103,4 +108,5 @@ app.on('window-all-closed', () => {
   playerWindow = null
 })
 
-app.whenReady().then(createWindows)
+app.whenReady()
+  .then(createWindows)

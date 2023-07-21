@@ -28,8 +28,13 @@ contextBridge.exposeInMainWorld('common', <CommonBridge>{
 ipcRenderer.once('port', async (event) => {
   await windowLoaded
   
-  console.log('set-port', event)
   window.postMessage('set-port', '*', event.ports)
+})
+
+ipcRenderer.once('set-feedback-source', async (_event, { sourceId }: { sourceId: string }) => {
+  await windowLoaded
+
+  window.postMessage({ type: 'set-feedback-source', sourceId })
 })
 
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
