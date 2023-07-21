@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useDraggable } from '../../hooks/useDraggable'
 
 interface Props {
   sourceId: string
@@ -12,6 +13,8 @@ export function FeedbackScreen({ sourceId }: Props) {
   const video = useRef<HTMLVideoElement>(null)
 
   const [stream, setStream] = useState<MediaStream>()
+
+  const [container, dragHandlers] = useDraggable<HTMLDivElement>(8)
 
   useEffect(() => {
     if (!sourceId) return
@@ -27,7 +30,7 @@ export function FeedbackScreen({ sourceId }: Props) {
           maxWidth: width,
           minHeight: height,
           maxHeight: height,
-        }
+        },
       }
     }).then(stream => {
       setStream(stream)
@@ -45,7 +48,7 @@ export function FeedbackScreen({ sourceId }: Props) {
   }, [stream])
 
   return (
-    <div className="fixed bottom-2 right-2 rounded-md bg-black overflow-hidden" style={{ width: width, height }}>
+    <div ref={container} {...dragHandlers} className="fixed bottom-2 right-2 rounded-md bg-black overflow-hidden" style={{ width: width, height }}>
       <video
         ref={video}
         onLoadedMetadata={() => video.current?.play()}
