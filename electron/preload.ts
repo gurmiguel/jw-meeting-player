@@ -26,6 +26,10 @@ contextBridge.exposeInMainWorld('common', <CommonBridge>{
   windowShow: () => ipcRenderer.send('window-show'),
 })
 
+contextBridge.exposeInMainWorld('api', <API>{
+  fetchWeekMedia: (payload) => ipcRenderer.invoke('fetch-week-data', payload)
+})
+
 ipcRenderer.once('port', async (event) => {
   await windowLoaded
   

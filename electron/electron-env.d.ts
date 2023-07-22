@@ -18,5 +18,7 @@ declare namespace NodeJS {
     DIST: string
     /** /dist/ or /public/ */
     PUBLIC: string
+
+    FILES_PATH: string
   }
 }

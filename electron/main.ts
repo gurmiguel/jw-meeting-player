@@ -14,7 +14,7 @@ import { attachEvents } from './events'
 // │
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
-
+process.env.FILES_PATH = path.join(app.getPath('userData'), 'files')
 
 let mainWindow: BrowserWindow | null
 let playerWindow: BrowserWindow | null
@@ -74,6 +74,8 @@ async function createWindows() {
     if (!mainWindow?.isDestroyed()) e.preventDefault()
   })
 
+  attachEvents(mainWindow, playerWindow)
+
   if (VITE_DEV_SERVER_URL) {
     await mainWindow.loadURL(VITE_DEV_SERVER_URL)
     await playerWindow.loadURL(VITE_DEV_SERVER_URL + 'player.html');
@@ -99,8 +101,6 @@ async function createWindows() {
   }
 
   mainWindow.webContents.send('set-feedback-source', { sourceId: playerWindow.getMediaSourceId() })
-
-  attachEvents(mainWindow, playerWindow)
 }
 
 app.on('window-all-closed', () => {

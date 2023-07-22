@@ -23,9 +23,9 @@ function App() {
   }, [])
 
   const media = useMemo<MediaItem[]>(() => [
-    { type: 'video', file: '/public/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=1' },
-    { type: 'video', file: '/public/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=2' },
-    { type: 'video', file: '/public/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=3' },
+    { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=1' },
+    { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=2' },
+    { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=3' },
   ], [])
 
   const createMediaOpenerHandler = (type: PlayerEvents.Start['type'], file: string): MouseEventHandler => async (e) => {
@@ -81,6 +81,12 @@ function App() {
 
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
+  }, [])
+
+  useEffect(() => {
+    api.fetchWeekMedia({ isoDate: new Date().toISOString() }).then(res => {
+      console.log(res)
+    })
   }, [])
 
   return (

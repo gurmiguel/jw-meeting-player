@@ -1,5 +1,6 @@
 import { IpcRendererEvent } from 'electron'
 import { PlayerEvents } from '../electron/events/player'
+import { APIEvents } from '../electron/events/api'
 
 declare global {
   interface IpcRendererCallback<T> {
@@ -45,6 +46,12 @@ declare global {
   }
 
   const common: CommonBridge
+
+  interface API {
+    fetchWeekMedia(payload: APIEvents.FetchWeekMediaPayload): Promise<APIEvents.FetchWeekMediaResponse>
+  }
+
+  const api: API
 }
 
 export {}
