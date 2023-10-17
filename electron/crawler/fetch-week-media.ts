@@ -1,4 +1,4 @@
-import { format as formatDate, isWeekend } from 'date-fns'
+import { addMinutes, format as formatDate, isWeekend } from 'date-fns'
 import { CheerioAPI } from 'cheerio'
 import { crawl } from './utils'
 import { fetchPublicationVideo } from './fetch-publication-video'
@@ -6,6 +6,7 @@ import { MediaData, fetchArticle } from './fetch-article'
 import downloader from './Downloader'
 
 export async function fetchWeekMedia(date: Date) {
+  date = addMinutes(date, date.getTimezoneOffset())
   const jwURL = `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${formatDate(date, 'yyyy\/w')}`
 
   const { $ } = await crawl(jwURL)
