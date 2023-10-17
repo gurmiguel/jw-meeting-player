@@ -1,20 +1,23 @@
-import cheerio from 'cheerio'
+import { JSDOM } from 'jsdom'
 
 export async function crawl(url: string) {
-  const response = await fetch(url)
+  return await JSDOM.fromURL(url, {
+    pretendToBeVisual: true,
+    runScripts: 'dangerously',
+  })
 
-  if (Math.floor(response.status / 100) === 3) {
-    const baseURL = new URL(url!).origin
-    const location = response.headers.get('location')
+  // const response = await fetch(url)
 
-    if (location) {
-      const redirect = location.startsWith('/') ? baseURL + location : location
+  // if (Math.floor(response.status / 100) === 3) {
+  //   const baseURL = new URL(url!).origin
+  //   const location = response.headers.get('location')
 
-      return crawl(redirect)
-    }
-  }
+  //   if (location) {
+  //     const redirect = location.startsWith('/') ? baseURL + location : location
 
-  const $ = cheerio.load(await response.text())
+  //     return crawl(redirect)
+  //   }
+  // }
 
-  return { $ }
+  // return { $ }
 }
