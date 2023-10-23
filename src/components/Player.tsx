@@ -60,13 +60,13 @@ function Player() {
     })
   }
 
-  function handleVideoEnded() {
+  function handleMediaEnded() {
     bridge.stop({ propagate: true })
   }
 
   return (
     <div className="dark:bg-black flex-1 w-full h-full">
-      {media?.file && media.type === 'video' && media && (
+      {media?.file && media.type === 'video' && (
         <video
           key={media.timestamp}
           ref={player}
@@ -74,7 +74,19 @@ function Player() {
           className="block w-full h-full object-contain"
           controls={false}
           onTimeUpdate={handleTimeUpdate}
-          onEnded={handleVideoEnded}
+          onEnded={handleMediaEnded}
+          autoPlay
+        />
+      )}
+      {media?.file && media.type === 'audio' && (
+        <audio
+          key={media.timestamp}
+          ref={player}
+          src={media.file}
+          className="block w-full h-full object-contain"
+          controls={false}
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleMediaEnded}
           autoPlay
         />
       )}
