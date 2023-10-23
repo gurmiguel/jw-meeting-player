@@ -34,3 +34,7 @@
 .controlButtonActive {
   @apply bg-zinc-800
 }
+
+.progressBarContainer {
+  @apply absolute left-1/2 -translate-x-1/2 bottom-full mb-2 bg-zinc-950 rounded-md w-[480px] max-w-[80vw]
+}

@@ -2,9 +2,11 @@ import { BrowserWindow, ipcMain } from 'electron'
 
 export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   registerTwoWayEvent('start')
-  registerTwoWayEvent('playerControl')
   registerTwoWayEvent('stop')
+  registerTwoWayEvent('playerControl')
   registerTwoWayEvent('setSpeed')
+  registerTwoWayEvent('time')
+  registerTwoWayEvent('seek')
 
   function registerTwoWayEvent<E extends EventNames, Payload = Parameters<PlayerBridge[E]>[0]>(
     eventName: E,
@@ -32,5 +34,14 @@ export namespace PlayerEvents {
 
   export interface SetSpeed {
     speed: number
+  }
+
+  export interface Time {
+    current: number
+    duration: number
+  }
+
+  export interface Seek {
+    position: number
   }
 }

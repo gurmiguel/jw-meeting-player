@@ -4,6 +4,8 @@ import { MediaControls } from '../MediaControls/MediaControls'
 import { useBridgeEventHandler } from '../../hooks/useBridgeEventHandler'
 
 export function PlayerInterface() {
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [playStatus, setPlayStatus] = useState<'play' | 'pause'>()
 
@@ -15,6 +17,8 @@ export function PlayerInterface() {
     bridge.stop()
     setPlaying(false)
     setPlayStatus(undefined)
+    setCurrentTime(0)
+    setDuration(0)
   }
 
   function handlePause() {
@@ -33,6 +37,11 @@ export function PlayerInterface() {
   
   function handleSetSpeed(speed: number) {
     bridge.setSpeed({ speed })
+  }
+  
+  function handleSeek(position: number) {
+    setCurrentTime(position)
+    bridge.seek({ position })
   }
   
   useEffect(() => {
@@ -58,10 +67,18 @@ export function PlayerInterface() {
   useBridgeEventHandler('stop', () => {
     setPlayStatus('pause')
     setPlaying(false)
+    setCurrentTime(0)
+    setDuration(0)
   }, [])
 
   useBridgeEventHandler('playerControl', ({ action }) => {
     setPlayStatus(action)
+  }, [])
+
+  useBridgeEventHandler('time', ({ current, duration }) => {
+    setCurrentTime(current)
+    setDuration(duration)
+    console.log({ current, duration })
   }, [])
 
   return (
@@ -73,6 +90,9 @@ export function PlayerInterface() {
         onPlay={handlePlay}
         onPause={handlePause}
         onSetSpeed={handleSetSpeed}
+        currentTime={currentTime}
+        duration={duration}
+        onSeek={handleSeek}
       />
 
       {feedbackSourceId && playing && (

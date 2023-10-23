@@ -30,9 +30,11 @@ function eventHandler<E extends EventNames>(namespace: string, eventName: E) {
 
 contextBridge.exposeInMainWorld('bridge', {
   ...eventHandler('player', 'start'),
-  ...eventHandler('player', 'playerControl'),
   ...eventHandler('player', 'stop'),
+  ...eventHandler('player', 'playerControl'),
   ...eventHandler('player', 'setSpeed'),
+  ...eventHandler('player', 'time'),
+  ...eventHandler('player', 'seek'),
 })
 
 contextBridge.exposeInMainWorld('common', <CommonBridge>{

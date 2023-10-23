@@ -94,6 +94,12 @@ async function createWindows() {
       BrowserWindow.getFocusedWindow()?.webContents.openDevTools()
       BrowserWindow.getFocusedWindow()?.webContents.devToolsWebContents?.focus()
     })
+
+    globalShortcut.register('CmdOrCtrl+Shift+C', () => {
+      const window = BrowserWindow.getFocusedWindow()
+      window?.webContents.openDevTools()
+      window?.webContents.devToolsWebContents?.focus()
+    })
   } else {
     // win.loadFile('dist/index.html')
     await mainWindow.loadFile(path.join(process.env.DIST, 'index.html'))

@@ -3,6 +3,7 @@ import classes from './MediaControls.module.css'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import clsx from 'clsx'
 import { DEFAULT_SPEED } from '../../../constants'
+import { ProgressSlider } from '../ProgressSlider/ProgressSlider'
 
 interface Props {
   playing: boolean
@@ -11,11 +12,14 @@ interface Props {
   onPause(): void
   onStop(): void
   onSetSpeed(speed: number): void
+  currentTime: number
+  duration: number
+  onSeek(position: number): void
 }
 
 const SPEED_OPTIONS = [0.5, 0.7, 1.0, 1.1, 1.2, 1.5, 2]
 
-export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, onSetSpeed }: Props) {
+export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, onSetSpeed, currentTime, duration, onSeek }: Props) {
   const [currentSpeed, setCurrentSpeed] = useState(DEFAULT_SPEED)
   const [speedOptsOpen, setSpeedOptsOpen] = useState(false)
 
@@ -33,6 +37,15 @@ export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, on
 
   return (
     <div className={clsx(classes.container, classes.absoluteCenter)}>
+      <div className={classes.progressBarContainer}>
+        <ProgressSlider
+          currentTime={currentTime}
+          duration={duration}
+          onChange={onSeek}
+          disabled={!playing}
+        />
+      </div>
+
       {playStatus === 'play' && (
         <button className={classes.controlButton} onClick={onPause} disabled={!playing}>
           <PauseIcon className="w-6 h-6" />

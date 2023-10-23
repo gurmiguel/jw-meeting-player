@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { titleBar } from '../../../constants'
 import { delay } from '../../lib/utils'
 
@@ -7,6 +7,8 @@ export function useDraggable<E extends HTMLElement>(gutter = 0) {
   
   const initialPosition = useRef({ top: Infinity, left: Infinity })
   
+  const [dragging, setDragging] = useState(false)
+
   const setNewPosition = useCallback((newX: number, newY: number) => {
     if (!ref.current) return
     
@@ -39,6 +41,7 @@ export function useDraggable<E extends HTMLElement>(gutter = 0) {
     
     if (!ref.current) return
     
+    setDragging(true)
     document.addEventListener('mousemove', onMouseMove, false)
     document.addEventListener('mouseup', onMouseUp, false)
     
@@ -46,6 +49,7 @@ export function useDraggable<E extends HTMLElement>(gutter = 0) {
     const initialMousePos = { x: e.clientX - left, y: e.clientY - top }
     
     function onMouseUp() {
+      setDragging(false)
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     }
@@ -96,5 +100,5 @@ export function useDraggable<E extends HTMLElement>(gutter = 0) {
   return [ ref, {
     onMouseDown,
     onDoubleClick,
-  }] as const
+  }, dragging] as const
 }

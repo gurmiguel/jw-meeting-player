@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { SyntheticEvent, useLayoutEffect, useRef, useState } from 'react'
 import { PlayerEvents } from '../../electron/events/player'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
 import { DEFAULT_SPEED } from '../../constants'
@@ -39,11 +39,26 @@ function Player() {
     setCurrentSpeed(speed)
   }, [])
 
+  useBridgeEventHandler('seek', ({ position }) => {
+    if (!player.current) return
+
+    player.current.currentTime = position
+  }, [])
+
   useLayoutEffect(() => {
     if (!player.current) return
 
     player.current.playbackRate = currentSpeed
   }, [currentSpeed])
+
+  function handleTimeUpdate(e: SyntheticEvent<HTMLVideoElement>) {
+    const video = e.currentTarget
+
+    bridge.time({
+      current: video.currentTime,
+      duration: video.duration,
+    })
+  }
 
   function handleVideoEnded() {
     bridge.stop()
@@ -58,6 +73,7 @@ function Player() {
           src={media.file}
           className="block w-full h-full object-contain"
           controls={false}
+          onTimeUpdate={handleTimeUpdate}
           onEnded={handleVideoEnded}
           autoPlay
         />

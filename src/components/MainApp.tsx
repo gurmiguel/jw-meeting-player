@@ -33,9 +33,9 @@ function MainApp() {
   }
 
   useEffect(() => {
-    api.fetchWeekMedia({ isoDate: new Date().toISOString() }).then(res => {
-      console.log(res)
-    })
+    // api.fetchWeekMedia({ isoDate: new Date().toISOString() }).then(res => {
+    //   console.log(res)
+    // })
   }, [])
 
   return (

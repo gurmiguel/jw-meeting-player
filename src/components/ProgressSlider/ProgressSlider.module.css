@@ -1,0 +1,28 @@
+.container {
+  @apply relative flex items-center
+}
+
+.disabled {
+  @apply opacity-20 pointer-events-none
+}
+
+.track {
+  @apply rounded-full flex flex-grow items-center cursor-pointer py-3 mx-2
+}
+
+.thumbTrace {
+  @apply h-2 bg-zinc-400 rounded-l-md
+}
+
+.thumb {
+  @apply relative;
+
+  &:before {
+    content: '';
+    @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-50 w-4 h-4 rounded-full;
+  }
+}
+
+.time {
+  @apply flex-shrink mx-2 pointer-events-none
+}

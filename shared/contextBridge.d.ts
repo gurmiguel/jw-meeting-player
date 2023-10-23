@@ -23,6 +23,10 @@ declare global {
     onStop(callback: IpcRendererCallback): IpcRendererCallbackUnsubscriber
     setSpeed(payload: PlayerEvents.SetSpeed): void
     onSetSpeed(callback: IpcRendererCallback<PlayerEvents.SetSpeed>): IpcRendererCallbackUnsubscriber
+    time(payload: PlayerEvents.Time): void
+    onTime(callback: IpcRendererCallback<PlayerEvents.Time>): IpcRendererCallbackUnsubscriber
+    seek(payload: PlayerEvents.Seek): void
+    onSeek(callback: IpcRendererCallback<PlayerEvents.Seek>): IpcRendererCallbackUnsubscriber
   }
 
   type EventHandlers = Exclude<{

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDraggable } from '../../hooks/useDraggable'
+import clsx from 'clsx'
 
 interface Props {
   sourceId: string
@@ -14,7 +15,7 @@ export function FeedbackScreen({ sourceId }: Props) {
 
   const [stream, setStream] = useState<MediaStream>()
 
-  const [container, dragHandlers] = useDraggable<HTMLDivElement>(8)
+  const [container, dragHandlers, dragging] = useDraggable<HTMLDivElement>(8)
 
   useEffect(() => {
     if (!sourceId) return
@@ -48,7 +49,7 @@ export function FeedbackScreen({ sourceId }: Props) {
   }, [stream])
 
   return (
-    <div ref={container} {...dragHandlers} className="fixed bottom-2 right-2 rounded-md bg-black overflow-hidden" style={{ width: width, height }}>
+    <div ref={container} {...dragHandlers} className={clsx('fixed bottom-2 right-2 rounded-md bg-black overflow-hidden cursor-grab', dragging && 'cursor-grabbing')} style={{ width: width, height }}>
       <video
         ref={video}
         onLoadedMetadata={() => video.current?.play()}
