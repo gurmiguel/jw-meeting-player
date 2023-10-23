@@ -1,5 +1,10 @@
 .container {
-  @apply bg-zinc-950 flex justify-between gap-2 p-2 rounded-md
+  @apply bg-zinc-950 flex justify-between gap-2 p-2 rounded-md pointer-events-none
+
+}
+
+.container > * {
+  @apply pointer-events-auto
 }
 
 .absoluteCenter {
@@ -8,8 +13,24 @@
 
 .controlButton {
   @apply p-2 hover:opacity-70 transition-opacity;
+
+  &:disabled {
+    @apply opacity-50 pointer-events-none
+  }
 }
 
 .speedsButton {
   @apply w-[5.5ch] text-right
+}
+
+.controlButtonRelative {
+  @apply relative -mx-2
+}
+
+.speedsButton.controlButtonRelative {
+  @apply w-[7.25ch] px-4
+}
+
+.controlButtonActive {
+  @apply bg-zinc-800
 }

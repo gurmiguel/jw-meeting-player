@@ -20,29 +20,30 @@ export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, on
   const [speedOptsOpen, setSpeedOptsOpen] = useState(false)
 
   useEffect(() => {
-    setCurrentSpeed(DEFAULT_SPEED)
     setSpeedOptsOpen(false)
+
+    if (playing) return
+
+    setCurrentSpeed(DEFAULT_SPEED)
   }, [playing])
 
   useLayoutEffect(() => {
     onSetSpeed(currentSpeed)
   }, [currentSpeed, onSetSpeed])
 
-  if (!playing) return <></>
-
   return (
     <div className={clsx(classes.container, classes.absoluteCenter)}>
       {playStatus === 'play' && (
-        <button className={classes.controlButton} onClick={onPause}>
+        <button className={classes.controlButton} onClick={onPause} disabled={!playing}>
           <PauseIcon className="w-6 h-6" />
         </button>
       )}
       {['pause', undefined].includes(playStatus) && (
-        <button className={classes.controlButton} onClick={onPlay}>
+        <button className={classes.controlButton} onClick={onPlay} disabled={!playing}>
           <PlayIcon className="w-6 h-6" />
         </button>
       )}
-      <button className={classes.controlButton} onClick={onStop}>
+      <button className={classes.controlButton} onClick={onStop} disabled={!playing}>
         <StopIcon className="w-6 h-6" />
       </button>
       <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)}>
@@ -53,13 +54,18 @@ export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, on
           {SPEED_OPTIONS.map(speed => (
             <button
               key={speed}
-              className={clsx(classes.controlButton, classes.speedsButton, 'relative')}
+              className={clsx(
+                classes.controlButton,
+                classes.speedsButton,
+                classes.controlButtonRelative,
+                speed === currentSpeed && classes.controlButtonActive,
+              )}
               onClick={() => {
                 setCurrentSpeed(speed)
                 setSpeedOptsOpen(false)
               }}
             >
-              {speed === currentSpeed && <span className="absolute right-full -mr-2 font-black">🠢</span>}
+              {speed === currentSpeed && <span className="absolute right-full -mr-4 font-black">🠢</span>}
               <span className="font-semibold">{speed.toFixed(1)}x</span>
             </button>
           ))}

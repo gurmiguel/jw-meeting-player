@@ -14,13 +14,14 @@ function Player() {
 
   const [currentSpeed, setCurrentSpeed] = useState(DEFAULT_SPEED)
 
-  useBridgeEventHandler('start', (_, { type, file }) => {
+  useBridgeEventHandler('start', ({ type, file }) => {
+    console.log({type, file})
     setMedia({ type, file, timestamp: Date.now() })
 
     common.windowShow()
   }, [])
 
-  useBridgeEventHandler('playerControl', (_, { action }) => {
+  useBridgeEventHandler('playerControl', ({ action }) => {
     switch (action) {
       case 'play':
         return player.current?.play()
@@ -34,8 +35,7 @@ function Player() {
     setCurrentSpeed(DEFAULT_SPEED)
   }, [])
 
-  useBridgeEventHandler('setSpeed', (_, { speed }) => {
-    console.log('set speed', speed)
+  useBridgeEventHandler('setSpeed', ({ speed }) => {
     setCurrentSpeed(speed)
   }, [])
 
@@ -45,10 +45,22 @@ function Player() {
     player.current.playbackRate = currentSpeed
   }, [currentSpeed])
 
+  function handleVideoEnded() {
+    bridge.stop()
+  }
+
   return (
     <div className="dark:bg-black flex-1 w-full h-full">
       {media && media.type === 'video' && (
-        <video key={media.timestamp} ref={player} src={media.file} className="block w-full h-full object-contain" controls={false} autoPlay />
+        <video
+          key={media.timestamp}
+          ref={player}
+          src={media.file}
+          className="block w-full h-full object-contain"
+          controls={false}
+          onEnded={handleVideoEnded}
+          autoPlay
+        />
       )}
     </div>
   )

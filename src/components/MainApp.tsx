@@ -1,21 +1,15 @@
 import { addDays, format as formatDate, startOfWeek } from 'date-fns'
-import { Children, MouseEventHandler, useEffect, useMemo, useState } from 'react'
-import { TitleBar } from './TitleBar/TitleBar'
+import { Children, MouseEventHandler, useEffect, useMemo } from 'react'
 import { PlayerEvents } from '../../electron/events/player'
-import { MediaControls } from './MediaControls/MediaControls'
-import { FeedbackScreen } from './FeedbackScreen/FeedbackScreen'
 import { delay } from '../lib/utils'
+import { PlayerInterface } from './PlayerInterface/PlayerInterface'
+import { TitleBar } from './TitleBar/TitleBar'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
   thumbnail: string
 }
 
-function App() {
-  const [playing, setPlaying] = useState(false)
-  const [playStatus, setPlayStatus] = useState<'play' | 'pause'>()
-
-  const [feedbackSourceId, setFeedbackSourceId] = useState<string>()
-
+function MainApp() {
   const currentWeekStart = useMemo(() => {
     const today = new Date()
 
@@ -32,56 +26,11 @@ function App() {
     e.preventDefault()
 
     bridge.stop()
-    setPlayStatus('pause')
-    setPlaying(false)
 
     await delay()
 
     bridge.start({ type, file })
-    setPlayStatus('play')
-    setPlaying(true)
   }
-
-  function handleStop() {
-    if (!playing) return
-
-    bridge.stop()
-    setPlaying(false)
-    setPlayStatus(undefined)
-  }
-
-  function handlePause() {
-    if (!playing) return
-    
-    bridge.playerControl({ action: 'pause' })
-    setPlayStatus('pause')
-  }
-  
-  function handlePlay() {
-    if (!playing) return
-    
-    bridge.playerControl({ action: 'play' })
-    setPlayStatus('play')
-  }
-  
-  function handleSetSpeed(speed: number) {
-    bridge.setSpeed({ speed })
-  }
-  
-  useEffect(() => {
-    function onMessage(e: MessageEvent) {
-      if (!e.data.type) return
-
-      switch (e.data.type) {
-        case 'set-feedback-source':
-          setFeedbackSourceId(e.data.sourceId)
-          break
-      }
-    }
-
-    window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
-  }, [])
 
   useEffect(() => {
     api.fetchWeekMedia({ isoDate: new Date().toISOString() }).then(res => {
@@ -107,23 +56,10 @@ function App() {
           </div>
         </div>
 
-        <MediaControls
-          playing={playing}
-          playStatus={playStatus}
-          onStop={handleStop}
-          onPlay={handlePlay}
-          onPause={handlePause}
-          onSetSpeed={handleSetSpeed}
-        />
-
-        {feedbackSourceId && playing && (
-          <FeedbackScreen
-            sourceId={feedbackSourceId}
-          />
-        )}
+        <PlayerInterface />
       </div>
     </>
   )
 }
 
-export default App
+export default MainApp

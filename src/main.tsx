@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom/client'
-import App from './components/App.tsx'
+import MainApp from './components/MainApp.tsx'
 import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<App />)
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<MainApp />)
 
 postMessage({ payload: 'removeLoading' }, '*')

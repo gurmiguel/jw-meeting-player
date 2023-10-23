@@ -4,7 +4,7 @@ import { APIEvents } from '../electron/events/api'
 
 declare global {
   interface IpcRendererCallback<T> {
-    (event: IpcRendererEvent, payload: T): void
+    (payload: T): void
   }
 
   interface IpcRendererCallbackUnsubscriber {

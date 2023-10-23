@@ -5,12 +5,25 @@ const windowLoaded = new Promise(res => window.onload = res)
 function eventHandler<E extends EventNames>(namespace: string, eventName: E) {
   type EventParameters = Parameters<PlayerBridge[E]>
   type Payload = EventParameters extends Array<any> ? EventParameters[0] : never
+  const channel = `${namespace}:${eventName}`
   return {
-    [eventName]: (payload: Payload) => ipcRenderer.send(`${namespace}:${eventName}`, payload),
+    [eventName]: (payload: Payload) => {
+      ipcRenderer.send(channel, payload)
+      window.postMessage({ channel, payload })
+    },
     ['on' + eventName[0].toUpperCase() + eventName.slice(1)]: (callback: IpcRendererCallback<Payload>) => {
-      ipcRenderer.on(`${namespace}:${eventName}`, callback)
+      ipcRenderer.on(channel, (_, payload) => callback(payload))
+      window.addEventListener('message', onWindowMessage)
+      function onWindowMessage({ data }: MessageEvent<{channel: string, payload: Payload}>) {
+        if (!data || data.channel !== channel) return
+
+        callback(data.payload)
+      }
   
-      return () => ipcRenderer.removeListener(`${namespace}:${eventName}`, callback)
+      return () => {
+        ipcRenderer.removeListener(`${namespace}:${eventName}`, callback)
+        window.removeEventListener('message', onWindowMessage)
+      }
     }
   }
 }
