@@ -1,6 +1,5 @@
-import { IpcRendererEvent } from 'electron'
-import { PlayerEvents } from '../electron/events/player'
 import { APIEvents } from '../electron/events/api'
+import { PlayerEvents } from '../electron/events/player'
 
 declare global {
   interface IpcRendererCallback<T> {
@@ -19,8 +18,8 @@ declare global {
     onStart(callback: IpcRendererCallback<PlayerEvents.Start>): IpcRendererCallbackUnsubscriber
     playerControl(payload: PlayerEvents.PlayerControl): void
     onPlayerControl(callback: IpcRendererCallback<PlayerEvents.PlayerControl>): IpcRendererCallbackUnsubscriber
-    stop(): void
-    onStop(callback: IpcRendererCallback): IpcRendererCallbackUnsubscriber
+    stop(payload: PlayerEvents.Stop): void
+    onStop(callback: IpcRendererCallback<PlayerEvents.Stop>): IpcRendererCallbackUnsubscriber
     setSpeed(payload: PlayerEvents.SetSpeed): void
     onSetSpeed(callback: IpcRendererCallback<PlayerEvents.SetSpeed>): IpcRendererCallbackUnsubscriber
     time(payload: PlayerEvents.Time): void
@@ -58,4 +57,4 @@ declare global {
   const api: API
 }
 
-export {}
+export { }

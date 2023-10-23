@@ -1,15 +1,18 @@
 import { addDays, format as formatDate, startOfWeek } from 'date-fns'
 import { Children, MouseEventHandler, useEffect, useMemo } from 'react'
 import { PlayerEvents } from '../../electron/events/player'
-import { delay } from '../lib/utils'
+import { useAppDispatch } from '../store/hooks'
+import { PlayerState, playerActions } from '../store/player/slice'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
 import { TitleBar } from './TitleBar/TitleBar'
 
-type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
+type MediaItem = NonNullableObject<Pick<PlayerEvents.Start, 'type' | 'file'>> & {
   thumbnail: string
 }
 
 function MainApp() {
+  const dispatch = useAppDispatch()
+
   const currentWeekStart = useMemo(() => {
     const today = new Date()
 
@@ -22,14 +25,10 @@ function MainApp() {
     { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=3' },
   ], [])
 
-  const createMediaOpenerHandler = (type: PlayerEvents.Start['type'], file: string): MouseEventHandler => async (e) => {
+  const createMediaOpenerHandler = (type: NonNullable<PlayerState['type']>, file: string): MouseEventHandler => async (e) => {
     e.preventDefault()
 
-    bridge.stop()
-
-    await delay()
-
-    bridge.start({ type, file })
+    dispatch(playerActions.start({ type, file }))
   }
 
   useEffect(() => {

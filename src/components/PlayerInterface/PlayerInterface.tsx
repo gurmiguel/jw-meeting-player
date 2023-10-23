@@ -1,47 +1,47 @@
 import { useEffect, useState } from 'react'
+import { useBridgeEventHandler } from '../../hooks/useBridgeEventHandler'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import { playerActions } from '../../store/player/slice'
 import { FeedbackScreen } from '../FeedbackScreen/FeedbackScreen'
 import { MediaControls } from '../MediaControls/MediaControls'
-import { useBridgeEventHandler } from '../../hooks/useBridgeEventHandler'
 
 export function PlayerInterface() {
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [playStatus, setPlayStatus] = useState<'play' | 'pause'>()
+  const dispatch = useAppDispatch()
+  const {
+    currentTime,
+    duration,
+    file,
+    playRate,
+    playState,
+  } = useAppSelector(state => state.player)
+  const playing = file !== null
 
   const [feedbackSourceId, setFeedbackSourceId] = useState<string>()
 
   function handleStop() {
     if (!playing) return
 
-    bridge.stop()
-    setPlaying(false)
-    setPlayStatus(undefined)
-    setCurrentTime(0)
-    setDuration(0)
+    dispatch(playerActions.stop())
   }
 
   function handlePause() {
     if (!playing) return
     
-    bridge.playerControl({ action: 'pause' })
-    setPlayStatus('pause')
+    dispatch(playerActions.pause())
   }
   
   function handlePlay() {
     if (!playing) return
     
-    bridge.playerControl({ action: 'play' })
-    setPlayStatus('play')
+    dispatch(playerActions.play())
   }
   
   function handleSetSpeed(speed: number) {
-    bridge.setSpeed({ speed })
+    dispatch(playerActions.playRate(speed))
   }
   
   function handleSeek(position: number) {
-    setCurrentTime(position)
-    bridge.seek({ position })
+    dispatch(playerActions.time({ currentTime: position }))
   }
   
   useEffect(() => {
@@ -59,47 +59,33 @@ export function PlayerInterface() {
     return () => window.removeEventListener('message', onMessage)
   }, [])
 
-  useBridgeEventHandler('start', () => {
-    setPlayStatus('play')
-    setPlaying(true)
-  }, [])
-
-  useBridgeEventHandler('stop', () => {
-    setPlayStatus('pause')
-    setPlaying(false)
-    setCurrentTime(0)
-    setDuration(0)
-  }, [])
-
-  useBridgeEventHandler('playerControl', ({ action }) => {
-    setPlayStatus(action)
+  useBridgeEventHandler('stop', ({ propagate }) => {
+    if (propagate)
+      dispatch(playerActions.stop())
   }, [])
 
   useBridgeEventHandler('time', ({ current, duration }) => {
-    setCurrentTime(current)
-    setDuration(duration)
-    console.log({ current, duration })
+    dispatch(playerActions.time({ currentTime: current, duration }))
   }, [])
 
   return (
     <>
       <MediaControls
         playing={playing}
-        playStatus={playStatus}
+        playStatus={playState}
         onStop={handleStop}
         onPlay={handlePlay}
         onPause={handlePause}
+        speed={playRate}
         onSetSpeed={handleSetSpeed}
         currentTime={currentTime}
         duration={duration}
         onSeek={handleSeek}
       />
 
-      {feedbackSourceId && playing && (
-        <FeedbackScreen
-          sourceId={feedbackSourceId}
-        />
-      )}
+      <FeedbackScreen
+        sourceId={feedbackSourceId ?? null}
+      />
     </>
   )
 }

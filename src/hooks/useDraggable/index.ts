@@ -5,7 +5,7 @@ import { delay } from '../../lib/utils'
 export function useDraggable<E extends HTMLElement>(gutter = 0) {
   const ref = useRef<E>(null)
   
-  const initialPosition = useRef({ top: Infinity, left: Infinity })
+  const initialPosition = useRef({ top: Infinity, left: Infinity, width: Infinity, height: Infinity })
   
   const [dragging, setDragging] = useState(false)
 
@@ -26,20 +26,39 @@ export function useDraggable<E extends HTMLElement>(gutter = 0) {
     ref.current.style.top = `${newTop}px`
   }, [gutter])
   
-  const resetPosition = useCallback(() => {
+  const resetPosition = useCallback(async () => {
     if (!ref.current) return
     
-    const { top, left } = initialPosition.current
+    const { top, left, width, height } = initialPosition.current
     
-    if (top === Infinity || left === Infinity) return
+    if ([top, left, width, height].includes(Infinity)) return
     
+    ref.current.style.width = `${width}px`
+    ref.current.style.height = `${height}px`
+
+    await delay()
+
     setNewPosition(left, top)
   }, [setNewPosition])
   
-  function onMouseDown(e: React.MouseEvent) {
-    e.preventDefault()
-    
+  function onMouseDown(e: React.MouseEvent<HTMLElement>) {
     if (!ref.current) return
+
+    if (getComputedStyle(e.currentTarget).resize !== 'none') {
+      const rect = e.currentTarget.getBoundingClientRect()
+      console.log(e.clientX, rect.right)
+      console.log(e.clientY, rect.bottom)
+
+      const HORIZONTAL_RESIZER_THRESHOLD = 20
+      const VERTICAL_RESIZER_THRESHOLD = 18
+
+      // ignore event to allow resizing instead
+      if (Math.abs(e.clientX - rect.right) < HORIZONTAL_RESIZER_THRESHOLD
+        && Math.abs(e.clientY - rect.bottom) < VERTICAL_RESIZER_THRESHOLD)
+        return
+    }
+    
+    e.preventDefault()
     
     setDragging(true)
     document.addEventListener('mousemove', onMouseMove, false)
@@ -71,16 +90,26 @@ export function useDraggable<E extends HTMLElement>(gutter = 0) {
     
     resetPosition()
   }
-  
-  useLayoutEffect(() => {
+
+  const calculateInitialPosition = useCallback((width?: number, height?: number) => {    
     if (!ref.current) return
-    
-    const { top, left } = ref.current.style
+
+    const { top, left } = getComputedStyle(ref.current)
+    const rect = ref.current.getBoundingClientRect()
+    width ??= rect.width
+    height ??= rect.height
     initialPosition.current = {
       top: parseInt(top),
       left: parseInt(left),
+      width,
+      height,
     }
+
   }, [])
+  
+  useLayoutEffect(() => {
+    calculateInitialPosition()
+  }, [calculateInitialPosition])
   
   useEffect(() => {
     async function onWindowResize() {
@@ -91,11 +120,13 @@ export function useDraggable<E extends HTMLElement>(gutter = 0) {
       const { x, y } = ref.current.getBoundingClientRect()
       
       setNewPosition(x, y)
+
+      calculateInitialPosition(initialPosition.current.width, initialPosition.current.height)
     }
     
     window.addEventListener('resize', onWindowResize)
     return () => window.removeEventListener('resize', onWindowResize)
-  }, [setNewPosition])
+  }, [calculateInitialPosition, setNewPosition])
   
   return [ ref, {
     onMouseDown,

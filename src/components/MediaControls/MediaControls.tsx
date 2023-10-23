@@ -1,9 +1,8 @@
 import { PauseIcon, PlayIcon, StopIcon } from '@heroicons/react/24/solid'
-import classes from './MediaControls.module.css'
-import { useEffect, useLayoutEffect, useState } from 'react'
 import clsx from 'clsx'
-import { DEFAULT_SPEED } from '../../../constants'
+import { useState } from 'react'
 import { ProgressSlider } from '../ProgressSlider/ProgressSlider'
+import classes from './MediaControls.module.css'
 
 interface Props {
   playing: boolean
@@ -11,6 +10,7 @@ interface Props {
   onPlay(): void
   onPause(): void
   onStop(): void
+  speed: number
   onSetSpeed(speed: number): void
   currentTime: number
   duration: number
@@ -19,21 +19,8 @@ interface Props {
 
 const SPEED_OPTIONS = [0.5, 0.7, 1.0, 1.1, 1.2, 1.5, 2]
 
-export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, onSetSpeed, currentTime, duration, onSeek }: Props) {
-  const [currentSpeed, setCurrentSpeed] = useState(DEFAULT_SPEED)
+export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, speed: currentSpeed, onSetSpeed, currentTime, duration, onSeek }: Props) {
   const [speedOptsOpen, setSpeedOptsOpen] = useState(false)
-
-  useEffect(() => {
-    setSpeedOptsOpen(false)
-
-    if (playing) return
-
-    setCurrentSpeed(DEFAULT_SPEED)
-  }, [playing])
-
-  useLayoutEffect(() => {
-    onSetSpeed(currentSpeed)
-  }, [currentSpeed, onSetSpeed])
 
   return (
     <div className={clsx(classes.container, classes.absoluteCenter)}>
@@ -74,7 +61,7 @@ export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, on
                 speed === currentSpeed && classes.controlButtonActive,
               )}
               onClick={() => {
-                setCurrentSpeed(speed)
+                onSetSpeed(speed)
                 setSpeedOptsOpen(false)
               }}
             >

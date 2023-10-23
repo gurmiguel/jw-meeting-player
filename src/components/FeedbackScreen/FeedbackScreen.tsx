@@ -1,9 +1,9 @@
+import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
 import { useDraggable } from '../../hooks/useDraggable'
-import clsx from 'clsx'
 
 interface Props {
-  sourceId: string
+  sourceId: string | null
 }
 
 const ASPECT_RATIO = 16 / 9
@@ -32,7 +32,7 @@ export function FeedbackScreen({ sourceId }: Props) {
           minHeight: height,
           maxHeight: height,
         },
-      }
+      },
     }).then(stream => {
       setStream(stream)
     })
@@ -49,12 +49,14 @@ export function FeedbackScreen({ sourceId }: Props) {
   }, [stream])
 
   return (
-    <div ref={container} {...dragHandlers} className={clsx('fixed bottom-2 right-2 rounded-md bg-black overflow-hidden cursor-grab', dragging && 'cursor-grabbing')} style={{ width: width, height }}>
-      <video
-        ref={video}
-        onLoadedMetadata={() => video.current?.play()}
-        className="block w-full h-full object-contain"
-      />
+    <div ref={container} {...dragHandlers} className={clsx('fixed bottom-2 right-2 rounded-md bg-black overflow-hidden cursor-grab resize', dragging && 'cursor-grabbing')} style={{ width: width, height }}>
+      {!!sourceId && (
+        <video
+          ref={video}
+          onLoadedMetadata={() => video.current?.play()}
+          className="block w-full h-full object-contain"
+        />
+      )}
     </div>
   )
 }

@@ -5,7 +5,8 @@
   "rules": {
     "indent": ["warn", 2, { "SwitchCase": 1 }],
     "semi": ["warn", "never"],
-    "eol-last": ["warn", "always"]
+    "eol-last": ["warn", "always"],
+    "comma-dangle": ["warn", "always-multiline"]
   },
   "overrides": [
     {

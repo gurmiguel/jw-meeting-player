@@ -1,7 +1,7 @@
 import { SyntheticEvent, useLayoutEffect, useRef, useState } from 'react'
+import { DEFAULT_SPEED } from '../../constants'
 import { PlayerEvents } from '../../electron/events/player'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
-import { DEFAULT_SPEED } from '../../constants'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
   timestamp: number
@@ -14,8 +14,8 @@ function Player() {
 
   const [currentSpeed, setCurrentSpeed] = useState(DEFAULT_SPEED)
 
-  useBridgeEventHandler('start', ({ type, file }) => {
-    console.log({type, file})
+  useBridgeEventHandler('start', ({ type, file, playRate }) => {
+    setCurrentSpeed(playRate)
     setMedia({ type, file, timestamp: Date.now() })
 
     common.windowShow()
@@ -61,12 +61,12 @@ function Player() {
   }
 
   function handleVideoEnded() {
-    bridge.stop()
+    bridge.stop({ propagate: true })
   }
 
   return (
     <div className="dark:bg-black flex-1 w-full h-full">
-      {media && media.type === 'video' && (
+      {media && media.type === 'video' && media.file && (
         <video
           key={media.timestamp}
           ref={player}

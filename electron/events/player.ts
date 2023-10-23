@@ -1,4 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron'
+import { PlayerState } from '../../src/store/player/slice'
 
 export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   registerTwoWayEvent('start')
@@ -23,9 +24,10 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
 }
 
 export namespace PlayerEvents {
-  export interface Start {
-    type: 'video' | 'image' | 'audio'
-    file: string
+  export interface Start extends Omit<PlayerState, 'duration'> {}
+
+  export interface Stop {
+    propagate?: boolean
   }
 
   export interface PlayerControl {
