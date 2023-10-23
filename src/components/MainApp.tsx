@@ -23,6 +23,7 @@ function MainApp() {
     { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=1' },
     { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=2' },
     { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=3' },
+    { type: 'image', file: 'https://picsum.photos/1920/1080', thumbnail: 'https://picsum.photos/200/300' },
   ], [])
 
   const createMediaOpenerHandler = (type: NonNullable<PlayerState['type']>, file: string): MouseEventHandler => async (e) => {

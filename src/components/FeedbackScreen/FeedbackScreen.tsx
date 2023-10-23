@@ -27,10 +27,7 @@ export function FeedbackScreen({ sourceId }: Props) {
         mandatory: {
           chromeMediaSource: 'desktop',
           chromeMediaSourceId: sourceId,
-          minWidth: width,
-          maxWidth: width,
-          minHeight: height,
-          maxHeight: height,
+          aspectRatio: ASPECT_RATIO,
         },
       },
     }).then(stream => {
@@ -49,7 +46,7 @@ export function FeedbackScreen({ sourceId }: Props) {
   }, [stream])
 
   return (
-    <div ref={container} {...dragHandlers} className={clsx('fixed bottom-2 right-2 rounded-md bg-black overflow-hidden cursor-grab resize', dragging && 'cursor-grabbing')} style={{ width: width, height }}>
+    <div ref={container} {...dragHandlers} className={clsx('fixed bottom-2 right-2 rounded-md bg-black overflow-hidden cursor-grab resize', dragging && 'cursor-grabbing')} style={{ width, height }}>
       {!!sourceId && (
         <video
           ref={video}

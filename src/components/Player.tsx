@@ -66,7 +66,7 @@ function Player() {
 
   return (
     <div className="dark:bg-black flex-1 w-full h-full">
-      {media && media.type === 'video' && media.file && (
+      {media?.file && media.type === 'video' && media && (
         <video
           key={media.timestamp}
           ref={player}
@@ -76,6 +76,14 @@ function Player() {
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleVideoEnded}
           autoPlay
+        />
+      )}
+      {media?.file && media.type === 'image' && (
+        <img
+          key={media.timestamp}
+          src={media.file}
+          className="block w-full h-full object-contain"
+          alt=""
         />
       )}
     </div>

@@ -46,8 +46,6 @@ export function useDraggable<E extends HTMLElement>(gutter = 0) {
 
     if (getComputedStyle(e.currentTarget).resize !== 'none') {
       const rect = e.currentTarget.getBoundingClientRect()
-      console.log(e.clientX, rect.right)
-      console.log(e.clientY, rect.bottom)
 
       const HORIZONTAL_RESIZER_THRESHOLD = 20
       const VERTICAL_RESIZER_THRESHOLD = 18

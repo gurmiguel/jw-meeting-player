@@ -11,16 +11,15 @@ export function PlayerInterface() {
     currentTime,
     duration,
     file,
+    type,
     playRate,
     playState,
   } = useAppSelector(state => state.player)
-  const playing = file !== null
+  const playing = file !== null && type !== 'image'
 
   const [feedbackSourceId, setFeedbackSourceId] = useState<string>()
 
   function handleStop() {
-    if (!playing) return
-
     dispatch(playerActions.stop())
   }
 

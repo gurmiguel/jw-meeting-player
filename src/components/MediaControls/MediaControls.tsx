@@ -43,7 +43,7 @@ export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, sp
           <PlayIcon className="w-6 h-6" />
         </button>
       )}
-      <button className={classes.controlButton} onClick={onStop} disabled={!playing}>
+      <button className={classes.controlButton} onClick={onStop}>
         <StopIcon className="w-6 h-6" />
       </button>
       <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)}>

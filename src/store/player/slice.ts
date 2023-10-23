@@ -26,7 +26,7 @@ export const playerSlice = createSlice({
     start(state, action: PayloadAction<NonNullableObject<Pick<PlayerState, 'file' | 'type'>>>) {
       state.file = action.payload.file
       state.type = action.payload.type
-      state.playState = 'play'
+      state.playState = action.payload.type !== 'image' ? 'play' : 'pause'
     },
     stop(state) {
       Object.assign(state, initialState)
