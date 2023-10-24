@@ -1,18 +1,30 @@
+import { PhotoIcon, SpeakerWaveIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
 import { addDays, format as formatDate, startOfWeek } from 'date-fns'
-import { Children, MouseEventHandler, useEffect, useMemo } from 'react'
-import { PlayerEvents } from '../../electron/events/player'
+import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo } from 'react'
 import { useAppDispatch } from '../store/hooks'
 import { PlayerState, playerActions } from '../store/player/slice'
 import { AudioPlaceholder } from './AudioPlaceholder/AudioPlaceholder'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
 import { TitleBar } from './TitleBar/TitleBar'
 
-type MediaItem = NonNullableObject<Pick<PlayerEvents.Start, 'type' | 'file'>> & ({
+type MediaItem = NonNullableObject<Pick<PlayerState, 'type' | 'file'>> & ({
   type: 'video' | 'image'
   thumbnail: string
 } | {
   type: 'audio'
 })
+
+const mediaIcons: Record<MediaItem['type'], ComponentType<any>> = {
+  image: PhotoIcon,
+  audio: SpeakerWaveIcon,
+  video: VideoCameraIcon,
+}
+
+const mediaTips: Record<MediaItem['type'], string> = {
+  image: 'Imagem',
+  audio: 'Áudio',
+  video: 'Vídeo',
+}
 
 function MainApp() {
   const dispatch = useAppDispatch()
@@ -25,8 +37,6 @@ function MainApp() {
 
   const media = useMemo<MediaItem[]>(() => [
     { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=1' },
-    { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=2' },
-    { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=3' },
     { type: 'image', file: 'https://picsum.photos/1920/1080', thumbnail: 'https://picsum.photos/200/300' },
     { type: 'audio', file: '/sample-audio.opus' },
   ], [])
@@ -54,10 +64,13 @@ function MainApp() {
 
           <div className="flex flex-wrap w-full gap-5">
             {Children.toArray(media.map(item => (
-              <a href="#" onClick={createMediaOpenerHandler(item.type, item.file)} className="transition hover:shadow-md hover:shadow-neutral-300/40">
+              <a href="#" onClick={createMediaOpenerHandler(item.type, item.file)} className="relative transition hover:shadow-md hover:shadow-neutral-300/40">
                 {item.type === 'audio'
                   ? <AudioPlaceholder file={item.file} />
                   : <img src={item.thumbnail} alt="" className="w-[260px] h-[180px] object-cover" />}
+                <div className="absolute top-2 right-2 drop-shadow-sm" title={mediaTips[item.type]}>
+                  {createElement(mediaIcons[item.type], { className: 'h-6' })}
+                </div>
               </a>
             )))}
           </div>

@@ -27,6 +27,8 @@ export const playerSlice = createSlice({
       state.file = action.payload.file
       state.type = action.payload.type
       state.playState = action.payload.type !== 'image' ? 'play' : 'pause'
+      state.currentTime = initialState.currentTime
+      state.duration = initialState.duration
     },
     stop(state) {
       Object.assign(state, initialState)
