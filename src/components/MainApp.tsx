@@ -1,6 +1,7 @@
 import { PhotoIcon, SpeakerWaveIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
 import { addDays, format as formatDate, startOfWeek } from 'date-fns'
-import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo } from 'react'
+import { Children, ComponentType, MouseEventHandler, createElement, useMemo } from 'react'
+import { useFetchWeekMediaQuery } from '../store/api/week'
 import { useAppDispatch } from '../store/hooks'
 import { PlayerState, playerActions } from '../store/player/slice'
 import { AudioPlaceholder } from './AudioPlaceholder/AudioPlaceholder'
@@ -35,6 +36,8 @@ function MainApp() {
     return startOfWeek(today, { weekStartsOn: 1 })
   }, [])
 
+  const { data, isFetching } = useFetchWeekMediaQuery(currentWeekStart)
+
   const media = useMemo<MediaItem[]>(() => [
     { type: 'video', file: '/sample-video.webm', thumbnail: 'https://picsum.photos/300/300?_=1' },
     { type: 'image', file: 'https://picsum.photos/1920/1080', thumbnail: 'https://picsum.photos/200/300' },
@@ -46,12 +49,6 @@ function MainApp() {
 
     dispatch(playerActions.start({ type, file }))
   }
-
-  useEffect(() => {
-    // api.fetchWeekMedia({ isoDate: new Date().toISOString() }).then(res => {
-    //   console.log(res)
-    // })
-  }, [])
 
   return (
     <>
@@ -74,6 +71,10 @@ function MainApp() {
               </a>
             )))}
           </div>
+
+          {isFetching && <div>Fetching...</div>}
+
+          <pre>{JSON.stringify(data, null, 2)}</pre>
         </div>
 
         <PlayerInterface />

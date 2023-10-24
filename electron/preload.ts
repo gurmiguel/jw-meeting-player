@@ -42,7 +42,9 @@ contextBridge.exposeInMainWorld('common', <CommonBridge>{
 })
 
 contextBridge.exposeInMainWorld('api', <API>{
-  fetchWeekMedia: (payload) => ipcRenderer.invoke('fetch-week-data', payload)
+  fetch(endpoint, payload) {
+    return ipcRenderer.invoke(endpoint, payload)
+  },
 })
 
 ipcRenderer.once('port', async (event) => {

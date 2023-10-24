@@ -1,13 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit'
+import { electronApi } from './api'
 import { playerListener } from './player/listener'
 import player from './player/slice'
 
 export const store = configureStore({
   reducer: {
     player,
+    [electronApi.reducerPath]: electronApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(playerListener.middleware),
+    getDefaultMiddleware()
+      .prepend(electronApi.middleware)
+      .prepend(playerListener.middleware),
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

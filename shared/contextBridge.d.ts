@@ -1,4 +1,3 @@
-import { APIEvents } from '../electron/events/api'
 import { PlayerEvents } from '../electron/events/player'
 
 declare global {
@@ -51,7 +50,7 @@ declare global {
   const common: CommonBridge
 
   interface API {
-    fetchWeekMedia(payload: APIEvents.FetchWeekMediaPayload): Promise<APIEvents.FetchWeekMediaResponse>
+    fetch<T = any>(endpoint: string, payload: any): Promise<T>
   }
 
   const api: API
