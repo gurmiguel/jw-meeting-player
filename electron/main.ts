@@ -30,6 +30,7 @@ async function createWindows() {
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       nodeIntegrationInWorker: true,
+      webSecurity: false,
       preload: path.join(__dirname, 'preload.js'),
     },
     width: 1200,
@@ -52,6 +53,7 @@ async function createWindows() {
     // alwaysOnTop: true,
     movable: false,
     webPreferences: {
+      webSecurity: false,
       preload: path.join(__dirname, 'preload.js'),
     },
     x: playerDisplay?.bounds.x,

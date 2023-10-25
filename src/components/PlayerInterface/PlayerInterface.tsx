@@ -15,7 +15,7 @@ export function PlayerInterface() {
     playRate,
     playState,
   } = useAppSelector(state => state.player)
-  const playing = file !== null && type !== 'image'
+  const playing = file !== null
 
   const [feedbackSourceId, setFeedbackSourceId] = useState<string>()
 
@@ -71,6 +71,7 @@ export function PlayerInterface() {
     <>
       <MediaControls
         playing={playing}
+        type={type}
         playStatus={playState}
         onStop={handleStop}
         onPlay={handlePlay}

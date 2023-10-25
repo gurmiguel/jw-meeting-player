@@ -8,5 +8,8 @@ export async function fetchPublicationVideo(pubIdentifier: string) {
 
   const downloadURL = fileData.progressiveDownloadURL
   
-  return downloadVideo(downloadURL)
+  return {
+    ...await downloadVideo(downloadURL),
+    type: 'video',
+  }
 }

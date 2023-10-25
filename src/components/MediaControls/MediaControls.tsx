@@ -1,11 +1,13 @@
-import { PauseIcon, PlayIcon, StopIcon } from '@heroicons/react/24/solid'
+import { PauseIcon, PlayIcon, StopIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useState } from 'react'
+import { PlayerState } from '../../store/player/slice'
 import { ProgressSlider } from '../ProgressSlider/ProgressSlider'
 import classes from './MediaControls.module.css'
 
 interface Props {
   playing: boolean
+  type: PlayerState['type']
   playStatus: undefined | 'play' | 'pause'
   onPlay(): void
   onPause(): void
@@ -19,7 +21,8 @@ interface Props {
 
 const SPEED_OPTIONS = [0.5, 0.7, 1.0, 1.1, 1.2, 1.5, 2]
 
-export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, speed: currentSpeed, onSetSpeed, currentTime, duration, onSeek }: Props) {
+export function MediaControls({ playing, type, playStatus, onPause, onPlay, onStop, speed: currentSpeed, onSetSpeed, currentTime, duration, onSeek }: Props) {
+  const playingMedia = playing && type !== 'image'
   const [speedOptsOpen, setSpeedOptsOpen] = useState(false)
 
   return (
@@ -29,22 +32,24 @@ export function MediaControls({ playing, playStatus, onPause, onPlay, onStop, sp
           currentTime={currentTime}
           duration={duration}
           onChange={onSeek}
-          disabled={!playing}
+          disabled={!playingMedia}
         />
       </div>
 
       {playStatus === 'play' && (
-        <button className={classes.controlButton} onClick={onPause} disabled={!playing}>
+        <button className={classes.controlButton} onClick={onPause} disabled={!playingMedia}>
           <PauseIcon className="w-6 h-6" />
         </button>
       )}
       {['pause', undefined].includes(playStatus) && (
-        <button className={classes.controlButton} onClick={onPlay} disabled={!playing}>
+        <button className={classes.controlButton} onClick={onPlay} disabled={!playingMedia}>
           <PlayIcon className="w-6 h-6" />
         </button>
       )}
-      <button className={classes.controlButton} onClick={onStop}>
-        <StopIcon className="w-6 h-6" />
+      <button className={classes.controlButton} onClick={onStop} disabled={!playing}>
+        {type === 'image'
+          ? <XMarkIcon className="w-6 h-6" />
+          : <StopIcon className="w-6 h-6" />}
       </button>
       <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)}>
         <span className="font-semibold">{currentSpeed.toFixed(1)}x</span>

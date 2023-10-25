@@ -23,6 +23,8 @@
     "redux": "^4.2.1"
   },
   "devDependencies": {
+    "@types/ffbinaries": "^1.1.4",
+    "@types/fluent-ffmpeg": "^2.1.23",
     "@types/lodash": "^4.14.195",
     "@types/lodash-es": "^4.17.8",
     "@types/node": "^20.8.6",
@@ -38,7 +40,7 @@
     "eslint": "^8.38.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
-    "ffmpeg-static": "^5.2.0",
+    "ffbinaries": "^1.1.5",
     "fluent-ffmpeg": "^2.1.2",
     "postcss": "^8.4.26",
     "tailwindcss": "^3.3.3",

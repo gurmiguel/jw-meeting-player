@@ -1,11 +1,12 @@
-import { addMinutes, format as formatDate, isWeekend } from 'date-fns'
 import { CheerioAPI } from 'cheerio'
-import { crawl } from './utils'
-import { fetchPublicationVideo } from './fetch-publication-video'
-import { MediaData, fetchArticle } from './fetch-article'
+import { addMinutes, format as formatDate } from 'date-fns'
+import { FetchWeekType } from '../../shared/models/FetchWeekData'
 import downloader from './Downloader'
+import { fetchArticle } from './fetch-article'
+import { fetchPublicationVideo } from './fetch-publication-video'
+import { crawl } from './utils'
 
-export async function fetchWeekMedia(date: Date) {
+export async function fetchWeekMedia(date: Date, type: FetchWeekType) {
   date = addMinutes(date, date.getTimezoneOffset())
   const jwURL = `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${formatDate(date, 'yyyy\/w')}`
 
@@ -14,19 +15,27 @@ export async function fetchWeekMedia(date: Date) {
   const baseURL = new URL(jwURL).origin
 
   try {
-    if (isWeekend(date)) {
-      downloader.setContext(formatDate(date, 'yyyy-w') + ' - 2')
-  
-    } else {
-      downloader.setContext(formatDate(date, 'yyyy-w') + ' - 1')
-      return await fetchMidWeekMeetingMedia($, baseURL)
+    console.log('Fetching from:', jwURL)
+
+    downloader.setContext(formatDate(date, 'yyyy-w') + ` - ${type + 1}`)
+    switch (type) {
+      case FetchWeekType.MIDWEEK:
+        return await fetchMidWeekMeetingMedia($, baseURL)
+      case FetchWeekType.WEEKEND:
+        return await []
     }
   } finally {
     await downloader.flush()
   }
 }
 
-async function fetchMidWeekMeetingMedia($: CheerioAPI, baseURL: string) {
+interface Media {
+  type: string
+  path: string
+  thumbnail: string
+}
+
+async function fetchMidWeekMeetingMedia($: CheerioAPI, baseURL: string): Promise<Media[]> {
   const $root = $('.todayItem.pub-mwb')
 
   const $initialSong = $root.find('#section1 ul > li:first-child a')
@@ -54,7 +63,7 @@ async function fetchMidWeekMeetingMedia($: CheerioAPI, baseURL: string) {
       const $anchor = $(el)
       const href = $anchor.attr('href')!
   
-      const $parent = $anchor.parentsUntil('[data-pid]').first()
+      const $parent = $anchor.closest('[data-pid]')
       const pid = $parent.attr('data-pid')
   
       if (songsPids.includes(pid)) // exclude already fetched songs
@@ -63,7 +72,7 @@ async function fetchMidWeekMeetingMedia($: CheerioAPI, baseURL: string) {
       if (href.includes('/wol/bc/')) // exclude bible texts
         return false
   
-      const articleOnlyRegex = new RegExp(`\\W*${$anchor.text()}\\W*:`)
+      const articleOnlyRegex = new RegExp(`“?\\W*${$anchor.text()}\\W*”?:`)
   
       if (!articleOnlyRegex.test($parent.text().trim())) // only crawl articles for images
         return false
@@ -71,7 +80,7 @@ async function fetchMidWeekMeetingMedia($: CheerioAPI, baseURL: string) {
       return true
     })
 
-  const media: Array<{ name: string, images: MediaData[], videos: MediaData[] }> = (await Promise.all($discourses.map(async (_, el) => {
+  const media = (await Promise.all($discourses.map(async (_, el) => {
     const $anchor = $(el)
     const href = $anchor.attr('href')!
 
@@ -83,35 +92,24 @@ async function fetchMidWeekMeetingMedia($: CheerioAPI, baseURL: string) {
       name: $anchor.text().trim(),
       ...media,
     }
-  }).get())).filter(Boolean)
-
-  console.log(
-    'Downloading media',
-    media.map(({ name, images, videos }) => ({
-      name,
-      images: images.length,
-      videos: videos.length,
-    }))
-  )
+  }).get())).flatMap(data => {
+    return [
+      ...data.images.map(x => ({ path: x.path, thumbnail: x.thumbnail, type: 'image' })),
+      ...data.videos.map(x => ({ path: x.path, thumbnail: x.thumbnail, type: 'video' })),
+    ]
+  }).filter(Boolean)
 
   const $videos = $root.find('a[data-video]')
 
-  const videos: MediaData[] = await Promise.all($videos.map(async (_, el) => {
+  const videos = await Promise.all($videos.map(async (_, el) => {
     const $anchor = $(el)
     const href = $anchor.attr('href')!
 
     const fullHref = href.startsWith('/') ? baseURL + href : href
     const pubIdentifier = new URL(fullHref).searchParams.get('lank')!
 
-    const path = await fetchPublicationVideo(pubIdentifier)
-
-    return { src: href, alt: $anchor.text().trim(), localPath: path }
+    return await fetchPublicationVideo(pubIdentifier)
   }).get())
-
-  console.log(
-    'Downloading Videos',
-    videos
-  )
 
   return [
     ...songs,

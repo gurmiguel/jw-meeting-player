@@ -1,35 +1,42 @@
-import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import path from 'node:path'
+import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
-import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    electron([
-      {
-        // Main-Process entry file of the Electron App.
-        entry: 'electron/main.ts',
-      },
-      {
-        entry: 'electron/preload.ts',
-        onstart(options) {
-          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete, 
-          // instead of restarting the entire Electron App.
-          options.reload()
+export default defineConfig(() => {
+  return {
+    plugins: [
+      react(),
+      electron([
+        {
+          // Main-Process entry file of the Electron App.
+          entry: 'electron/main.ts',
+          vite: {
+            define: {
+              'process.env.FLUENTFFMPEG_COV': false,
+            }
+          }
         },
-      },
-    ]),
-    renderer(),
-  ],
-  build: {
-    rollupOptions: {
-      input: {
-        index: path.resolve(__dirname, 'index.html'),
-        player: path.resolve(__dirname, 'player.html'),
+        {
+          entry: 'electron/preload.ts',
+          onstart(options) {
+            // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete, 
+            // instead of restarting the entire Electron App.
+            options.reload()
+          },
+        },
+      ]),
+      renderer(),
+    ],
+    build: {
+      rollupOptions: {
+        input: {
+          index: path.resolve(__dirname, 'index.html'),
+          player: path.resolve(__dirname, 'player.html'),
+        }
       }
-    }
+    },
   }
 })

@@ -1,11 +1,12 @@
-import { crawl } from './utils'
 import { downloadImage } from './download-image'
 import { fetchPublicationVideo } from './fetch-publication-video'
+import { crawl } from './utils'
 
 export interface MediaData {
   src: string
   alt: string
-  localPath: string
+  path: string
+  thumbnail: string
 }
 
 export async function fetchArticle(url: string) {
@@ -23,9 +24,9 @@ export async function fetchArticle(url: string) {
     const alt = $image.attr('alt')!
 
     const fullSrc = src.startsWith('/') ? baseURL + src : src
-    const localPath = await downloadImage(fullSrc)
+    const { path } = await downloadImage(fullSrc)
 
-    return { src: fullSrc, alt, localPath }
+    return { src: fullSrc, alt, path, thumbnail: path }
   }).get())
 
   const $videos = $root.find('a[data-video]')
@@ -37,9 +38,9 @@ export async function fetchArticle(url: string) {
     const fullHref = href.startsWith('/') ? baseURL + href : href
     const pubIdentifier = new URL(fullHref).searchParams.get('lank')!
 
-    const path = await fetchPublicationVideo(pubIdentifier)
+    const { path, thumbnail } = await fetchPublicationVideo(pubIdentifier)
 
-    return { src: href, alt: $anchor.text().trim(), localPath: path }
+    return { src: href, alt: $anchor.text().trim(), path, thumbnail }
   }).get())
 
   return { images, videos }

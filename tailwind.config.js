@@ -7,7 +7,17 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      animation: {
+        'fade-in': 'fade-in 0.5s ease',
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
+    },
     container: {
       center: true,
     },
@@ -20,7 +30,7 @@ module.exports = {
         'h3': { marginBottom: theme('spacing.1'), fontSize: theme('fontSize.xl') },
         'h4': { marginBottom: theme('spacing.0.5'), fontSize: theme('fontSize.lg') },
       })
-    })
+    }),
   ],
 }
 

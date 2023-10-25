@@ -34,5 +34,10 @@
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false
-  }
+  },
+  "asarUnpack":[
+    "node_modules/ffmpeg-static/bin/${os}/${arch}/ffmpeg",
+    "node_modules/ffmpeg-static/index.js",
+    "node_modules/ffmpeg-static/package.json"
+  ]
 }
