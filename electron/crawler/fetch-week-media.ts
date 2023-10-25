@@ -1,5 +1,6 @@
 import { CheerioAPI } from 'cheerio'
 import { addMinutes, format as formatDate } from 'date-fns'
+import { isEqual, uniqWith } from 'lodash'
 import { FetchWeekType } from '../../shared/models/FetchWeekData'
 import downloader from './Downloader'
 import { fetchArticle } from './fetch-article'
@@ -111,9 +112,9 @@ async function fetchMidWeekMeetingMedia($: CheerioAPI, baseURL: string): Promise
     return await fetchPublicationVideo(pubIdentifier)
   }).get())
 
-  return [
+  return uniqWith([
     ...songs,
     ...media,
     ...videos,
-  ]
+  ], isEqual)
 }

@@ -95,6 +95,8 @@ function MainApp() {
           </div>
 
           {isFetching && <div>Fetching...</div>}
+
+          <pre>{JSON.stringify(data, null, 2)}</pre>
         </div>
 
         <PlayerInterface />
