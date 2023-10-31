@@ -9,7 +9,7 @@ export class Downloader {
   private dirsCreated = new Set<string>()
   private downloadQueue: Array<{ targetPath: string, url: string, thumbnail: string }> = []
 
-  private get targetDir() {
+  get targetDir() {
     return path.join(FILES_PATH, this.currentContext)
   }
   
@@ -64,6 +64,4 @@ export class Downloader {
   }
 }
 
-const downloader = new Downloader()
-
-export default downloader
+export default Downloader

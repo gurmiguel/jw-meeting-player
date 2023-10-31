@@ -94,7 +94,7 @@ function Player() {
         <img
           key={media.timestamp}
           src={media.file}
-          className="block w-full h-full object-scale-down animate-[fade-in_1s_ease]"
+          className="block w-full h-full object-contain animate-[fade-in_1s_ease]"
           alt=""
         />
       )}

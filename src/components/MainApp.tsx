@@ -1,7 +1,7 @@
-import { PhotoIcon, SpeakerWaveIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, PhotoIcon, SpeakerWaveIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
 import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
-import { groupBy } from 'lodash-es'
-import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState } from 'react'
+import { groupBy, uniqueId } from 'lodash-es'
+import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState, useTransition } from 'react'
 import { FetchWeekType } from '../../shared/models/FetchWeekData'
 import { useFetchWeekMediaQuery } from '../store/api/week'
 import { useAppDispatch } from '../store/hooks'
@@ -32,7 +32,8 @@ const mediaTips: Record<MediaItem['type'], string> = {
 function MainApp() {
   const dispatch = useAppDispatch()
 
-  const today = useMemo(() => new Date('2023-10-31'), [])
+  const today = useMemo(() => new Date(), [])
+  const [,startTransition] = useTransition()
 
   const currentWeekStart = useMemo(() => {
     return startOfWeek(today, { weekStartsOn: 1 })
@@ -41,8 +42,9 @@ function MainApp() {
   const [type, setType] = useState(() => {
     return isWeekend(today) ? FetchWeekType.WEEKEND : FetchWeekType.MIDWEEK
   })
+  const [forceSeed, setForceSeed] = useState<number>(0)
 
-  const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type })
+  const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type, forceSeed })
 
   const mediaGroups = useMemo(() => {
     return groupBy(data ?? [], 'group')
@@ -65,10 +67,29 @@ function MainApp() {
       <TitleBar title={document.title} />
       <div className="dark:bg-zinc-900 flex-1 w-full">
         <div className="flex flex-col m-10">
-          <div className="flex flex-row items-center justify-between">
-            <h1 className="cursor-default">Reunião da Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
+          <div className="flex flex-row items-center justify-end">
+            <h1 className="cursor-default ml-0 mr-auto">Reunião da Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
 
-            <select className="ml-3 h-10 px-3" value={type} onChange={e => setType(parseInt(e.target.value))}>
+            <button
+              type="button"
+              onClick={() => setForceSeed(parseInt(uniqueId()))}
+              className="flex items-center p-2 px-4 bg-zinc-500/40 enabled:hover:bg-zinc-500/50 disabled:opacity-50 transition-colors"
+              disabled={isFetching}
+            >
+              Recarregar
+              <ArrowPathIcon className="h-5 ml-1.5 data-[loading=true]:animate-spin" data-loading={isFetching} />
+            </button>
+
+            <select
+              className="ml-3 h-10 px-3"
+              value={type}
+              onChange={e => {
+                startTransition(() => {
+                  setType(parseInt(e.target.value))
+                  setForceSeed(0)
+                })
+              }}
+            >
               <option value={FetchWeekType.MIDWEEK}>Reunião de Meio de Semana</option>
               <option value={FetchWeekType.WEEKEND}>Reunião de Fim de Semana</option>
             </select>

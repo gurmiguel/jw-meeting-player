@@ -6,9 +6,9 @@ import { fileURL } from '../../../shared/utils'
 const weekApiEndpoints = electronApi.injectEndpoints({
   endpoints: build => ({
     fetchWeekMedia: build.query<APIEvents.FetchWeekMediaResponse, FetchWeekDataRequest>({
-      query: ({ isoDate, type }) => ({
+      query: ({ isoDate, type, forceSeed }) => ({
         url: 'fetch-week-data',
-        body: { isoDate, type },
+        body: { isoDate, type, force: !!forceSeed },
       }),
       transformResponse(response: APIEvents.FetchWeekMediaResponse) {
         return response.map(x => ({
