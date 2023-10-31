@@ -6,22 +6,20 @@ export class SongsParser extends CrawlerParser {
   protected static SONG_PUB_ID = 'sjjm'
 
   async process(doc: Document) {
-    const $root = doc.querySelector('.todayItem.pub-mwb')
+    const $root = doc.querySelector('#article')
 
     if (!$root) return null
 
-    const $initialSong = $root.querySelector<HTMLAnchorElement>('#section1 ul > li:first-child a')
-    const initialSong = parseInt($initialSong?.text?.replace(/\D/g, '') ?? 'NaN')
+    const ORDERED_NODE_ITERATOR_TYPE = 5
+    const $songs = doc.evaluate('//a[contains(., "CÂNTICO")]', $root, null, ORDERED_NODE_ITERATOR_TYPE)
 
-    const $midSong = $root.querySelector<HTMLAnchorElement>('#section4 ul > li:first-child a')
-    const midSong = parseInt($midSong?.text?.replace(/\D/g, '') ?? 'NaN')
-
-    const $finalSong = $root.querySelector<HTMLAnchorElement>('#section4 ul > li:last-child a')
-    const finalSong = parseInt($finalSong?.text?.replace(/\D/g, '') ?? 'NaN')
-
-    const songs = [
-      initialSong, midSong, finalSong,
-    ].filter(num => !Number.isNaN(num))
+    const songs = new Array<number>()
+    let $song: Node | null
+    while ($song = $songs.iterateNext()) {
+      const song = parseInt($song?.textContent?.replace(/\D/g, '') ?? 'NaN')
+      if (!Number.isNaN(song))
+        songs.push(song)
+    }
 
     const songsVideos = await Promise.all(songs.map(async song => {
       return {

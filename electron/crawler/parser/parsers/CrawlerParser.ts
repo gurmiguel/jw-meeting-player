@@ -1,5 +1,5 @@
+import { CrawlerUtils } from '../CrawlerUtils'
 import { ParsingResult } from '../types'
-import { CrawlerUtils } from './CrawlerUtils'
 
 export abstract class CrawlerParser {
   protected baseURL!: string

@@ -11,3 +11,7 @@ export interface ParsingResult {
   type: MediaTypes
   media: ParsedMedia[]
 }
+
+export interface ProcessedResult extends ParsingResult {
+  manual: boolean
+}

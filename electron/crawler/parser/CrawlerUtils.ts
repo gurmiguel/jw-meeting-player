@@ -1,6 +1,7 @@
-import { type Downloader } from '../../Downloader'
-import { CrawlerHandler } from '../CrawlerHandler'
-import { ArticleMediaParser } from './ArticleMediaParser'
+import { type Downloader } from '../Downloader'
+import { CrawlerHandler } from './CrawlerHandler'
+import { ArticleMediaParser } from './parsers/ArticleMediaParser'
+import { SongsParser } from './parsers/SongsParser'
 
 export class CrawlerUtils {
   constructor(protected downloader: Downloader) {}
@@ -64,12 +65,24 @@ export class CrawlerUtils {
     return { ...downloadingMedia, title }
   }
 
-  async fetchArticleMedia(url: string, types?: ArticleMediaParser['types']) {
+  async crawlUrl(url: string, addParsers: (handler: CrawlerHandler) => void) {
     const handler = new CrawlerHandler(url, this.downloader)
 
-    handler.addParser(new ArticleMediaParser(types ?? ['image', 'video']))
+    addParsers(handler)
 
     return await handler.process()
+  }
+
+  async fetchArticleMedia(url: string, types?: ArticleMediaParser['types']) {
+    return this.crawlUrl(url, handler => {
+      handler.addParser(new ArticleMediaParser(types ?? ['image', 'video']))
+    })
+  }
+
+  async fetchSongsMedia(url: string) {
+    return this.crawlUrl(url, handler => {
+      handler.addParser(new SongsParser())
+    })
   }
 
   download: Downloader['enqueue'] = (...args) => this.downloader.enqueue(...args)

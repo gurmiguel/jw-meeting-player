@@ -8,7 +8,8 @@ import { ChristianLifeMediaParser } from './parser/parsers/ChristianLifeMediaPar
 import { SchoolMediaParser } from './parser/parsers/SchoolMediaParser'
 import { SongsParser } from './parser/parsers/SongsParser'
 import { TreasuresMediaParser } from './parser/parsers/TreasuresMediaParser'
-import { ParsingResult } from './parser/types'
+import { WeekendParser } from './parser/parsers/WeekendParser'
+import { ProcessedResult } from './parser/types'
 
 // pnpm run -s script "./electron/crawler/fetch-week-media.ts" "fetchWeekMedia" "new Date('$(date)')" "0"
 
@@ -25,8 +26,8 @@ export async function fetchWeekMedia(date: Date, type: FetchWeekType, force = fa
   const jwURL = `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${formatDate(date, 'yyyy\/w')}`
   
   const metadataLoader = new MetadataLoader(downloader)
-  const loadedMetadata = await metadataLoader.loadMetadata()
-  let parsingResult: ParsingResult[] | null = loadedMetadata
+  const loadedMetadata = await metadataLoader.loadMetadata(force)
+  let parsingResult: ProcessedResult[] | null = loadedMetadata
   try {
     if (!parsingResult || force) {
       switch (type) {
@@ -34,7 +35,7 @@ export async function fetchWeekMedia(date: Date, type: FetchWeekType, force = fa
           parsingResult = await fetchMidWeekMeetingMedia(jwURL, downloader)
           break
         case FetchWeekType.WEEKEND:
-          parsingResult = await []
+          parsingResult = await fetchWeekendMeetingMedia(jwURL, downloader)
           break
       }
     }
@@ -59,6 +60,16 @@ async function fetchMidWeekMeetingMedia(url: string, downloader: Downloader) {
   handler.addParser(new TreasuresMediaParser())
   handler.addParser(new SchoolMediaParser())
   handler.addParser(new ChristianLifeMediaParser())
+
+  const results = await handler.process()
+
+  return results
+}
+
+async function fetchWeekendMeetingMedia(url: string, downloader: Downloader) {
+  const handler = new CrawlerHandler(url, downloader)
+  
+  handler.addParser(new WeekendParser())
 
   const results = await handler.process()
 
