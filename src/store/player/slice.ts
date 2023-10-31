@@ -1,15 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
-import { MediaTypes } from '../../../shared/models/MediaTypes'
-
-export interface PlayerState {
-  file: string | null
-  type: MediaTypes | null
-  playState: 'play' | 'pause'
-  playRate: number
-  currentTime: number
-  duration: number
-}
+import { PlayerState } from '../../../shared/state'
 
 const initialState: PlayerState = {
   file: null,

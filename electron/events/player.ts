@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron'
-import { PlayerState } from '../../src/store/player/slice'
+import { PlayerState } from '../../shared/state'
 
 export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   registerTwoWayEvent('start')

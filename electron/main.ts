@@ -1,6 +1,6 @@
 import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen } from 'electron'
 import path from 'node:path'
-import { titleBar } from '../constants'
+import { titleBar } from '../shared/constants'
 import { attachEvents } from './events'
 
 // The built directory structure
@@ -80,8 +80,14 @@ async function createWindows() {
 
   if (VITE_DEV_SERVER_URL) {
     await mainWindow.loadURL(VITE_DEV_SERVER_URL)
-    await playerWindow.loadURL(VITE_DEV_SERVER_URL + 'player.html');
+    await playerWindow.loadURL(VITE_DEV_SERVER_URL + 'player.html')
+  } else {
+    // win.loadFile('dist/index.html')
+    await mainWindow.loadFile(path.join(process.env.DIST, 'index.html'))
+    await playerWindow.loadFile(path.join(process.env.DIST, 'player.html'))
+  }
 
+  if (VITE_DEV_SERVER_URL || true) {
     [mainWindow, playerWindow].forEach(win => {
       win.setThumbarButtons([
         {
@@ -96,16 +102,12 @@ async function createWindows() {
       BrowserWindow.getFocusedWindow()?.webContents.openDevTools()
       BrowserWindow.getFocusedWindow()?.webContents.devToolsWebContents?.focus()
     })
-
+  
     globalShortcut.register('CmdOrCtrl+Shift+C', () => {
       const window = BrowserWindow.getFocusedWindow()
       window?.webContents.openDevTools()
       window?.webContents.devToolsWebContents?.focus()
     })
-  } else {
-    // win.loadFile('dist/index.html')
-    await mainWindow.loadFile(path.join(process.env.DIST, 'index.html'))
-    await playerWindow.loadFile(path.join(process.env.DIST, 'player.html'))
   }
 
   mainWindow.webContents.send('set-feedback-source', { sourceId: playerWindow.getMediaSourceId() })

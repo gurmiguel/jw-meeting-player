@@ -1,4 +1,4 @@
-import { titleBar } from '../../../constants'
+import { titleBar } from '../../../shared/constants'
 
 interface Props {
   title: string

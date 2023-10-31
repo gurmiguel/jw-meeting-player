@@ -1,6 +1,6 @@
 import { SyntheticEvent, useLayoutEffect, useRef, useState } from 'react'
-import { DEFAULT_SPEED } from '../../constants'
 import { PlayerEvents } from '../../electron/events/player'
+import { DEFAULT_SPEED } from '../../shared/constants'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {

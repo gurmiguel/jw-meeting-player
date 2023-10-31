@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { titleBar } from '../../../constants'
+import { titleBar } from '../../../shared/constants'
 import { delay } from '../../lib/utils'
 
 export function useDraggable<E extends HTMLElement>(gutter = 0) {

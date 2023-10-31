@@ -1,7 +1,7 @@
 import { PauseIcon, PlayIcon, StopIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useState } from 'react'
-import { PlayerState } from '../../store/player/slice'
+import { PlayerState } from '../../../shared/state'
 import { ProgressSlider } from '../ProgressSlider/ProgressSlider'
 import classes from './MediaControls.module.css'
 
