@@ -21,6 +21,8 @@ let playerWindow: BrowserWindow | null
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
+const isDebugMode = !!VITE_DEV_SERVER_URL || ['1','true'].includes(process.env.DEBUG ?? '')
+
 Menu.setApplicationMenu(null)
 
 async function createWindows() {
@@ -87,7 +89,7 @@ async function createWindows() {
     await playerWindow.loadFile(path.join(process.env.DIST, 'player.html'))
   }
 
-  if (VITE_DEV_SERVER_URL || true) {
+  if (isDebugMode) {
     [mainWindow, playerWindow].forEach(win => {
       win.setThumbarButtons([
         {
@@ -116,6 +118,9 @@ async function createWindows() {
 app.on('window-all-closed', () => {
   mainWindow = null
   playerWindow = null
+
+  if (process.platform !== 'darwin')
+    app.quit()
 })
 
 app.whenReady()
