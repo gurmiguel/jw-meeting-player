@@ -1,6 +1,7 @@
 import { electronApi } from '.'
 import { type APIEvents } from '../../../electron/events/api'
 import { FetchWeekDataRequest } from '../../../shared/models/FetchWeekData'
+import { fileURL } from '../../../shared/utils'
 
 const weekApiEndpoints = electronApi.injectEndpoints({
   endpoints: build => ({
@@ -11,9 +12,11 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       }),
       transformResponse(response: APIEvents.FetchWeekMediaResponse) {
         return response.map(x => ({
-          path: 'file://' + x.path.replace(/\\/g, '/'),
-          thumbnail: 'file://' + x.thumbnail.replace(/\\/g, '/'),
-          type: x.type,
+          ...x,
+          media: x.media.map(media => ({
+            ...media,
+            path: fileURL(media.path),
+          })),
         }))
       },
     }),

@@ -14,7 +14,7 @@ function eventHandler<E extends EventNames>(namespace: string, eventName: E) {
     ['on' + eventName[0].toUpperCase() + eventName.slice(1)]: (callback: IpcRendererCallback<Payload>) => {
       ipcRenderer.on(channel, (_, payload) => callback(payload))
       window.addEventListener('message', onWindowMessage)
-      function onWindowMessage({ data }: MessageEvent<{channel: string, payload: Payload}>) {
+      function onWindowMessage({ data }: MessageEvent<{ channel: string, payload: Payload }>) {
         if (!data || data.channel !== channel) return
 
         callback(data.payload)
@@ -24,7 +24,7 @@ function eventHandler<E extends EventNames>(namespace: string, eventName: E) {
         ipcRenderer.removeListener(`${namespace}:${eventName}`, callback)
         window.removeEventListener('message', onWindowMessage)
       }
-    }
+    },
   }
 }
 

@@ -1,4 +1,4 @@
-import { PlayerEvents } from '../electron/events/player'
+import { type PlayerEvents } from '../electron/events/player'
 
 declare global {
   interface IpcRendererCallback<T> {

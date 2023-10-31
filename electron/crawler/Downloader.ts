@@ -4,13 +4,19 @@ import path from 'node:path'
 import { FILES_PATH } from '../paths'
 import { generateThumbnail } from '../utils/thumbnails'
 
-class Downloader {
+export class Downloader {
   private currentContext!: string
   private dirsCreated = new Set<string>()
   private downloadQueue: Array<{ targetPath: string, url: string, thumbnail: string }> = []
+
+  private get targetDir() {
+    return path.join(FILES_PATH, this.currentContext)
+  }
   
   setContext(ctx: string) {
     this.currentContext = ctx
+
+    console.log('Target downloads directory:', `"${this.targetDir}"`)
   }
 
   async enqueue(url: string, type: string) {
@@ -19,11 +25,10 @@ class Downloader {
     if (!filename.endsWith(`.${type}`))
       filename += `.${type}`
     
-    const targetDir = path.join(FILES_PATH, this.currentContext)
-    const targetPath = path.join(targetDir, filename)
-    const thumbnail = path.join(targetDir, filename.replace(/\.mp4/i, '-thumb.png'))
+    const targetPath = path.join(this.targetDir, filename)
+    const thumbnail = path.join(this.targetDir, filename.replace(/\.mp4/i, '-thumb.png'))
 
-    await this.ensureDirectoryIsCreated(targetDir)
+    await this.ensureDirectoryIsCreated(this.targetDir)
 
     if (!this.downloadQueue.find(({ targetPath: path }) => path === targetPath))
       this.downloadQueue.push({ url, targetPath, thumbnail })
@@ -32,13 +37,12 @@ class Downloader {
   }
 
   async flush() {
-    await Promise.all(this.downloadQueue.map(async ({ targetPath, thumbnail, url }) => {
+    const downloads = await Promise.all(this.downloadQueue.map(async ({ targetPath, thumbnail, url }) => {
       const file = fs.createWriteStream(targetPath)
 
       await new Promise<void>(resolve => http.get(url, response => {
         response.pipe(file)
 
-        
         file.on('finish', async () => {
           file.close()
           if (targetPath.endsWith('.mp4'))
@@ -48,6 +52,8 @@ class Downloader {
         })
       }))
     }))
+
+    return downloads.length
   }
 
   protected async ensureDirectoryIsCreated(dir: string) {

@@ -2,7 +2,8 @@
   "ts-node": {
     "compilerOptions": {
       "module": "commonjs",
-      "esModuleInterop": true
+      "esModuleInterop": true,
+      "moduleResolution": "node"
     }
   },
   "compilerOptions": {
@@ -12,5 +13,5 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["vite.config.ts", "contextBridge.d.ts"]
+  "include": ["vite.config.ts", "shared/**/*.ts"]
 }

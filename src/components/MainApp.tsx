@@ -1,5 +1,6 @@
 import { PhotoIcon, SpeakerWaveIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
 import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
+import { groupBy } from 'lodash-es'
 import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState } from 'react'
 import { FetchWeekType } from '../../shared/models/FetchWeekData'
 import { useFetchWeekMediaQuery } from '../store/api/week'
@@ -31,23 +32,21 @@ const mediaTips: Record<MediaItem['type'], string> = {
 function MainApp() {
   const dispatch = useAppDispatch()
 
-  const currentWeekStart = useMemo(() => {
-    const today = new Date()
+  const today = useMemo(() => new Date('2023-10-31'), [])
 
+  const currentWeekStart = useMemo(() => {
     return startOfWeek(today, { weekStartsOn: 1 })
-  }, [])
+  }, [today])
 
   const [type, setType] = useState(() => {
-    return isWeekend(new Date()) ? FetchWeekType.WEEKEND : FetchWeekType.MIDWEEK
+    return isWeekend(today) ? FetchWeekType.WEEKEND : FetchWeekType.MIDWEEK
   })
 
   const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type })
 
-  const media = useMemo<MediaItem[]>(() => data?.map(item => ({
-    file: item.path,
-    type: item.type as MediaItem['type'],
-    thumbnail: item.thumbnail,
-  })) ?? [], [data])
+  const mediaGroups = useMemo(() => {
+    return groupBy(data ?? [], 'group')
+  }, [data])
 
   const createMediaOpenerHandler = (type: NonNullable<PlayerState['type']>, file: string): MouseEventHandler => async (e) => {
     e.preventDefault()
@@ -66,10 +65,10 @@ function MainApp() {
       <TitleBar title={document.title} />
       <div className="dark:bg-zinc-900 flex-1 w-full">
         <div className="flex flex-col m-10">
-          <div className="flex flex-row items-center">
-            <h1>Reunião da Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
+          <div className="flex flex-row items-center justify-between">
+            <h1 className="cursor-default">Reunião da Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
 
-            <select className="ml-3" value={type} onChange={e => setType(parseInt(e.target.value))}>
+            <select className="ml-3 h-10 px-3" value={type} onChange={e => setType(parseInt(e.target.value))}>
               <option value={FetchWeekType.MIDWEEK}>Reunião de Meio de Semana</option>
               <option value={FetchWeekType.WEEKEND}>Reunião de Fim de Semana</option>
             </select>
@@ -77,24 +76,34 @@ function MainApp() {
 
           <div className="my-4" />
 
-          <div className="flex flex-wrap w-full gap-5">
+          <div className="flex flex-wrap flex-col w-full">
             {!isFetching && !data?.length && (
               <h4 className="text-xl italic border p-2 px-4">Nenhuma mídia encontrada</h4>
             )}
 
-            {Children.toArray(media.map(item => (
-              <a href="#" onClick={createMediaOpenerHandler(item.type, item.file)} className="relative transition hover:shadow-md hover:shadow-neutral-300/40">
-                {item.type === 'audio'
-                  ? <AudioPlaceholder file={item.file} />
-                  : <img src={item.thumbnail} alt="" className="w-[180px] h-[180px] object-cover" />}
-                <div className="absolute top-2 right-2 drop-shadow-sm" title={mediaTips[item.type]}>
-                  {createElement(mediaIcons[item.type], { className: 'h-6' })}
+            {Object.entries(mediaGroups).map(([ group, items ]) => (
+              <details key={group} open>
+                <summary className="p-2 pl-4 cursor-pointer hover:bg-zinc-300/5">{group}</summary>
+                <div className="flex flex-wrap w-full gap-5 mt-3 mb-3">
+                  {Children.toArray(items.map(item => (
+                    <div className="w-[180px]" title={item.label}>
+                      <a href="#" onClick={createMediaOpenerHandler(item.type, item.media[0].path)} className="flex relative w-full transition hover:shadow-md hover:shadow-neutral-300/40">
+                        {item.type === 'audio'
+                          ? <AudioPlaceholder file={item.media[0].path} />
+                          : <img src={item.media.find(it => it.type === 'image')?.path} alt="" className="w-full aspect-square object-cover" />}
+                        <div className="absolute top-2 right-2 icon-shadow" title={mediaTips[item.type]}>
+                          {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5 })}
+                        </div>
+                      </a>
+                      <p className="cursor-default text-md w-full mt-1.5 line-clamp-2 leading-5">{item.label}</p>
+                    </div>
+                  )))}
                 </div>
-              </a>
-            )))}
+              </details>
+            ))}
           </div>
 
-          {isFetching && <div>Fetching...</div>}
+          {isFetching && <div>Carregando mídias...</div>}
         </div>
 
         <PlayerInterface />

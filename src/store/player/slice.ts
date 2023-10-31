@@ -1,9 +1,10 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
+import { MediaTypes } from '../../../shared/models/MediaTypes'
 
 export interface PlayerState {
   file: string | null
-  type: 'video' | 'image' | 'audio' | null
+  type: MediaTypes | null
   playState: 'play' | 'pause'
   playRate: number
   currentTime: number

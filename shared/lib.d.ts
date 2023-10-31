@@ -3,10 +3,11 @@ declare global {
     ? T
     : never
 
+  type ArrayType<A extends Array> = A extends Array<infer T> ? T : never
+
   type NonNullableObject<T extends {}> = {
     [K in keyof T]: NonNullable<T[K]>
   }
 }
-
 
 export { }

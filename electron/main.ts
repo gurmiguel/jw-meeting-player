@@ -38,7 +38,7 @@ async function createWindows() {
     x: mainDisplay?.bounds.x,
     y: mainDisplay?.bounds.y,
     titleBarStyle: 'hidden',
-    titleBarOverlay: titleBar
+    titleBarOverlay: titleBar,
   })
 
   nativeTheme.themeSource = 'dark'
@@ -88,7 +88,7 @@ async function createWindows() {
           tooltip: 'Open Dev Tools',
           icon: nativeImage.createFromPath(path.join(process.env.PUBLIC, 'react-icon.png')),
           click: () => win!.webContents.openDevTools(),
-        }
+        },
       ])
     })
 

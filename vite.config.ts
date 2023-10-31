@@ -2,7 +2,6 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron'
-import renderer from 'vite-plugin-electron-renderer'
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -16,8 +15,15 @@ export default defineConfig(() => {
           vite: {
             define: {
               'process.env.FLUENTFFMPEG_COV': false,
-            }
-          }
+            },
+            build: {
+              rollupOptions: {
+                external: [
+                  'canvas',
+                ],
+              },
+            },
+          },
         },
         {
           entry: 'electron/preload.ts',
@@ -28,15 +34,14 @@ export default defineConfig(() => {
           },
         },
       ]),
-      renderer(),
     ],
     build: {
       rollupOptions: {
         input: {
           index: path.resolve(__dirname, 'index.html'),
           player: path.resolve(__dirname, 'player.html'),
-        }
-      }
+        },
+      },
     },
   }
 })

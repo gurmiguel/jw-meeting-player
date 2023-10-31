@@ -19,7 +19,7 @@ export async function generateThumbnail(videoPath: string, outputFilepath: strin
   const dir = path.resolve(outputFilepath).split(path.sep)
     .slice(0, -1).join(path.sep)
 
-    await binariesPromise
+  await binariesPromise
 
   return new Promise<void>((resolve, reject) => {
     const command = ffmpeg(videoPath)
