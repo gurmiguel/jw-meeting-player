@@ -1,0 +1,28 @@
+.container {
+  @apply flex flex-col gap-4 pt-4
+}
+
+.inputWrapper {
+  @apply flex-1 flex flex-col text-left
+}
+
+.label {
+  @apply block text-xs leading-3 opacity-70
+}
+
+.input {
+  @apply appearance-none p-2 px-4 pl-0.5 bg-transparent border-b outline-none
+}
+
+.buttons {
+  @apply flex items-center gap-2 my-4 mx-auto
+}
+
+.button {
+  @apply border p-1 px-2 bg-transparent hover:bg-zinc-50/10 transition-colors
+}
+
+.buttonSubmit {
+  @apply bg-zinc-700 dark:border-zinc-200 dark:bg-zinc-200 dark:text-zinc-950 font-semibold;
+  @apply hover:bg-zinc-950 hover:border-zinc-950 hover:dark:bg-zinc-100 hover:dark:border-zinc-100
+}

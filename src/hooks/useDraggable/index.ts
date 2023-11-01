@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { titleBar } from '../../../shared/constants'
-import { delay } from '../../lib/utils'
+import { delay } from '../../../shared/utils'
 
 export function useDraggable<E extends HTMLElement>(gutter = 0) {
   const ref = useRef<E>(null)

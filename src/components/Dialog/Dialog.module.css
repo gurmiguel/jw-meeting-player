@@ -1,0 +1,16 @@
+.overlay {
+  @apply fixed top-0 left-0 w-full h-full z-20 flex flex-col bg-zinc-950/90
+}
+
+.dialog {
+  @apply flex flex-col my-auto mx-auto bg-zinc-100 dark:bg-zinc-900 py-4 px-6 rounded-sm text-center;
+  @apply max-w-3xl min-w-[480px] shadow-md
+}
+
+.title {
+  @apply text-2xl my-0 -mx-4 px-4 pb-2 border-b
+}
+
+.content {
+  @apply block pt-4
+}

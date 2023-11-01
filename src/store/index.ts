@@ -10,8 +10,8 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
-      .prepend(electronApi.middleware)
-      .prepend(playerListener.middleware),
+      .prepend(playerListener.middleware)
+      .prepend(electronApi.middleware),
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

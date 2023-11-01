@@ -1,10 +1,7 @@
+import { WeekType } from './WeekType'
+
 export interface FetchWeekDataRequest {
   isoDate: string
-  type: FetchWeekType
+  type: WeekType
   forceSeed?: number
-}
-
-export enum FetchWeekType {
-  MIDWEEK,
-  WEEKEND,
 }

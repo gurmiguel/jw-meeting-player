@@ -1,6 +1,8 @@
 import { ipcMain } from 'electron'
-import { FetchWeekType } from '../../shared/models/FetchWeekData'
-import { fetchWeekMedia } from '../crawler/fetch-week-media'
+import { UploadMediaRequest } from '../../shared/models/UploadMedia'
+import { WeekType } from '../../shared/models/WeekType'
+import { fetchWeekMedia } from '../api/fetch-week-media'
+import { uploadMedia } from '../api/upload-media'
 
 export function attachApiEvents() {
   ipcMain.handle('fetch-week-data', (_e, { isoDate, type, force }: APIEvents.FetchWeekMediaPayload) => {
@@ -8,14 +10,23 @@ export function attachApiEvents() {
 
     return fetchWeekMedia(date, type, force)
   })
+  ipcMain.handle('upload-media', (_e, { isoDate, type, files }: APIEvents.UploadMediaPayload) => {
+    const date = new Date(isoDate)
+
+    return uploadMedia(date, type, files)
+  })
 }
 
 export namespace APIEvents {
   export interface FetchWeekMediaPayload {
     isoDate: string
-    type: FetchWeekType
+    type: WeekType
     force?: boolean
   }
 
   export type FetchWeekMediaResponse = PromiseType<ReturnType<typeof fetchWeekMedia>>
+  
+  export interface UploadMediaPayload extends UploadMediaRequest {}
+
+  export type UploadMediaResponse = PromiseType<ReturnType<typeof uploadMedia>>
 }

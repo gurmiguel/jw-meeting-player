@@ -1,23 +1,11 @@
 import fs from 'node:fs'
 import http from 'node:https'
 import path from 'node:path'
-import { FILES_PATH } from '../paths'
-import { generateThumbnail } from '../utils/thumbnails'
+import { generateThumbnail, isVideoFile } from '../utils/thumbnails'
+import { FileSystemService } from './FileSystemService'
 
-export class Downloader {
-  private currentContext!: string
-  private dirsCreated = new Set<string>()
-  private downloadQueue: Array<{ targetPath: string, url: string, thumbnail: string }> = []
-
-  get targetDir() {
-    return path.join(FILES_PATH, this.currentContext)
-  }
-  
-  setContext(ctx: string) {
-    this.currentContext = ctx
-
-    console.log('Target downloads directory:', `"${this.targetDir}"`)
-  }
+export class Downloader extends FileSystemService {
+  protected downloadQueue: Array<{ targetPath: string, url: string, thumbnail: string }> = []
 
   async enqueue(url: string, type: string) {
     let filename = url.split('/').pop()!
@@ -45,7 +33,7 @@ export class Downloader {
 
         file.on('finish', async () => {
           file.close()
-          if (targetPath.endsWith('.mp4'))
+          if (isVideoFile(targetPath))
             await generateThumbnail(targetPath, thumbnail)
               .catch((err: Error) => console.log(`Error generating thumbnail for ${path.basename(targetPath)}:`, err.message))
           resolve()
@@ -54,13 +42,6 @@ export class Downloader {
     }))
 
     return downloads.length
-  }
-
-  protected async ensureDirectoryIsCreated(dir: string) {
-    if (this.dirsCreated.has(dir)) return
-
-    await fs.promises.mkdir(dir, { recursive: true })
-    this.dirsCreated.add(dir)
   }
 }
 

@@ -14,6 +14,10 @@ const binariesPromise = new Promise<void>(resolve => {
   })
 })
 
+export function isVideoFile(filepath: string) {
+  return ['mp4', 'mov', 'avi', 'webm', 'wmv', '3gp', 'mkv', 'ogg'].some(ext => filepath.endsWith(`.${ext}`))
+}
+
 export async function generateThumbnail(videoPath: string, outputFilepath: string) {
   const filename = path.basename(outputFilepath)
   const dir = path.resolve(outputFilepath).split(path.sep)

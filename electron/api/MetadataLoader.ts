@@ -1,15 +1,15 @@
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
-import { Downloader } from './Downloader'
+import { FileSystemService } from './FileSystemService'
 import { ProcessedResult } from './parser/types'
 
 class MetadataLoader {
   static MATADATA_FILENAME = 'metadata.json'
 
-  constructor(protected downloader: Downloader) {}
+  constructor(protected fileSystemService: FileSystemService) {}
 
   get targetDir() {
-    return this.downloader.targetDir
+    return this.fileSystemService.targetDir
   }
 
   get targetPath() {

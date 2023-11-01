@@ -8,7 +8,10 @@
     "eol-last": ["warn", "always"],
     "comma-dangle": ["warn", "always-multiline"],
     "object-curly-spacing": "off",
-    "@typescript-eslint/object-curly-spacing": ["warn", "always"]
+    "@typescript-eslint/object-curly-spacing": ["warn", "always"],
+    "@typescript-eslint/no-unused-vars": ["warn", {
+      "varsIgnorePattern": "_.*"
+    }]
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {

@@ -1,6 +1,6 @@
 import { addMinutes, format as formatDate } from 'date-fns'
 import { isEqual, unionWith } from 'lodash'
-import { FetchWeekType } from '../../shared/models/FetchWeekData'
+import { WeekType } from '../../shared/models/WeekType'
 import { Downloader } from './Downloader'
 import MetadataLoader from './MetadataLoader'
 import { CrawlerHandler } from './parser/CrawlerHandler'
@@ -11,12 +11,12 @@ import { TreasuresMediaParser } from './parser/parsers/TreasuresMediaParser'
 import { WeekendParser } from './parser/parsers/WeekendParser'
 import { ProcessedResult } from './parser/types'
 
-// pnpm run -s script "./electron/crawler/fetch-week-media.ts" "fetchWeekMedia" "new Date('$(date)')" "0"
+// pnpm run -s script "./electron/api/fetch-week-media.ts" "fetchWeekMedia" "new Date('$(date)')" "0"
 
-export async function fetchWeekMedia(date: Date, type: FetchWeekType, force = false) {
+export async function fetchWeekMedia(date: Date, type: WeekType, force = false) {
   date = addMinutes(date, date.getTimezoneOffset())
 
-  console.log('Fetching data for date:', formatDate(date, 'yyyy-MM-dd'), 'and type:', FetchWeekType[type])
+  console.log('Fetching data for date:', formatDate(date, 'yyyy-MM-dd'), 'and type:', WeekType[type])
   if (force)
     console.log('-- Fetching with force enabled')
   
@@ -31,10 +31,10 @@ export async function fetchWeekMedia(date: Date, type: FetchWeekType, force = fa
   try {
     if (!parsingResult || force) {
       switch (type) {
-        case FetchWeekType.MIDWEEK:
+        case WeekType.MIDWEEK:
           parsingResult = await fetchMidWeekMeetingMedia(jwURL, downloader)
           break
-        case FetchWeekType.WEEKEND:
+        case WeekType.WEEKEND:
           parsingResult = await fetchWeekendMeetingMedia(jwURL, downloader)
           break
       }
@@ -44,8 +44,8 @@ export async function fetchWeekMedia(date: Date, type: FetchWeekType, force = fa
     const count = await downloader.flush()
     console.log(`Downloaded ${count} media items`)
   }
-  const mergedResults = unionWith(loadedMetadata, parsingResult, (a, b) => {
-    return isEqual([a.group,a.type,a.media],[b.group,b.type,b.media])
+  const mergedResults = unionWith(parsingResult, loadedMetadata, (a, b) => {
+    return isEqual(a, b)
   })
   if (mergedResults.length > 0)
     await metadataLoader.saveMetadata(mergedResults)

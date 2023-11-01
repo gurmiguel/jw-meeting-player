@@ -6,6 +6,7 @@ import {
   useStore,
 } from 'react-redux'
 
+import { Slice } from '@reduxjs/toolkit'
 import { AppDispatch, RootState } from './index'
 
 export const useAppDispatch = useDispatch<AppDispatch>
@@ -20,3 +21,7 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = (
 ) => useSelector(selector, equalityFn)
 
 export const useAppStore = useStore<RootState>
+
+export type SliceActions<TSlice extends Slice, Actions = TSlice['actions']> = {
+  [K in keyof Actions]: Actions[K]
+}[keyof Actions]

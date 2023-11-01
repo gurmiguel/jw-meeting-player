@@ -26,7 +26,10 @@ const isDebugMode = !!VITE_DEV_SERVER_URL || ['1','true'].includes(process.env.D
 Menu.setApplicationMenu(null)
 
 async function createWindows() {
-  const mainDisplay = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+  const displays = screen.getAllDisplays()
+  const mainDisplay = !isDebugMode
+    ? screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+    : displays.find(display => display.id !== screen.getPrimaryDisplay().id) ?? screen.getPrimaryDisplay()
   
   mainWindow = new BrowserWindow({
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
@@ -45,7 +48,6 @@ async function createWindows() {
 
   nativeTheme.themeSource = 'dark'
 
-  const displays = screen.getAllDisplays()
 
   const playerDisplay = displays.find(display => display.id !== mainDisplay.id)
   

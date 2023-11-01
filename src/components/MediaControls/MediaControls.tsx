@@ -1,7 +1,8 @@
 import { PauseIcon, PlayIcon, StopIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { PlayerState } from '../../../shared/state'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import { ProgressSlider } from '../ProgressSlider/ProgressSlider'
 import classes from './MediaControls.module.css'
 
@@ -24,6 +25,10 @@ const SPEED_OPTIONS = [0.5, 0.7, 1.0, 1.1, 1.2, 1.5, 2]
 export function MediaControls({ playing, type, playStatus, onPause, onPlay, onStop, speed: currentSpeed, onSetSpeed, currentTime, duration, onSeek }: Props) {
   const playingMedia = playing && type !== 'image'
   const [speedOptsOpen, setSpeedOptsOpen] = useState(false)
+
+  const clickOutsideRef = useClickOutside<HTMLDivElement>(useCallback(() => {
+    setSpeedOptsOpen(false)
+  }, []), !speedOptsOpen)
 
   return (
     <div className={clsx(classes.container, classes.absoluteCenter)}>
@@ -55,7 +60,7 @@ export function MediaControls({ playing, type, playStatus, onPause, onPlay, onSt
         <span className="font-semibold">{currentSpeed.toFixed(1)}x</span>
       </button>
       {speedOptsOpen && (
-        <div className={clsx(classes.container, 'absolute flex flex-col-reverse bottom-0 right-0')}>
+        <div ref={clickOutsideRef} className={clsx(classes.container, 'absolute flex flex-col-reverse bottom-0 right-0')}>
           {SPEED_OPTIONS.map(speed => (
             <button
               key={speed}

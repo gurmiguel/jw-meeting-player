@@ -1,5 +1,5 @@
 import { createListenerMiddleware } from '@reduxjs/toolkit'
-import { delay } from '../../lib/utils'
+import { delay } from '../../../shared/utils'
 import { RootState } from '../index'
 import { playerActions } from './slice'
 

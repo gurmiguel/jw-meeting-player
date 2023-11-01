@@ -2,14 +2,18 @@ import { ArrowPathIcon, PhotoIcon, SpeakerWaveIcon, VideoCameraIcon } from '@her
 import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
 import { groupBy, uniqueId } from 'lodash-es'
 import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState, useTransition } from 'react'
-import { FetchWeekType } from '../../shared/models/FetchWeekData'
+import { UploadingFile } from '../../shared/models/UploadMedia'
+import { WeekType } from '../../shared/models/WeekType'
 import { PlayerState } from '../../shared/state'
-import { useFetchWeekMediaQuery } from '../store/api/week'
+import { useFetchWeekMediaQuery, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
 import { AudioPlaceholder } from './AudioPlaceholder/AudioPlaceholder'
+import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
+import { useDialog } from './Dialog/DialogProvider'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
 import { TitleBar } from './TitleBar/TitleBar'
+import { UploadMetadataDialog } from './UploadMetadataDialog/UploadMetadataDialog'
 
 type MediaItem = NonNullableObject<Pick<PlayerState, 'type' | 'file'>> & ({
   type: 'video' | 'image'
@@ -33,6 +37,8 @@ const mediaTips: Record<MediaItem['type'], string> = {
 function MainApp() {
   const dispatch = useAppDispatch()
 
+  const { show: showDialog } = useDialog()
+
   const today = useMemo(() => new Date(), [])
   const [,startTransition] = useTransition()
 
@@ -41,11 +47,12 @@ function MainApp() {
   }, [today])
 
   const [type, setType] = useState(() => {
-    return isWeekend(today) ? FetchWeekType.WEEKEND : FetchWeekType.WEEKEND
+    return isWeekend(today) ? WeekType.WEEKEND : WeekType.WEEKEND
   })
   const [forceSeed, setForceSeed] = useState<number>(0)
 
   const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type, forceSeed })
+  const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
 
   const mediaGroups = useMemo(() => {
     return groupBy(data ?? [], 'group')
@@ -57,6 +64,29 @@ function MainApp() {
     dispatch(playerActions.start({ type, file }))
   }
 
+  async function handleDataTransfer(files: File[]) {
+    try {
+      const uploadingFiles = new Array<UploadingFile>()
+      for (const file of files) {
+        const { group, label } = await new Promise<Omit<UploadingFile, 'file'>>((resolve, reject) => {
+          showDialog((
+            <UploadMetadataDialog
+              onSubmit={resolve}
+              defaultGroup="Outros"
+              defaultLabel={file.name}
+            />
+          ), {
+            onDismiss: reject,
+            disableOverlayDismiss: true,
+          })
+        })
+        uploadingFiles.push({ file: { name: file.name, path: file.path }, group, label })
+      }
+
+      await uploadMedia({ isoDate: currentWeekStart.toISOString(), type, forceSeed, files: uploadingFiles }).unwrap()
+    } catch { /* empty */ }
+  }
+
   useEffect(() => {
     return () => {
       dispatch(playerActions.stop())
@@ -66,7 +96,7 @@ function MainApp() {
   return (
     <>
       <TitleBar title={document.title} />
-      <div className="dark:bg-zinc-900 flex-1 w-full">
+      <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/']} className="dark:bg-zinc-900 flex-1 w-full">
         <div className="flex flex-col m-10">
           <div className="flex flex-row items-center justify-end">
             <h1 className="cursor-default ml-0 mr-auto">Reunião da Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
@@ -77,7 +107,7 @@ function MainApp() {
               className="flex items-center p-2 px-4 bg-zinc-500/40 enabled:hover:bg-zinc-500/50 disabled:opacity-50 transition-colors"
               disabled={isFetching}
             >
-              Recarregar
+                Recarregar
               <ArrowPathIcon className="h-5 ml-1.5 data-[loading=true]:animate-spin" data-loading={isFetching} />
             </button>
 
@@ -91,8 +121,8 @@ function MainApp() {
                 })
               }}
             >
-              <option value={FetchWeekType.MIDWEEK}>Reunião de Meio de Semana</option>
-              <option value={FetchWeekType.WEEKEND}>Reunião de Fim de Semana</option>
+              <option value={WeekType.MIDWEEK}>Reunião de Meio de Semana</option>
+              <option value={WeekType.WEEKEND}>Reunião de Fim de Semana</option>
             </select>
           </div>
 
@@ -129,7 +159,13 @@ function MainApp() {
         </div>
 
         <PlayerInterface />
-      </div>
+
+        {isUploading && (
+          <div className="absolute top-0 left-0 w-full h-full flex z-10 items-center justify-center bg-zinc-900/30">
+            <ArrowPathIcon className="h-12 animate-spin text-zinc-100" />
+          </div>
+        )}
+      </DataTransferContainer>
     </>
   )
 }

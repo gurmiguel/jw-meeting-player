@@ -1,5 +1,6 @@
 {
   "name": "jw-meeting-player",
+  "displayName": "JW Meeting Player",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -16,6 +17,7 @@
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "ffbinaries": "^1.1.5",
+    "file-type": "^18.5.0",
     "fluent-ffmpeg": "^2.1.2",
     "jsdom": "^22.1.0",
     "lodash": "^4.17.21",
