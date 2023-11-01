@@ -11,7 +11,26 @@
 }
 
 .input {
-  @apply appearance-none p-2 px-4 pl-0.5 bg-transparent border-b outline-none
+  @apply grid items-center appearance-none p-2 px-4 pl-0.5 bg-transparent border-b;
+}
+
+input.input {
+  @apply outline-none;
+}
+
+select.input {
+  @apply pr-8;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' height='24'><path fill='white' d='M13.418 7.859a.695.695 0 0 1 .978 0 .68.68 0 0 1 0 .969l-3.908 3.83a.697.697 0 0 1-.979 0l-3.908-3.83a.68.68 0 0 1 0-.969.695.695 0 0 1 .978 0L10 11l3.418-3.141z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 5px top 50%;
+
+  &:focus-within {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' transform='rotate(180)' viewBox='0 0 20 20' height='24'><path fill='white' d='M13.418 7.859a.695.695 0 0 1 .978 0 .68.68 0 0 1 0 .969l-3.908 3.83a.697.697 0 0 1-.979 0l-3.908-3.83a.68.68 0 0 1 0-.969.695.695 0 0 1 .978 0L10 11l3.418-3.141z'/></svg>");
+  }
+
+  & option {
+    @apply dark:text-zinc-50 dark:bg-zinc-800 font-semibold;
+  }
 }
 
 .buttons {
@@ -19,10 +38,11 @@
 }
 
 .button {
-  @apply border p-1 px-2 bg-transparent hover:bg-zinc-50/10 transition-colors
+  @apply border p-1 px-2 bg-transparent hover:bg-zinc-50/10 transition-colors;
+  @apply outline-offset-4;
 }
 
 .buttonSubmit {
   @apply bg-zinc-700 dark:border-zinc-200 dark:bg-zinc-200 dark:text-zinc-950 font-semibold;
-  @apply hover:bg-zinc-950 hover:border-zinc-950 hover:dark:bg-zinc-100 hover:dark:border-zinc-100
+  @apply hover:bg-zinc-950 hover:border-zinc-950 hover:dark:bg-zinc-100 hover:dark:border-zinc-100;
 }

@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import FocusTrap from 'focus-trap-react'
 import { ReactNode, createContext, forwardRef, useContext } from 'react'
 import classes from './Dialog.module.css'
 import { DialogContext, useDialog } from './DialogProvider'
@@ -24,9 +25,11 @@ export const Dialog = forwardRef<HTMLDivElement, DialogProps>(({ children, onDis
 
   return (
     <dialogContentContext.Provider value={{ onDismiss, ...props }}>
-      <div ref={ref} className={classes.dialog}>
-        {typeof children === 'function' ? children(ctx, { onDismiss, ...props }) : children}
-      </div>
+      <FocusTrap>
+        <div ref={ref} className={classes.dialog}>
+          {typeof children === 'function' ? children(ctx, { onDismiss, ...props }) : children}
+        </div>
+      </FocusTrap>
     </dialogContentContext.Provider>
   )
 })

@@ -19,6 +19,7 @@
     "ffbinaries": "^1.1.5",
     "file-type": "^18.5.0",
     "fluent-ffmpeg": "^2.1.2",
+    "focus-trap-react": "^10.2.3",
     "jsdom": "^22.1.0",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",

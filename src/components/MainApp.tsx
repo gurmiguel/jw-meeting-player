@@ -1,14 +1,16 @@
-import { ArrowPathIcon, PhotoIcon, SpeakerWaveIcon, VideoCameraIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, PhotoIcon, SpeakerWaveIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
 import { groupBy, uniqueId } from 'lodash-es'
 import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState, useTransition } from 'react'
+import { ProcessedResult } from '../../electron/api/parser/types'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { PlayerState } from '../../shared/state'
-import { useFetchWeekMediaQuery, useUploadMediaMutation } from '../store/api/week'
+import { useFetchWeekMediaQuery, useRemoveMediaMutation, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
 import { AudioPlaceholder } from './AudioPlaceholder/AudioPlaceholder'
+import { useConfirmDialog } from './ConfirmDialog/hook'
 import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
 import { useDialog } from './Dialog/DialogProvider'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
@@ -38,6 +40,7 @@ function MainApp() {
   const dispatch = useAppDispatch()
 
   const { show: showDialog } = useDialog()
+  const promptConfirm = useConfirmDialog()
 
   const today = useMemo(() => new Date(), [])
   const [,startTransition] = useTransition()
@@ -53,15 +56,23 @@ function MainApp() {
 
   const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type, forceSeed })
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
+  const [ removeMedia ] = useRemoveMediaMutation()
 
   const mediaGroups = useMemo(() => {
     return groupBy(data ?? [], 'group')
   }, [data])
 
-  const createMediaOpenerHandler = (type: NonNullable<PlayerState['type']>, file: string): MouseEventHandler => async (e) => {
+  const createMediaOpenHandler = (type: NonNullable<PlayerState['type']>, file: string): MouseEventHandler => async (e) => {
     e.preventDefault()
 
     dispatch(playerActions.start({ type, file }))
+  }
+
+  const createMediaRemoveHandler = (item: ProcessedResult): MouseEventHandler => async (e) => {
+    e.preventDefault()
+
+    if (await promptConfirm('Deseja realmente excluir este item?'))
+      await removeMedia({ isoDate: currentWeekStart.toISOString(), type, item })
   }
 
   async function handleDataTransfer(files: File[]) {
@@ -72,6 +83,7 @@ function MainApp() {
           showDialog((
             <UploadMetadataDialog
               onSubmit={resolve}
+              groups={Object.keys(mediaGroups)}
               defaultGroup="Outros"
               defaultLabel={file.name}
             />
@@ -138,8 +150,8 @@ function MainApp() {
                 <summary className="p-2 pl-4 cursor-pointer hover:bg-zinc-300/5">{group}</summary>
                 <div className="flex flex-wrap w-full gap-5 mt-3 mb-3">
                   {Children.toArray(items.map(item => (
-                    <div className="w-[180px]" title={item.label}>
-                      <a href="#" onClick={createMediaOpenerHandler(item.type, item.media[0].path)} className="flex relative w-full transition hover:shadow-md hover:shadow-neutral-300/40">
+                    <div className="relative w-[180px]" title={item.label}>
+                      <a href="#" onClick={createMediaOpenHandler(item.type, item.media[0].path)} className="flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
                         {item.type === 'audio'
                           ? <AudioPlaceholder file={item.media[0].path} />
                           : <img src={item.media.find(it => it.type === 'image')?.path} alt="" className="w-full aspect-square object-cover" />}
@@ -147,6 +159,11 @@ function MainApp() {
                           {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5 })}
                         </div>
                       </a>
+                      {item.manual && (
+                        <button className="appearance-none absolute top-2 left-2 bg-transparent icon-shadow" title="Excluir" type="button" onClick={createMediaRemoveHandler(item)}>
+                          <XMarkIcon className="h-6 text-zinc-100" strokeWidth="1.5" />
+                        </button>
+                      )}
                       <p className="cursor-default text-md w-full mt-1.5 line-clamp-2 leading-5">{item.label}</p>
                     </div>
                   )))}

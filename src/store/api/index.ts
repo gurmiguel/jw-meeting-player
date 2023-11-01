@@ -20,5 +20,6 @@ const baseQuery: BaseQueryFn<
 
 export const electronApi = createApi({
   baseQuery,
+  tagTypes: ['Date', 'WeekType'],
   endpoints: () => ({}),
 })
