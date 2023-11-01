@@ -54,7 +54,7 @@ async function createWindows() {
   playerWindow = new BrowserWindow({
     frame: false,
     fullscreen: true,
-    alwaysOnTop: true,
+    alwaysOnTop: !isDebugMode,
     movable: false,
     webPreferences: {
       webSecurity: false,
@@ -64,7 +64,10 @@ async function createWindows() {
     y: playerDisplay?.bounds.y,
   })
 
-  playerWindow.maximize()
+  if (isDebugMode)
+    playerWindow.minimize()
+  else
+    playerWindow.maximize()
   mainWindow.maximize()
 
   // Test active push message to Renderer-process.
