@@ -38,8 +38,8 @@ async function createWindows() {
       webSecurity: false,
       preload: path.join(__dirname, 'preload.js'),
     },
-    width: 1200,
-    height: 900,
+    minWidth: 800,
+    minHeight: 600,
     x: mainDisplay?.bounds.x,
     y: mainDisplay?.bounds.y,
     titleBarStyle: 'hidden',
@@ -48,6 +48,7 @@ async function createWindows() {
 
   nativeTheme.themeSource = 'dark'
 
+  mainWindow.setSize(1200, 900, false)
 
   const playerDisplay = displays.find(display => display.id !== mainDisplay.id)
   
@@ -66,9 +67,10 @@ async function createWindows() {
 
   if (isDebugMode)
     playerWindow.minimize()
-  else
+  else {
     playerWindow.maximize()
-  mainWindow.maximize()
+    mainWindow.maximize()
+  }
 
   // Test active push message to Renderer-process.
   mainWindow.webContents.on('did-finish-load', () => {

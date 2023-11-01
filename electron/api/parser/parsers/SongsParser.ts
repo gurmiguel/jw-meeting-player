@@ -10,12 +10,16 @@ export class SongsParser extends CrawlerParser {
 
     if (!$root) return null
 
-    const ORDERED_NODE_ITERATOR_TYPE = 5
-    const $songs = doc.evaluate('//a[contains(., "CÂNTICO")]', $root, null, ORDERED_NODE_ITERATOR_TYPE)
+    const ORDERED_NODE_SNAPSHOT_TYPE = 7
+    let $songs = doc.evaluate('//a[contains(., "CÂNTICO")]', $root, null, ORDERED_NODE_SNAPSHOT_TYPE)
+    if ($songs.snapshotLength === 0)
+      $songs = doc.evaluate('//a[contains(., "Cântico")]', $root, null, ORDERED_NODE_SNAPSHOT_TYPE)
+    if ($songs.snapshotLength === 0)
+      $songs = doc.evaluate('//a[contains(., "cântico")]', $root, null, ORDERED_NODE_SNAPSHOT_TYPE)
 
     const songs = new Array<number>()
     let $song: Node | null
-    while ($song = $songs.iterateNext()) {
+    for (let i = 0; ($song = $songs.snapshotItem(i)) !== null; i++) {
       const song = parseInt($song?.textContent?.replace(/\D/g, '') ?? 'NaN')
       if (!Number.isNaN(song))
         songs.push(song)
