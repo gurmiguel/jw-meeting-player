@@ -50,7 +50,7 @@ function MainApp() {
   }, [today])
 
   const [type, setType] = useState(() => {
-    return isWeekend(today) ? WeekType.WEEKEND : WeekType.WEEKEND
+    return isWeekend(today) ? WeekType.WEEKEND : WeekType.MIDWEEK
   })
   const [forceSeed, setForceSeed] = useState<number>(0)
 
