@@ -7,7 +7,7 @@ import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { PlayerState } from '../../shared/state'
 import { useFetchWeekMediaQuery, useRemoveMediaMutation, useUploadMediaMutation } from '../store/api/week'
-import { useAppDispatch } from '../store/hooks'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
 import { AudioPlaceholder } from './AudioPlaceholder/AudioPlaceholder'
 import { useConfirmDialog } from './ConfirmDialog/hook'
@@ -54,6 +54,8 @@ function MainApp() {
   })
   const [forceSeed, setForceSeed] = useState<number>(0)
 
+  const currentPlayingFile = useAppSelector(state => state.player.file)
+
   const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type, forceSeed })
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
   const [ removeMedia ] = useRemoveMediaMutation()
@@ -62,17 +64,21 @@ function MainApp() {
     return groupBy(data ?? [], 'group')
   }, [data])
 
-  const createMediaOpenHandler = (type: NonNullable<PlayerState['type']>, file: string): MouseEventHandler => async (e) => {
+  const createMediaOpenHandler = (item: ProcessedResult): MouseEventHandler => async (e) => {
     e.preventDefault()
 
-    dispatch(playerActions.start({ type, file }))
+    dispatch(playerActions.start({ type: item.type, file: item.media[0].path }))
   }
 
   const createMediaRemoveHandler = (item: ProcessedResult): MouseEventHandler => async (e) => {
     e.preventDefault()
 
-    if (await promptConfirm('Deseja realmente excluir este item?'))
+    if (await promptConfirm('Deseja realmente excluir este item?')) {
       await removeMedia({ isoDate: currentWeekStart.toISOString(), type, item })
+
+      if (currentPlayingFile === item.media[0].path)
+        dispatch(playerActions.stop())
+    }
   }
 
   async function handleDataTransfer(files: File[]) {
@@ -151,7 +157,7 @@ function MainApp() {
                 <div className="flex flex-wrap w-full gap-5 mt-3 mb-3">
                   {Children.toArray(items.map(item => (
                     <div className="relative w-[180px]" title={item.label}>
-                      <a href="#" onClick={createMediaOpenHandler(item.type, item.media[0].path)} className="flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
+                      <a href="#" onClick={createMediaOpenHandler(item)} className="flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
                         {item.type === 'audio'
                           ? <AudioPlaceholder file={item.media[0].path} />
                           : <img src={item.media.find(it => it.type === 'image')?.path} alt="" className="w-full aspect-square object-cover" />}

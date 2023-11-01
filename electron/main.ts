@@ -54,7 +54,7 @@ async function createWindows() {
   playerWindow = new BrowserWindow({
     frame: false,
     fullscreen: true,
-    // alwaysOnTop: true,
+    alwaysOnTop: true,
     movable: false,
     webPreferences: {
       webSecurity: false,
@@ -64,8 +64,8 @@ async function createWindows() {
     y: playerDisplay?.bounds.y,
   })
 
+  playerWindow.maximize()
   mainWindow.maximize()
-  playerWindow.minimize()
 
   // Test active push message to Renderer-process.
   mainWindow.webContents.on('did-finish-load', () => {
