@@ -17,6 +17,11 @@ jobs:
         node-version: [18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
+    permissions:
+      actions: write
+      contents: write
+      deployments: write
+
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
@@ -34,7 +39,7 @@ jobs:
     - name: Build/release Electron app
       uses: paneron/action-electron-builder@v1.8.1
       with:
-        github_token: ${{ secrets.GH_PAT }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         release: true
         build_script_name: build-ci
         package_manager: pnpm
