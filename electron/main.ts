@@ -1,4 +1,5 @@
 import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen } from 'electron'
+import log from 'electron-log/main'
 import path from 'node:path'
 import { titleBar } from '../shared/constants'
 import { delay } from '../shared/utils'
@@ -16,6 +17,8 @@ import { attachEvents } from './events'
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
 process.env.FILES_PATH = path.join(app.getPath('userData'), 'files')
+
+log.initialize({ preload: true })
 
 let mainWindow: BrowserWindow | null
 let playerWindow: BrowserWindow | null

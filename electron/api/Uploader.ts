@@ -1,3 +1,4 @@
+import log from 'electron-log/main'
 import fs from 'node:fs'
 import path from 'node:path'
 import { Readable } from 'node:stream'
@@ -19,7 +20,7 @@ export class Uploader extends FileSystemService {
     if (!this.uploadQueue.find(({ targetPath: path }) => path === targetPath))
       this.uploadQueue.push({ file, targetPath, thumbnail })
 
-    console.log('Enqueued file to upload', targetPath)
+    log.info('Enqueued file to upload', targetPath)
 
     const type: MediaTypes = await this.decideFileMediaType(sourcePath)
 
@@ -37,7 +38,7 @@ export class Uploader extends FileSystemService {
           file.close()
           if (isVideoFile(targetPath))
             await generateThumbnail(targetPath, thumbnail)
-              .catch((err: Error) => console.log(`Error generating thumbnail for ${path.basename(targetPath)}:`, err.message))
+              .catch((err: Error) => log.error(`Error generating thumbnail for "${thumbnail}":`, err))
           resolve()
         })
       })

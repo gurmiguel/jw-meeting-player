@@ -1,3 +1,4 @@
+import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 import { FileSystemService } from './FileSystemService'
@@ -18,7 +19,7 @@ class MetadataLoader {
 
   async loadMetadata(isForcing = false) {
     try {
-      console.log('Loading metadata from:', this.targetPath)
+      log.info('Loading metadata from:', this.targetPath)
       const metadata = await readFile(this.targetPath, 'utf-8')
       const loadedMetadata = JSON.parse(metadata) as ProcessedResult[]
 

@@ -1,4 +1,5 @@
 import { addMinutes, format as formatDate } from 'date-fns'
+import log from 'electron-log/main'
 import { isEqual } from 'lodash'
 import path from 'node:path'
 import { WeekType } from '../../shared/models/WeekType'
@@ -9,7 +10,7 @@ import { ProcessedResult } from './parser/types'
 export async function removeMedia(item: ProcessedResult, date: Date, type: WeekType) {
   date = addMinutes(date, date.getTimezoneOffset())
 
-  console.log('Deleting file for date:', formatDate(date, 'yyyy-MM-dd'))
+  log.info('Deleting file for date:', formatDate(date, 'yyyy-MM-dd'))
 
   const deleter = new Deleter()
   deleter.setContext(formatDate(date, 'yyyy-w') + `--${type + 1}`)
@@ -22,9 +23,9 @@ export async function removeMedia(item: ProcessedResult, date: Date, type: WeekT
       await deleter.enqueue(path.basename(media.path))
     }))
   } finally {
-    console.log('Starting to delete')
+    log.info('Starting to delete')
     const count = await deleter.flush()
-    console.log(`Deleted ${count} media items`)
+    log.info(`Deleted ${count} media items`)
   }
   
   const normalizedItem = {

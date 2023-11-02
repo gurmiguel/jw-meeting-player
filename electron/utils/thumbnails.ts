@@ -1,9 +1,19 @@
+import log from 'electron-log'
 import { downloadBinaries } from 'ffbinaries'
 import ffmpeg from 'fluent-ffmpeg'
+import fs from 'fs'
 import path from 'path'
+import { getLibraryDir } from './dirs'
+import { getNameAndVersion, isDev } from './electron-utils'
 
-const binariesPromise = new Promise<void>(resolve => {
-  downloadBinaries(['ffmpeg', 'ffprobe'], { destination: __dirname }, (err, results) => {
+const binariesPromise = new Promise<void>(async resolve => {
+  const destination = isDev() ? __dirname : path.join(getLibraryDir(process.platform, getNameAndVersion().name), 'binaries')
+
+  await fs.promises.mkdir(destination, { recursive: true })
+
+  log.debug('ffbinaries directory', destination)
+
+  downloadBinaries(['ffmpeg', 'ffprobe'], { destination }, (err, results) => {
     if (!err) {
       const ffmpegPath = results.find(x => x.filename.includes('ffmpeg'))
       const ffprobePath = results.find(x => x.filename.includes('ffprobe'))
@@ -31,10 +41,7 @@ export async function generateThumbnail(videoPath: string, outputFilepath: strin
         '-map', '0:v',
         '-map', '-0:V',
       )
-      .once('end', () => {
-        
-        resolve()
-      })
+      .once('end', () => resolve())
       .once('error', () => {
         // fallback to thumbnail generation
         ffmpeg(videoPath)

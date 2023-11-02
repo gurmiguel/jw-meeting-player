@@ -1,4 +1,5 @@
 import { addMinutes, format as formatDate } from 'date-fns'
+import log from 'electron-log/main'
 import { isEqual, unionWith } from 'lodash'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
@@ -9,7 +10,7 @@ import { ProcessedResult } from './parser/types'
 export async function uploadMedia(date: Date, type: WeekType, files: UploadingFile[]) {
   date = addMinutes(date, date.getTimezoneOffset())
 
-  console.log('Uploading files for date:', formatDate(date, 'yyyy-MM-dd'))
+  log.info('Uploading files for date:', formatDate(date, 'yyyy-MM-dd'))
 
   const uploader = new Uploader()
   uploader.setContext(formatDate(date, 'yyyy-w') + `--${type + 1}`)
@@ -36,9 +37,9 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
       }
     }))
   } finally {
-    console.log('Starting to upload')
+    log.info('Starting to upload')
     const count = await uploader.flush()
-    console.log(`Uploaded ${count} media items`)
+    log.info(`Uploaded ${count} media items`)
   }
   const mergedResults = unionWith(loadedMetadata, uploadedItems, (a, b) => {
     return isEqual(a,b)

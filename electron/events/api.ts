@@ -1,4 +1,5 @@
 import { IpcMainInvokeEvent, ipcMain } from 'electron'
+import log from 'electron-log/main'
 import { AddSongRequest } from '../../shared/models/AddSong'
 import { RemoveMediaRequest } from '../../shared/models/RemoveMedia'
 import { UploadMediaRequest } from '../../shared/models/UploadMedia'
@@ -34,7 +35,7 @@ export function attachApiEvents() {
 function createApiHandler<T>(endpoint: string, handler: (e: IpcMainInvokeEvent, params: T) => Promise<unknown>) {
   ipcMain.handle(endpoint, async (e, params: T) => {
     try {
-      console.log('Initiating Request: [EVENT]', endpoint)
+      log.debug('Initiating Request: [EVENT]', endpoint)
       
       return await handler(e, params)
     } catch (err) {

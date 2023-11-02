@@ -1,3 +1,4 @@
+import log from 'electron-log/main'
 import { fileTypeStream } from 'file-type/core'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -15,7 +16,7 @@ export abstract class FileSystemService {
   setContext(ctx: string) {
     this.currentContext = ctx
 
-    console.log('Target directory:', `"${this.targetDir}"`)
+    log.info('Target directory:', `"${this.targetDir}"`)
   }
 
   protected async ensureDirectoryIsCreated(dir: string) {

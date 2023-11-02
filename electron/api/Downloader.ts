@@ -1,3 +1,4 @@
+import log from 'electron-log/main'
 import fs from 'node:fs'
 import http from 'node:https'
 import path from 'node:path'
@@ -35,7 +36,7 @@ export class Downloader extends FileSystemService {
           file.close()
           if (isVideoFile(targetPath))
             await generateThumbnail(targetPath, thumbnail)
-              .catch((err: Error) => console.log(`Error generating thumbnail for ${path.basename(targetPath)}:`, err.message))
+              .catch((err: Error) => log.error(`Error generating thumbnail for "${thumbnail}":`, err))
           resolve()
         })
       }))

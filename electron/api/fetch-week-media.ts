@@ -1,4 +1,5 @@
 import { addMinutes, format as formatDate } from 'date-fns'
+import log from 'electron-log/main'
 import { isEqual, unionWith } from 'lodash'
 import { WeekType } from '../../shared/models/WeekType'
 import { Downloader } from './Downloader'
@@ -16,9 +17,9 @@ import { ProcessedResult } from './parser/types'
 export async function fetchWeekMedia(date: Date, type: WeekType, force = false) {
   date = addMinutes(date, date.getTimezoneOffset())
 
-  console.log('Fetching data for date:', formatDate(date, 'yyyy-MM-dd'), 'and type:', WeekType[type])
+  log.info('Fetching data for date:', formatDate(date, 'yyyy-MM-dd'), 'and type:', WeekType[type])
   if (force)
-    console.log('-- Fetching with force enabled')
+    log.info('-- Fetching with force enabled')
   
   const downloader = new Downloader()
   downloader.setContext(formatDate(date, 'yyyy-w') + `--${type + 1}`)
@@ -40,9 +41,9 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
       }
     }
   } finally {
-    console.log('Starting to download')
+    log.info('Starting to download')
     const count = await downloader.flush()
-    console.log(`Downloaded ${count} media items`)
+    log.info(`Downloaded ${count} media items`)
   }
   const mergedResults = unionWith(parsingResult, loadedMetadata, (a, b) => {
     return isEqual(a, b)

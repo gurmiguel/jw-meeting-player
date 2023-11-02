@@ -1,4 +1,5 @@
 import { BaseQueryFn, FetchArgs, FetchBaseQueryError, createApi } from '@reduxjs/toolkit/query/react'
+import log from 'electron-log/renderer'
 
 const baseQuery: BaseQueryFn<
   string | FetchArgs,
@@ -14,7 +15,7 @@ const baseQuery: BaseQueryFn<
 
     return { data }
   } catch (error: any) {
-    console.error('API Error', error)
+    log.error('API Error', error)
     return { error }
   }
 }

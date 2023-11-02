@@ -1,3 +1,4 @@
+import log from 'electron-log/main'
 import { type JSDOM } from 'jsdom'
 import { isEqual, uniqWith } from 'lodash'
 import { type Downloader } from '../Downloader'
@@ -26,7 +27,7 @@ export class CrawlerHandler {
   }
 
   async process(): Promise<ProcessedResult[]> {
-    console.log('Fetching from:', this.url)
+    log.info('Fetching from:', this.url)
 
     const { window: { document: doc } }: JSDOM = await require('jsdom').JSDOM.fromURL(this.url)
 

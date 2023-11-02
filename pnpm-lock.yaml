@@ -20,6 +20,9 @@ dependencies:
   date-fns:
     specifier: ^2.30.0
     version: 2.30.0
+  electron-log:
+    specifier: 5.0.0-rc.1
+    version: 5.0.0-rc.1
   ffbinaries:
     specifier: ^1.1.5
     version: 1.1.5
@@ -1977,6 +1980,11 @@ packages:
       tslib: 2.6.0
       unzip-crx-3: 0.2.0
     dev: true
+
+  /electron-log@5.0.0-rc.1:
+    resolution: {integrity: sha512-zRqKr+p9V8Lw1DWQtj6pxTccdLT1GQySpYhd0AvuSDOlxhanQJgeK1f3eSm5DsYbfzg7w8HVvaY+1fkdbiwO3Q==}
+    engines: {electron: '>= 13', node: '>= 14'}
+    dev: false
 
   /electron-publish@24.5.0:
     resolution: {integrity: sha512-zwo70suH15L15B4ZWNDoEg27HIYoPsGJUF7xevLJLSI7JUPC8l2yLBdLGwqueJ5XkDL7ucYyRZzxJVR8ElV9BA==}
