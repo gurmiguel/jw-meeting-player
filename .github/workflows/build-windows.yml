@@ -7,9 +7,6 @@ on:
   push:
     tags: [ "v*" ]
 
-env:
-  ADBLOCK: true
-
 jobs:
   build:
 
@@ -37,7 +34,7 @@ jobs:
     - name: Build/release Electron app
       uses: paneron/action-electron-builder@v1.8.1
       with:
-        github_token: ${{ secrets.github_token }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         release: true
         build_script_name: build-ci
         package_manager: pnpm
