@@ -10,7 +10,8 @@ interface Props {
   onSubmit(data: { group: string, label: string }): void
 }
 
-export function UploadMetadataDialog({ onSubmit, groups, defaultGroup, defaultLabel }: Props) {
+export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGroup, defaultLabel }: Props) {
+  const groups = groupsProp.filter(group => group.toLowerCase() !== 'cânticos')
   const { onDismiss } = useDialogContent()
   const defaultGroupExists = !!defaultGroup && groups.includes(defaultGroup)
   const [creatingGroup, setCreatingGroup] = useState(!defaultGroupExists)
