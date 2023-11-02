@@ -22,7 +22,7 @@ export async function addSong(date: Date, type: WeekType, group: string, song: n
 
   const songFile = {
     group,
-    label: downloadedSong.title,
+    label: SongsParser.parseSongLabel(song, downloadedSong.title),
     file: {
       name: path.basename(downloadedSong.path),
       path: downloadedSong.path,

@@ -37,7 +37,7 @@ export class SongsParser extends CrawlerParser {
     return filteredSongsVideos.map<ParsingResult>((it) => {
       return {
         group: 'Cânticos',
-        label: `Cântico ${padStart(it.song+'', 2, '0')}`,
+        label: SongsParser.parseSongLabel(it.song, it.title),
         media: [
           { path: it.path, type: 'video' },
           { path: it.thumbnail, type: 'image' },
@@ -45,5 +45,9 @@ export class SongsParser extends CrawlerParser {
         type: 'video',
       }
     })
+  }
+
+  static parseSongLabel(song: number, label: string) {
+    return `Cântico ${label.replace(new RegExp(`^${song}\.\s*`), padStart(song.toString(), 2, '0') + ' - ')}`
   }
 }

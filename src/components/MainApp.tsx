@@ -199,7 +199,7 @@ function MainApp() {
                       </a>
                       {item.manual && (
                         <button className="appearance-none absolute top-2 left-2 bg-transparent icon-shadow" title="Excluir" type="button" onClick={createMediaRemoveHandler(item)}>
-                          <XMarkIcon className="h-6 text-zinc-100" strokeWidth="1.5" />
+                          <XMarkIcon className="h-6 text-red-700" strokeWidth="3" />
                         </button>
                       )}
                       <p className="cursor-default text-md w-full mt-1.5 line-clamp-2 leading-5">{item.label}</p>
