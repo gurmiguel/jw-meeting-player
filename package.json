@@ -2,7 +2,7 @@
   "name": "jw-meeting-player",
   "displayName": "JW Meeting Player",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "dev": "vite",
     "build-ci": "tsc && vite build",
