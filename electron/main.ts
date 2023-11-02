@@ -1,6 +1,7 @@
 import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen } from 'electron'
 import path from 'node:path'
 import { titleBar } from '../shared/constants'
+import { delay } from '../shared/utils'
 import { attachEvents } from './events'
 
 // The built directory structure
@@ -65,9 +66,12 @@ async function createWindows() {
     y: playerDisplay?.bounds.y,
   })
 
-  if (isDebugMode)
-    playerWindow.minimize()
-  else {
+  await delay()
+
+  if (isDebugMode) {
+    playerWindow?.minimize()
+    playerWindow.once('ready-to-show', () => playerWindow?.minimize())
+  } else {
     playerWindow.maximize()
     mainWindow.maximize()
   }

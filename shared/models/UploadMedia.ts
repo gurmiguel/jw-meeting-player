@@ -12,5 +12,4 @@ export interface UploadMediaRequest {
   isoDate: string
   type: WeekType
   files: UploadingFile[]
-  forceSeed?: number
 }

@@ -1,0 +1,12 @@
+.dialog-buttons {
+  @apply flex items-center gap-2 my-4 mx-auto
+}
+
+.dialog-button {
+  @apply min-w-[72px] border p-1 px-2 bg-transparent hover:bg-zinc-50/10 transition-colors;
+  @apply outline-offset-4;
+}
+.dialog-button--submit {
+  @apply bg-zinc-700 dark:border-zinc-200 dark:bg-zinc-200 dark:text-zinc-950 font-semibold;
+  @apply hover:bg-zinc-950 hover:border-zinc-950 hover:dark:bg-zinc-100 hover:dark:border-zinc-100;
+}

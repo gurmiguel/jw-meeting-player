@@ -1,4 +1,5 @@
-import { ArrowPathIcon, PhotoIcon, SpeakerWaveIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, PhotoIcon, PlusIcon, SpeakerWaveIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
 import { groupBy, uniqueId } from 'lodash-es'
 import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState, useTransition } from 'react'
@@ -6,7 +7,7 @@ import { ProcessedResult } from '../../electron/api/parser/types'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { PlayerState } from '../../shared/state'
-import { useFetchWeekMediaQuery, useRemoveMediaMutation, useUploadMediaMutation } from '../store/api/week'
+import { useAddSongMutation, useFetchWeekMediaQuery, useRemoveMediaMutation, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
 import { AudioPlaceholder } from './AudioPlaceholder/AudioPlaceholder'
@@ -14,6 +15,7 @@ import { useConfirmDialog } from './ConfirmDialog/hook'
 import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
 import { useDialog } from './Dialog/DialogProvider'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
+import { SelectSongDialog } from './SelectSongDialog/SelectSongDialog'
 import { TitleBar } from './TitleBar/TitleBar'
 import { UploadMetadataDialog } from './UploadMetadataDialog/UploadMetadataDialog'
 
@@ -59,6 +61,7 @@ function MainApp() {
   const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type, forceSeed })
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
   const [ removeMedia ] = useRemoveMediaMutation()
+  const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
 
   const mediaGroups = useMemo(() => {
     return groupBy(data ?? [], 'group')
@@ -81,6 +84,25 @@ function MainApp() {
     }
   }
 
+  const createAddSongHandler = (group: string): MouseEventHandler => async (e) => {
+    e.preventDefault()
+
+    try {
+      const song = await new Promise<number>((resolve, reject) => {
+        showDialog((
+          <SelectSongDialog
+            onSubmit={resolve}
+          />
+        ), {
+          onDismiss: reject,
+          disableOverlayDismiss: true,
+        })
+      })
+  
+      addSong({ isoDate: currentWeekStart.toISOString(), type, group, song })
+    } catch { /* empty */ }
+  }
+
   async function handleDataTransfer(files: File[]) {
     try {
       const uploadingFiles = new Array<UploadingFile>()
@@ -101,7 +123,7 @@ function MainApp() {
         uploadingFiles.push({ file: { name: file.name, path: file.path }, group, label })
       }
 
-      await uploadMedia({ isoDate: currentWeekStart.toISOString(), type, forceSeed, files: uploadingFiles }).unwrap()
+      await uploadMedia({ isoDate: currentWeekStart.toISOString(), type, files: uploadingFiles }).unwrap()
     } catch { /* empty */ }
   }
 
@@ -117,20 +139,11 @@ function MainApp() {
       <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/']} className="dark:bg-zinc-900 flex-1 w-full">
         <div className="flex flex-col m-10">
           <div className="flex flex-row items-center justify-end">
-            <h1 className="cursor-default ml-0 mr-auto">Reunião da Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
+            <h1 className="cursor-default ml-0 mr-auto">Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
+          </div>
 
-            <button
-              type="button"
-              onClick={() => setForceSeed(parseInt(uniqueId()))}
-              className="flex items-center p-2 px-4 bg-zinc-500/40 enabled:hover:bg-zinc-500/50 disabled:opacity-50 transition-colors"
-              disabled={isFetching}
-            >
-                Recarregar
-              <ArrowPathIcon className="h-5 ml-1.5 data-[loading=true]:animate-spin" data-loading={isFetching} />
-            </button>
-
+          <div className="flex justify-between items-center">
             <select
-              className="ml-3 h-10 px-3"
               value={type}
               onChange={e => {
                 startTransition(() => {
@@ -142,6 +155,16 @@ function MainApp() {
               <option value={WeekType.MIDWEEK}>Reunião de Meio de Semana</option>
               <option value={WeekType.WEEKEND}>Reunião de Fim de Semana</option>
             </select>
+
+            <button
+              type="button"
+              onClick={() => setForceSeed(parseInt(uniqueId()))}
+              className="flex items-center p-2 px-4 bg-transparent border enabled:hover:bg-zinc-500/50 disabled:opacity-50 transition-colors"
+              disabled={isFetching}
+            >
+              Recarregar
+              <ArrowPathIcon className="h-5 ml-1.5 data-[loading=true]:animate-spin" data-loading={isFetching} />
+            </button>
           </div>
 
           <div className="my-4" />
@@ -154,7 +177,7 @@ function MainApp() {
             {Object.entries(mediaGroups).map(([ group, items ]) => (
               <details key={group} open>
                 <summary className="p-2 pl-4 cursor-pointer hover:bg-zinc-300/5">{group}</summary>
-                <div className="flex flex-wrap w-full gap-5 mt-3 mb-3">
+                <div className="flex flex-wrap w-full items-start gap-5 mt-3 mb-3">
                   {Children.toArray(items.map(item => (
                     <div className="relative w-[180px]" title={item.label}>
                       <a href="#" onClick={createMediaOpenHandler(item)} className="flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
@@ -173,6 +196,25 @@ function MainApp() {
                       <p className="cursor-default text-md w-full mt-1.5 line-clamp-2 leading-5">{item.label}</p>
                     </div>
                   )))}
+                  {group.toLowerCase() === 'cânticos' && (
+                    <button
+                      type="button"
+                      className={clsx(
+                        'appearance-none relative flex items-center justify-center',
+                        'w-[180px] aspect-square',
+                        'rounded-md border border-dashed border-zinc-900 dark:border-zinc-300 bg-transparent',
+                        !isAddingSong && 'cursor-pointer hover:bg-zinc-300/30 transition-colors',
+                        'disabled:opacity-80',
+                      )}
+                      title="Adicionar Cântico"
+                      onClick={createAddSongHandler(group)}
+                      disabled={isAddingSong}
+                    >
+                      {isAddingSong
+                        ? <ArrowPathIcon className="w-20 animate-spin" />
+                        : <PlusIcon className="w-20" />}
+                    </button>
+                  )}
                 </div>
               </details>
             ))}

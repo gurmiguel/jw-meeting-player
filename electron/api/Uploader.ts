@@ -42,6 +42,7 @@ export class Uploader extends FileSystemService {
         })
       })
     }))
+    this.uploadQueue = []
     return uploads.length
   }
 

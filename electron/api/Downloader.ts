@@ -40,7 +40,7 @@ export class Downloader extends FileSystemService {
         })
       }))
     }))
-
+    this.downloadQueue = []
     return downloads.length
   }
 }

@@ -6,6 +6,7 @@
     "indent": ["warn", 2, { "SwitchCase": 1 }],
     "semi": ["warn", "never"],
     "eol-last": ["warn", "always"],
+    "quotes": ["warn", "single"],
     "comma-dangle": ["warn", "always-multiline"],
     "object-curly-spacing": "off",
     "@typescript-eslint/object-curly-spacing": ["warn", "always"],

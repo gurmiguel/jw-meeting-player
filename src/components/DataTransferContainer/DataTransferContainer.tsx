@@ -2,6 +2,7 @@ import { Dispatch, bindActionCreators, createSlice } from '@reduxjs/toolkit'
 import clsx from 'clsx'
 import { DragEvent, PropsWithChildren, useMemo, useReducer } from 'react'
 import { SliceActions } from '../../store/hooks'
+import { useConfirmDialog } from '../ConfirmDialog/hook'
 import classes from './DataTransferContainer.module.css'
 
 type DivProps = JSX.IntrinsicElements['div']
@@ -32,6 +33,8 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
     bindActionCreators(slice.actions, dispatch as Dispatch<SliceActions<typeof slice>>)
   ), [dispatch])
 
+  const promptConfirm = useConfirmDialog()
+
   function handleDragOver(e: DragEvent) {
     e.preventDefault()
     captureDragging()
@@ -52,7 +55,10 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
     if (validFiles.length)
       onTransfer(validFiles)
     else
-      alert(`Arquivos não permitidos! Somente ${validFormats?.map(f => f.replace(/\/$/, '')).join(', ')}`)
+      promptConfirm(`Arquivos não permitidos! Somente ${validFormats?.map(f => f.replace(/\/$/, '')).join(', ')}`, {
+        cancelLabel: false,
+        confirmLabel: 'OK',
+      })
   }
 
   return (

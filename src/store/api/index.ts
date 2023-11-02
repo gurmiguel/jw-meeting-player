@@ -14,6 +14,7 @@ const baseQuery: BaseQueryFn<
 
     return { data }
   } catch (error: any) {
+    console.error('API Error', error)
     return { error }
   }
 }

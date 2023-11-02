@@ -42,8 +42,13 @@ contextBridge.exposeInMainWorld('common', <CommonBridge>{
 })
 
 contextBridge.exposeInMainWorld('api', <API>{
-  fetch(endpoint, payload) {
-    return ipcRenderer.invoke(endpoint, payload)
+  async fetch(endpoint, payload) {
+    const response = await ipcRenderer.invoke(endpoint, payload)
+
+    if (response.error)
+      throw response.error
+
+    return response
   },
 })
 
@@ -93,7 +98,7 @@ const safeDOM = {
  * https://matejkustec.github.io/SpinThatShit
  */
 function useLoading() {
-  const className = `loaders-css__square-spin`
+  const className = 'loaders-css__square-spin'
   const styleContent = `
 @keyframes square-spin {
   25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }

@@ -1,12 +1,11 @@
-import clsx from 'clsx'
 import { FormEvent, PropsWithChildren } from 'react'
 import { DialogContent } from '../Dialog'
 import { useDialogContent } from '../Dialog/Dialog'
 import classes from './ConfirmDialog.module.css'
 
 interface Props {
-  cancelLabel?: string
-  confirmLabel?: string
+  cancelLabel?: string | false
+  confirmLabel?: string | false
   onConfirm(): void
 }
 
@@ -25,17 +24,21 @@ export function ConfirmDialog({ onConfirm, cancelLabel = 'Não', confirmLabel = 
         <div className={classes.container}>
           <div className={classes.question}>{children}</div>
 
-          <form className={classes.buttons} onSubmit={handleSubmit}>
-            <button
-              type="button"
-              onClick={onDismiss}
-              className={classes.button}
-            >{cancelLabel}</button>
-            <button
-              type="submit"
-              className={clsx(classes.button, classes.buttonSubmit)}
-              autoFocus
-            >{confirmLabel}</button>
+          <form className="dialog-buttons" onSubmit={handleSubmit}>
+            {cancelLabel !== false && (
+              <button
+                type="button"
+                onClick={onDismiss}
+                className="dialog-button"
+              >{cancelLabel}</button>
+            )}
+            {confirmLabel !== false && (
+              <button
+                type="submit"
+                className="dialog-button dialog-button--submit"
+                autoFocus
+              >{confirmLabel}</button>
+            )}
           </form>
         </div>
       </DialogContent>

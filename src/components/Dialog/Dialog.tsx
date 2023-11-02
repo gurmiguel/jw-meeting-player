@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import FocusTrap from 'focus-trap-react'
 import { ReactNode, createContext, forwardRef, useContext } from 'react'
+import './Dialog.base.css'
 import classes from './Dialog.module.css'
 import { DialogContext, useDialog } from './DialogProvider'
 

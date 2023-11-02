@@ -1,5 +1,6 @@
 import { electronApi } from '.'
 import { type APIEvents } from '../../../electron/events/api'
+import { AddSongRequest } from '../../../shared/models/AddSong'
 import { FetchWeekDataRequest } from '../../../shared/models/FetchWeekData'
 import { RemoveMediaRequest } from '../../../shared/models/RemoveMedia'
 import { UploadMediaRequest } from '../../../shared/models/UploadMedia'
@@ -29,24 +30,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
         body: { files, type, isoDate },
         method: 'POST',
       }),
-      transformResponse(response: APIEvents.UploadMediaResponse) {
-        return response.map(x => ({
-          ...x,
-          media: x.media.map(media => ({
-            ...media,
-            path: fileURL(media.path),
-          })),
-        }))
-      },
-      async onQueryStarted({ isoDate, type, forceSeed }, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled
-
-          dispatch(
-            weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate, type, forceSeed }, data),
-          )
-        } catch { /* empty */ }
-      },
+      invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
     }),
     removeMedia: build.mutation<APIEvents.RemoveMediaResponse, RemoveMediaRequest>({
       query: ({ isoDate, type, item }) => ({
@@ -63,6 +47,14 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       }),
       invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
     }),
+    addSong: build.mutation<APIEvents.AddSongResponse, AddSongRequest>({
+      query: ({ isoDate, type, group, song }) => ({
+        url: 'add-song',
+        body: { isoDate, type, group, song },
+        method: 'POST',
+      }),
+      invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
+    }),
   }),
 })
 
@@ -70,6 +62,7 @@ export const {
   useFetchWeekMediaQuery,
   useUploadMediaMutation,
   useRemoveMediaMutation,
+  useAddSongMutation,
 } = weekApiEndpoints
 
 export default weekApiEndpoints

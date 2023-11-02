@@ -45,6 +45,4 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
   })
   if (mergedResults.length > 0)
     await metadataLoader.saveMetadata(mergedResults)
-
-  return mergedResults
 }

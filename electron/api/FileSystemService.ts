@@ -1,4 +1,4 @@
-import { fileTypeFromStream } from 'file-type/core'
+import { fileTypeStream } from 'file-type/core'
 import fs from 'node:fs'
 import path from 'node:path'
 import { MediaTypes } from '../../shared/models/MediaTypes'
@@ -26,12 +26,18 @@ export abstract class FileSystemService {
   }
 
   protected async decideFileMediaType(filepath: string): Promise<MediaTypes> {
-    const res = await fileTypeFromStream(fs.createReadStream(filepath))
-    if (res?.mime.startsWith('image')) return 'image'
-    if (res?.mime.startsWith('video')) return 'video'
-    if (res?.mime.startsWith('audio')) return 'audio'
+    const stream = await fileTypeStream(fs.createReadStream(filepath))
+    const res = stream.fileType
 
-    return 'image'
+    try {
+      if (res?.mime.startsWith('image')) return 'image'
+      if (res?.mime.startsWith('video')) return 'video'
+      if (res?.mime.startsWith('audio')) return 'audio'
+  
+      return 'image'
+    } finally {
+      stream.destroy()
+    }
   }
 
   abstract flush(): Promise<number>

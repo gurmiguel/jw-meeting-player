@@ -31,7 +31,10 @@ export async function generateThumbnail(videoPath: string, outputFilepath: strin
         '-map', '0:v',
         '-map', '-0:V',
       )
-      .once('end', () => resolve())
+      .once('end', () => {
+        
+        resolve()
+      })
       .once('error', () => {
         // fallback to thumbnail generation
         ffmpeg(videoPath)

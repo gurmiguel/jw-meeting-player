@@ -3,7 +3,7 @@ import { ParsingResult } from '../types'
 import { CrawlerParser } from './CrawlerParser'
 
 export class SongsParser extends CrawlerParser {
-  protected static SONG_PUB_ID = 'sjjm'
+  static SONG_PUB_ID = 'sjjm'
 
   async process(doc: Document) {
     const $root = doc.querySelector('#article')

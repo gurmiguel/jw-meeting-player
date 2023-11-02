@@ -11,15 +11,20 @@ export class Deleter extends FileSystemService {
     if (!this.deleteQueue.find(({ targetPath: path }) => path === targetPath))
       this.deleteQueue.push({ targetPath })
 
-    console.log('Enqueued file to delete', targetPath)
+    console.log('Enqueued file/folder to delete', targetPath)
 
     return { path: targetPath }
   }
 
   async flush() {
     const deletes = await Promise.all(this.deleteQueue.map(async ({ targetPath }) => {
-      await fs.promises.unlink(targetPath).catch(() => {})
+      console.log('deleting', targetPath)
+      try {
+        fs.rmSync(targetPath, { recursive: true, force: true })
+        await fs.promises.unlink(targetPath)
+      } catch {}
     }))
+    this.deleteQueue = []
     return deletes.length
   }
 
