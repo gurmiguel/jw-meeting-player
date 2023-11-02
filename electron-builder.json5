@@ -4,6 +4,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "JwMeetingPlayer",
+  "productName": "JW Meeting Player",
   "asar": true,
   "directories": {
     "output": "release/${version}"
@@ -27,7 +28,8 @@
         ]
       }
     ],
-    "artifactName": "${productName}_${version}.${ext}"
+    "artifactName": "${productName}_${version}.${ext}",
+    "publish": ["github"]
   },
   "nsis": {
     "oneClick": false,

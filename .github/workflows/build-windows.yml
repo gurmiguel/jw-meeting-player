@@ -6,8 +6,12 @@ name: Build electron releases
 on:
   push:
     branches: [ "master" ]
+    tags-ignore: [ "v*" ]
   pull_request:
     branches: [ "master" ]
+
+env:
+  ADBLOCK: true
 
 jobs:
   build:
@@ -31,9 +35,8 @@ jobs:
       with:
         version: 8
         run_install: false
-        cache: pnpm
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
     - name: Build/release Electron app
       uses: paneron/action-electron-builder@v1.8.1
       with:

@@ -1,8 +1,13 @@
 {
   "name": "jw-meeting-player",
   "displayName": "JW Meeting Player",
+  "description": "Player for controlling media display/share on Jehova's Witnesses meetings",
   "private": true,
   "version": "0.0.1",
+  "author": {
+    "name": "Gustavo Miguel",
+    "email": "gu.rmiguel@gmail.com"
+  },
   "scripts": {
     "dev": "vite",
     "build-ci": "tsc && vite build",
