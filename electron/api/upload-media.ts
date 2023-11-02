@@ -25,7 +25,7 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
 
       const media: ProcessedResult['media'] = []
       media.push({ path, type })
-      if (thumbnail !== path)
+      if (thumbnail)
         media.push({ path: thumbnail, type: 'image' })
 
       return {

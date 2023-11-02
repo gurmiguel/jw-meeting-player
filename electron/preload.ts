@@ -45,7 +45,7 @@ contextBridge.exposeInMainWorld('api', <API>{
   async fetch(endpoint, payload) {
     const response = await ipcRenderer.invoke(endpoint, payload)
 
-    if (response.error)
+    if (response?.error)
       throw response.error
 
     return response
