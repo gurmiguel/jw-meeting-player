@@ -58,7 +58,7 @@ function MainApp() {
 
   const currentPlayingFile = useAppSelector(state => state.player.file)
 
-  const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type, forceSeed })
+  const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type, forceSeed }, { refetchOnMountOrArgChange: true })
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
   const [ removeMedia ] = useRemoveMediaMutation()
   const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
@@ -133,6 +133,13 @@ function MainApp() {
     }
   }, [dispatch, type])
 
+  useEffect(() => {
+    if (!forceSeed || !isFetching) return
+    return () => {
+      setForceSeed(0)
+    }
+  }, [forceSeed, isFetching])
+
   return (
     <>
       <TitleBar title={document.title} />
@@ -170,6 +177,8 @@ function MainApp() {
           <div className="my-4" />
 
           <div className="flex flex-wrap flex-col w-full">
+            {isFetching && <div>Carregando mídias...</div>}
+
             {!isFetching && !data?.length && (
               <h4 className="text-xl italic border p-2 px-4">Nenhuma mídia encontrada</h4>
             )}
@@ -219,8 +228,6 @@ function MainApp() {
               </details>
             ))}
           </div>
-
-          {isFetching && <div>Carregando mídias...</div>}
         </div>
 
         <PlayerInterface />
