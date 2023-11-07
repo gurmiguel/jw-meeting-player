@@ -9,9 +9,9 @@ import { fileLocalPath, fileURL } from '../../../shared/utils'
 const weekApiEndpoints = electronApi.injectEndpoints({
   endpoints: build => ({
     fetchWeekMedia: build.query<APIEvents.FetchWeekMediaResponse, FetchWeekDataRequest>({
-      query: ({ isoDate, type, forceSeed }) => ({
+      query: ({ isoDate, type }) => ({
         url: 'fetch-week-data',
-        body: { isoDate, type, force: !!forceSeed },
+        body: { isoDate, type },
       }),
       providesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
       transformResponse(response: APIEvents.FetchWeekMediaResponse) {
@@ -22,6 +22,30 @@ const weekApiEndpoints = electronApi.injectEndpoints({
             path: fileURL(media.path),
           })),
         }))
+      },
+    }),
+    refetchWeekMedia: build.query<APIEvents.FetchWeekMediaResponse, FetchWeekDataRequest>({
+      query: ({ isoDate, type }) => ({
+        url: 'fetch-week-data',
+        body: { isoDate, type, force: true },
+      }),
+      transformResponse(response: APIEvents.FetchWeekMediaResponse) {
+        return response.map(x => ({
+          ...x,
+          media: x.media.map(media => ({
+            ...media,
+            path: fileURL(media.path),
+          })),
+        }))
+      },
+      async onQueryStarted({ isoDate, type }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+
+          dispatch(
+            weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate, type }, data),
+          )
+        } catch { /* empty */ }
       },
     }),
     uploadMedia: build.mutation<APIEvents.UploadMediaResponse, UploadMediaRequest>({
@@ -63,6 +87,7 @@ export const {
   useUploadMediaMutation,
   useRemoveMediaMutation,
   useAddSongMutation,
+  useLazyRefetchWeekMediaQuery,
 } = weekApiEndpoints
 
 export default weekApiEndpoints

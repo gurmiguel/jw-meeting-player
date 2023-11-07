@@ -1,13 +1,13 @@
 import { ArrowPathIcon, PhotoIcon, PlusIcon, SpeakerWaveIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
-import { groupBy, uniqueId } from 'lodash-es'
+import { groupBy } from 'lodash-es'
 import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState, useTransition } from 'react'
 import { ProcessedResult } from '../../electron/api/parser/types'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { PlayerState } from '../../shared/state'
-import { useAddSongMutation, useFetchWeekMediaQuery, useRemoveMediaMutation, useUploadMediaMutation } from '../store/api/week'
+import { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, useRemoveMediaMutation, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
 import { AudioPlaceholder } from './AudioPlaceholder/AudioPlaceholder'
@@ -54,14 +54,22 @@ function MainApp() {
   const [type, setType] = useState(() => {
     return isWeekend(today) ? WeekType.WEEKEND : WeekType.MIDWEEK
   })
-  const [forceSeed, setForceSeed] = useState<number>(0)
 
   const currentPlayingFile = useAppSelector(state => state.player.file)
 
-  const { currentData: data, isFetching } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type, forceSeed }, { refetchOnMountOrArgChange: true })
+  const [ refetchWeekData, { isFetching: isRefreshing } ] = useLazyRefetchWeekMediaQuery()
+  const { currentData, isFetching } = useFetchWeekMediaQuery({
+    isoDate: currentWeekStart.toISOString(),
+    type,
+  }, { refetchOnMountOrArgChange: true })
+
+  const data = isRefreshing ? undefined : currentData
+
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
   const [ removeMedia ] = useRemoveMediaMutation()
   const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
+
+  const isFetchingData = isFetching || isRefreshing
 
   const mediaGroups = useMemo(() => {
     return groupBy(data ?? [], 'group')
@@ -133,13 +141,6 @@ function MainApp() {
     }
   }, [dispatch, type])
 
-  useEffect(() => {
-    if (!forceSeed || !isFetching) return
-    return () => {
-      setForceSeed(0)
-    }
-  }, [forceSeed, isFetching])
-
   return (
     <>
       <TitleBar title={document.title} />
@@ -153,10 +154,7 @@ function MainApp() {
             <select
               value={type}
               onChange={e => {
-                startTransition(() => {
-                  setType(parseInt(e.target.value))
-                  setForceSeed(0)
-                })
+                startTransition(() => setType(parseInt(e.target.value)))
               }}
             >
               <option value={WeekType.MIDWEEK}>Reunião de Meio de Semana</option>
@@ -165,21 +163,21 @@ function MainApp() {
 
             <button
               type="button"
-              onClick={() => setForceSeed(parseInt(uniqueId()))}
+              onClick={() => refetchWeekData({ isoDate: currentWeekStart.toISOString(), type })}
               className="flex items-center p-2 px-4 bg-transparent border enabled:hover:bg-zinc-500/50 disabled:opacity-50 transition-colors"
-              disabled={isFetching}
+              disabled={isFetchingData}
             >
               Recarregar
-              <ArrowPathIcon className="h-5 ml-1.5 data-[loading=true]:animate-spin" data-loading={isFetching} />
+              <ArrowPathIcon className="h-5 ml-1.5 data-[loading=true]:animate-spin" data-loading={isFetchingData} />
             </button>
           </div>
 
           <div className="my-4" />
 
           <div className="flex flex-wrap flex-col w-full">
-            {isFetching && <div>Carregando mídias...</div>}
+            {isFetchingData && !data?.length && <div>Carregando mídias...</div>}
 
-            {!isFetching && !data?.length && (
+            {!isFetchingData && !data?.length && (
               <h4 className="text-xl italic border p-2 px-4">Nenhuma mídia encontrada</h4>
             )}
 
