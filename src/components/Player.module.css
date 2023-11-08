@@ -1,0 +1,25 @@
+.yearText {
+  @apply font-['Wt-ClearText-Bold'] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center;
+  font-size: 4vw;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.yearTextLogo {
+  @apply font-['JW-Icons'] absolute;
+  bottom: 12vh;
+  right: 14vh;
+  height: 12vh;
+  width: 12vh;
+  color: black !important;
+  font-size: 16vh;
+  line-height: 1;
+  box-sizing: unset;
+  border: rgba(255, 255, 255, 0) 1.5vh solid;
+  background: rgba(255,255,255,.2);
+  overflow: hidden;
+
+}
+.yearTextLogoInner {
+  margin: -2.5vh -2vh;
+}

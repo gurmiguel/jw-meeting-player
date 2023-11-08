@@ -60,6 +60,7 @@ async function createWindows() {
     frame: false,
     fullscreen: true,
     alwaysOnTop: !isDebugMode,
+    kiosk: true,
     movable: false,
     webPreferences: {
       webSecurity: false,

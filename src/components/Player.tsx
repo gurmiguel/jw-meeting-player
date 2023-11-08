@@ -1,7 +1,8 @@
-import { SyntheticEvent, useLayoutEffect, useRef, useState } from 'react'
+import { SyntheticEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PlayerEvents } from '../../electron/events/player'
 import { DEFAULT_SPEED } from '../../shared/constants'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
+import classes from './Player.module.css'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
   timestamp: number
@@ -11,6 +12,7 @@ function Player() {
   const player = useRef<HTMLVideoElement & HTMLAudioElement>(null)
 
   const [media, setMedia] = useState<MediaItem>()
+  const [yearText, setYearText] = useState<string>()
 
   const [currentSpeed, setCurrentSpeed] = useState(DEFAULT_SPEED)
 
@@ -51,6 +53,11 @@ function Player() {
     player.current.playbackRate = currentSpeed
   }, [currentSpeed])
 
+  useEffect(() => {
+    api.fetch<string>('get-year-text', { year: new Date().getFullYear() })
+      .then((yearText) => setYearText(yearText))
+  }, [])
+
   function handleTimeUpdate(e: SyntheticEvent<HTMLVideoElement>) {
     const video = e.currentTarget
 
@@ -65,7 +72,16 @@ function Player() {
   }
 
   return (
-    <div className="dark:bg-black flex-1 w-full h-full">
+    <div className="dark:bg-black flex-1 w-full h-full pointer-events-none select-none">
+      {!media?.file && !!yearText && (
+        <>
+          <div className={classes.yearText} dangerouslySetInnerHTML={{ __html: yearText }} />
+          <div className={classes.yearTextLogo}>
+            <div className={classes.yearTextLogoInner}></div>
+          </div>
+        </>
+      )}
+
       {media?.file && media.type === 'video' && (
         <video
           key={media.timestamp}

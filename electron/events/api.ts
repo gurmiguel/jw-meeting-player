@@ -6,6 +6,7 @@ import { UploadMediaRequest } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { addSong } from '../api/add-song'
 import { fetchWeekMedia } from '../api/fetch-week-media'
+import { getYearText } from '../api/get-year-text'
 import { removeMedia } from '../api/remove-media'
 import { uploadMedia } from '../api/upload-media'
 
@@ -29,6 +30,9 @@ export function attachApiEvents() {
     const date = new Date(isoDate)
 
     return addSong(date, type, group, song)
+  })
+  createApiHandler('get-year-text', (_e, { year }: APIEvents.GetYearTextPayload) => {
+    return getYearText(year)
   })
 }
 
@@ -64,4 +68,10 @@ export namespace APIEvents {
   export interface AddSongPayload extends AddSongRequest {}
 
   export type AddSongResponse = PromiseType<ReturnType<typeof addSong>>
+
+  export interface GetYearTextPayload {
+    year: number
+  }
+
+  export type GetYearTextResponse = PromiseType<ReturnType<typeof getYearText>>
 }

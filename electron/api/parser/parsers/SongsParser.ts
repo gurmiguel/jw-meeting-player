@@ -40,7 +40,7 @@ export class SongsParser extends CrawlerParser {
         label: SongsParser.parseSongLabel(it.song, it.title),
         media: [
           { path: it.path, type: 'video' },
-          { path: it.thumbnail, type: 'image' },
+          { path: it.thumbnail!, type: 'image' },
         ],
         type: 'video',
       }

@@ -17,7 +17,7 @@ export abstract class FileSystemService {
     log.info('Target directory:', `"${this.targetDir}"`)
   }
 
-  protected async ensureDirectoryIsCreated(dir: string) {
+  async ensureDirectoryIsCreated(dir: string) {
     if (this.dirsCreated.has(dir)) return
 
     await fs.promises.mkdir(dir, { recursive: true })
