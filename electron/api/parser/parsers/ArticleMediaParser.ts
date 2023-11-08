@@ -88,7 +88,7 @@ export class ArticleMediaParser extends CrawlerParser {
       label: video.title,
       media: [
         { path: video.path, type: 'video' },
-        { path: video.thumbnail, type: 'image' },
+        { path: video.thumbnail!, type: 'image' },
       ],
     }
   }
