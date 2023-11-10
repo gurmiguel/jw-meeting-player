@@ -1,3 +1,26 @@
 .container {
-  @apply data-[dragging=true]:opacity-50
+  @apply relative;
+
+  &:before {
+    content: '';
+    @apply fixed-fill z-50 bg-zinc-950 opacity-0 pointer-events-none transition-opacity;
+  }
+
+  &:after {
+    content: '';
+    @apply fixed z-50 top-20 left-10 right-16 bottom-12 opacity-0 rounded-sm border-2 border-dashed pointer-events-none transition-opacity;
+  }
+}
+
+.containerDragging {
+  &:before {
+    @apply opacity-80;
+  }
+  &:after {
+    @apply opacity-100;
+  }
+}
+
+.draggingHint {
+  @apply fixed-center w-9/12 text-zinc-50 text-5xl z-50 text-center pointer-events-none animate-fade-in;
 }

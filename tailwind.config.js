@@ -29,6 +29,10 @@ module.exports = {
         'h2': { marginBottom: theme('spacing.1.5'), fontSize: theme('fontSize.2xl') },
         'h3': { marginBottom: theme('spacing.1'), fontSize: theme('fontSize.xl') },
         'h4': { marginBottom: theme('spacing.0.5'), fontSize: theme('fontSize.lg') },
+        '.absolute-fill': { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
+        '.fixed-fill': { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' },
+        '.absolute-center': { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
+        '.fixed-center': { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
       })
     }),
   ],

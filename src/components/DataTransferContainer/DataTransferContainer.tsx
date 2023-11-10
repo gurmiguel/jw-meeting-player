@@ -64,13 +64,20 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
   return (
     <div
       {...props}
-      className={clsx(classes.container, props.className)}
+      className={clsx([
+        classes.container,
+        props.className,
+        dragging && classes.containerDragging,
+      ])}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      data-dragging={dragging}
     >
       {children}
+
+      {dragging && (
+        <div className={classes.draggingHint}>Solte o(s) arquivo(s) aqui</div>
+      )}
     </div>
   )
 }
