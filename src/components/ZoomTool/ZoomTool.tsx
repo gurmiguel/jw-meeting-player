@@ -12,7 +12,7 @@ interface Props {
 }
 
 const MIN_ZOOM = 1.0
-const MAX_ZOOM = 2.8
+const MAX_ZOOM = 5
 
 export function ZoomTool({ gutter = 0, step = 0.05 }: Props) {
   const dispatch = useAppDispatch()
@@ -58,8 +58,15 @@ export function ZoomTool({ gutter = 0, step = 0.05 }: Props) {
       x: e.clientX - left,
       y: e.clientY - top,
     }
+    let currentStep = step
+
+    if (e.ctrlKey)
+      currentStep *= 0.5
+    if (e.shiftKey)
+      currentStep *= 2
+
     setZoomLevel(zoom => {
-      const value = Math.max(MIN_ZOOM, Math.min(wheelMovement === 'up' ? zoom + step : zoom - step, MAX_ZOOM))
+      const value = Math.max(MIN_ZOOM, Math.min(wheelMovement === 'up' ? zoom * (1 + currentStep) : zoom * (1 - currentStep), MAX_ZOOM))
 
       return parseFloat(value.toFixed(2))
     })

@@ -2,7 +2,8 @@ import { MagnifyingGlassPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
 import { useDraggable } from '../../hooks/useDraggable'
-import { useAppSelector } from '../../store/hooks'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import { initialState as initialPlayer, playerActions } from '../../store/player/slice'
 import { ZoomTool } from '../ZoomTool/ZoomTool'
 
 interface Props {
@@ -14,6 +15,8 @@ const height = 270
 const width = height * ASPECT_RATIO
 
 export function FeedbackScreen({ sourceId }: Props) {
+  const dispatch = useAppDispatch()
+  
   const video = useRef<HTMLVideoElement>(null)
 
   const media = useAppSelector(state => ({
@@ -62,6 +65,7 @@ export function FeedbackScreen({ sourceId }: Props) {
     e.nativeEvent.stopImmediatePropagation()
 
     setZoomMode(it => !it)
+    dispatch(playerActions.zoomLevel({ zoomLevel: initialPlayer.zoomLevel, position: initialPlayer.position }))
   }
 
   return (
@@ -90,7 +94,7 @@ export function FeedbackScreen({ sourceId }: Props) {
         </>
       )}
 
-      <div className="controls absolute top-4 right-4 z-10">
+      <div className="controls absolute top-4 left-4 z-10">
         {media.type === 'image' && (
           <button type="button" className="p-2 icon-shadow transition appearance-none bg-transparent" onClick={handleZoomToggle}>
             {!zoomMode
