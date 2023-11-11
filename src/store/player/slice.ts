@@ -2,13 +2,15 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 import { PlayerState } from '../../../shared/state'
 
-const initialState: PlayerState = {
+export const initialState: PlayerState = {
   file: null,
   type: null,
   playState: 'pause',
   playRate: 1,
   currentTime: 0,
   duration: 0,
+  zoomLevel: 1,
+  position: { top: 0, left: 0 },
 }
 
 export const playerSlice = createSlice({
@@ -38,6 +40,10 @@ export const playerSlice = createSlice({
     },
     playRate(state, action: PayloadAction<number>) {
       state.playRate = action.payload
+    },
+    zoomLevel(state, action: PayloadAction<Pick<PlayerState, 'zoomLevel' | 'position'>>) {
+      state.zoomLevel = action.payload.zoomLevel
+      state.position = action.payload.position
     },
   },
 })

@@ -2,6 +2,7 @@ import { SyntheticEvent, useEffect, useLayoutEffect, useRef, useState } from 're
 import { PlayerEvents } from '../../electron/events/player'
 import { DEFAULT_SPEED } from '../../shared/constants'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
+import { initialState as initialPlayer } from '../store/player/slice'
 import classes from './Player.module.css'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
@@ -14,7 +15,12 @@ function Player() {
   const [media, setMedia] = useState<MediaItem>()
   const [yearText, setYearText] = useState<string>()
 
-  const [currentSpeed, setCurrentSpeed] = useState(DEFAULT_SPEED)
+  const [currentSpeed, setCurrentSpeed] = useState(initialPlayer.playRate)
+
+  const [{ zoomLevel, position }, setZoomNPos] = useState({
+    zoomLevel: initialPlayer.zoomLevel,
+    position: initialPlayer.position,
+  })
 
   useBridgeEventHandler('start', ({ type, file, playRate }) => {
     setCurrentSpeed(playRate)
@@ -47,6 +53,10 @@ function Player() {
     player.current.currentTime = position
   }, [])
 
+  useBridgeEventHandler('zoom', ({ zoomLevel, top, left }) => {
+    setZoomNPos({ zoomLevel, position: { top, left } })
+  }, [])
+
   useLayoutEffect(() => {
     if (!player.current) return
 
@@ -72,7 +82,7 @@ function Player() {
   }
 
   return (
-    <div className="dark:bg-black flex-1 w-full h-full pointer-events-none select-none">
+    <div className="relative dark:bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
       {!media?.file && !!yearText && (
         <>
           <div className={classes.yearText} dangerouslySetInnerHTML={{ __html: yearText }} />
@@ -110,8 +120,13 @@ function Player() {
         <img
           key={media.timestamp}
           src={media.file}
-          className="block w-full h-full object-contain animate-[fade-in_1s_ease]"
+          className="absolute block w-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
           alt=""
+          style={{
+            transformOrigin: '0 0',
+            transform: `scale(${zoomLevel}) translate(-${position.left}%, -${position.top}%)`,
+            // transform: `scale(${zoomLevel}) translate(-${position.top}%, -${position.left}%)`,
+          }}
         />
       )}
     </div>

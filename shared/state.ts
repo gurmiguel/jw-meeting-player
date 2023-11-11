@@ -7,4 +7,6 @@ export interface PlayerState {
   playRate: number
   currentTime: number
   duration: number
+  zoomLevel: number
+  position: { top: number, left: number }
 }

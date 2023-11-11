@@ -33,6 +33,8 @@ module.exports = {
         '.fixed-fill': { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' },
         '.absolute-center': { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
         '.fixed-center': { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
+        '.border-inset-white': { boxShadow: '0 0 0 2px rgba(255,255,255,var(--tw-border-opacity, 1))' },
+        '.border-inset-black': { boxShadow: '0 0 0 2px rgba(0,0,0,var(--tw-border-opacity, 1))' },
       })
     }),
   ],

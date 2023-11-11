@@ -4,6 +4,7 @@ import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
 import { groupBy } from 'lodash-es'
 import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState, useTransition } from 'react'
 import { ProcessedResult } from '../../electron/api/parser/types'
+import { titleBar } from '../../shared/constants'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { PlayerState } from '../../shared/state'
@@ -146,7 +147,7 @@ function MainApp() {
       <TitleBar title={document.title} />
       <div className="h-screen overflow-hidden overflow-y-scroll">
         <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/']} className="dark:bg-zinc-900 flex-1 w-full">
-          <div className="flex flex-col p-10">
+          <div className="flex flex-col p-10" style={{ minHeight: `calc(100vh - ${titleBar.height}px)` }}>
             <div className="flex flex-row items-center justify-end">
               <h1 className="cursor-default ml-0 mr-auto">Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
             </div>

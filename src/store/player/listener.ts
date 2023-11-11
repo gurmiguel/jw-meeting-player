@@ -49,3 +49,10 @@ playerListener.startListening({
       bridge.seek({ position: payload.currentTime })
   },
 })
+
+playerListener.startListening({
+  actionCreator: playerActions.zoomLevel,
+  effect({ payload }) {
+    bridge.zoom({ zoomLevel: payload.zoomLevel, ...payload.position })
+  },
+})

@@ -8,6 +8,7 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   registerTwoWayEvent('setSpeed')
   registerTwoWayEvent('time')
   registerTwoWayEvent('seek')
+  registerTwoWayEvent('zoom')
 
   function registerTwoWayEvent<E extends EventNames, Payload = Parameters<PlayerBridge[E]>[0]>(
     eventName: E,
@@ -45,5 +46,11 @@ export namespace PlayerEvents {
 
   export interface Seek {
     position: number
+  }
+
+  export interface Zoom {
+    zoomLevel: number
+    top: number
+    left: number
   }
 }
