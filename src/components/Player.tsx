@@ -83,7 +83,7 @@ function Player() {
 
   return (
     <div className="relative dark:bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
-      {!media?.file && !!yearText && (
+      {[null, 'audio'].includes(media?.type ?? null) && !!yearText && (
         <>
           <div className={classes.yearText} dangerouslySetInnerHTML={{ __html: yearText }} />
           <div className={classes.yearTextLogo}>

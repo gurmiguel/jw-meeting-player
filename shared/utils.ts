@@ -17,8 +17,8 @@ export function formatDuration(duration: number) {
 
   return [
     hours,
-    minutes,
-    seconds,
+    (minutes ?? 0).toString(),
+    (seconds ?? 0).toString(),
   ]
     .filter(Boolean)
     .map(it => String(it).padStart(2, '0'))
