@@ -1,11 +1,11 @@
 import { addMinutes, format as formatDate } from 'date-fns'
 import log from 'electron-log/main'
-import { isEqual, unionWith } from 'lodash'
+import { isEqual, isUndefined, omitBy, unionWith } from 'lodash'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import MetadataLoader from './MetadataLoader'
 import { Uploader } from './Uploader'
-import { ProcessedResult } from './parser/types'
+import { ParsedMedia, ProcessedResult } from './parser/types'
 
 export async function uploadMedia(date: Date, type: WeekType, files: UploadingFile[]) {
   date = addMinutes(date, date.getTimezoneOffset())
@@ -21,10 +21,10 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
   let uploadedItems: ProcessedResult[] = []
   try {
     uploadedItems = await Promise.all(files.map<Promise<ProcessedResult>>(async ({ file, group, label }) => {
-      const { path, thumbnail, type } = await uploader.enqueue(file.path, file.name)
+      const { path, thumbnail, type, duration } = await uploader.enqueue(file.path, file.name)
 
       const media: ProcessedResult['media'] = []
-      media.push({ path, type })
+      media.push(omitBy({ path, type, duration }, isUndefined) as unknown as ParsedMedia)
       if (thumbnail)
         media.push({ path: thumbnail, type: 'image' })
 

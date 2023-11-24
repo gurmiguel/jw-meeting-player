@@ -8,6 +8,7 @@ import { titleBar } from '../../shared/constants'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { PlayerState } from '../../shared/state'
+import { formatDuration } from '../../shared/utils'
 import { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, useRemoveMediaMutation, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
@@ -189,13 +190,18 @@ function MainApp() {
                   <div className="flex flex-wrap w-full items-start gap-5 mt-3 mb-3">
                     {Children.toArray(items.map(item => (
                       <div className="relative w-[180px]" title={item.label}>
-                        <a href="#" onClick={createMediaOpenHandler(item)} className="flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
+                        <a href="#" onClick={createMediaOpenHandler(item)} className="relative flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
                           {item.type === 'audio'
                             ? <AudioPlaceholder file={item.media[0].path} />
                             : <img src={item.media.find(it => it.type === 'image')?.path} alt="" className="w-full aspect-square object-cover" />}
                           <div className="absolute top-2 right-2 icon-shadow" title={mediaTips[item.type]}>
                             {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5 })}
                           </div>
+                          {item.media[0].duration && (
+                            <div className="absolute bottom-0 right-0 shadow-sm px-1.5 font-semibold text-white bg-zinc-800">
+                              {formatDuration(item.media[0].duration)}
+                            </div>
+                          )}
                         </a>
                         {item.manual && (
                           <button className="appearance-none absolute top-2 left-2 bg-transparent icon-shadow" title="Excluir" type="button" onClick={createMediaRemoveHandler(item)}>

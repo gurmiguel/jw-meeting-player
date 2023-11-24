@@ -36,7 +36,7 @@ export class ChristianLifeMediaParser extends CrawlerParser {
           label: video.title,
           type: 'video',
           media: [
-            { path: video.path, type: 'video' },
+            { path: video.path, type: 'video', duration: video.duration },
             { path: video.thumbnail!, type: 'image' },
           ],
         }]

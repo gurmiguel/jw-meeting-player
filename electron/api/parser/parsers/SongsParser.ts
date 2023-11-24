@@ -39,7 +39,7 @@ export class SongsParser extends CrawlerParser {
         group: 'Cânticos',
         label: SongsParser.parseSongLabel(it.song, it.title),
         media: [
-          { path: it.path, type: 'video' },
+          { path: it.path, type: 'video', duration: it.duration },
           { path: it.thumbnail!, type: 'image' },
         ],
         type: 'video',

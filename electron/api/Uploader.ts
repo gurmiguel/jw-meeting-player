@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 import { decideFileMediaType } from '../utils/file-type'
-import { generateThumbnail } from '../utils/thumbnails'
+import { generateThumbnail, getMediaDuration } from '../utils/video-utils'
 import { FileSystemService } from './FileSystemService'
 
 export class Uploader extends FileSystemService {
@@ -15,17 +15,21 @@ export class Uploader extends FileSystemService {
     const targetPath = path.join(this.targetDir, filename)
     const type = await decideFileMediaType(sourcePath)
     const thumbnail = type === 'video'
-      ? path.join(this.targetDir, filename.replace(/\.mp4/i, '-thumb.png'))
+      ? path.join(this.targetDir, filename.replace(/\.[^\.]+$/i, '-thumb.png'))
       : null
 
     await this.ensureDirectoryIsCreated(this.targetDir)
+
+    const duration = ['video', 'audio'].includes(type)
+      ? await getMediaDuration(sourcePath)
+      : undefined
 
     if (!this.uploadQueue.find(({ targetPath: path }) => path === targetPath))
       this.uploadQueue.push({ file, targetPath, thumbnail })
 
     log.info('Enqueued file to upload', targetPath)
 
-    return { path: targetPath, thumbnail, type }
+    return { path: targetPath, thumbnail, type, duration }
   }
 
   async flush() {

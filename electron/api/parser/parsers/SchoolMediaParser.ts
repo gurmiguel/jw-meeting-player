@@ -29,7 +29,7 @@ export class SchoolMediaParser extends CrawlerParser {
         type: 'video',
         label: $anchor.text.trim() ?? video.path.split('/').pop() ?? '',
         media: [
-          { path: video.path, type: 'video' },
+          { path: video.path, type: 'video', duration: video.duration },
           { path: video.thumbnail!, type: 'image' },
         ],
       }

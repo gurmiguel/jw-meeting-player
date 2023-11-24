@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import http from 'node:https'
 import path from 'node:path'
 import { decideFileMediaType } from '../utils/file-type'
-import { generateThumbnail, isVideoFile } from '../utils/thumbnails'
+import { generateThumbnail, isVideoFile } from '../utils/video-utils'
 import { FileSystemService } from './FileSystemService'
 
 export class Downloader extends FileSystemService {
@@ -17,7 +17,7 @@ export class Downloader extends FileSystemService {
     
     const targetPath = path.join(this.targetDir, filename)
     const thumbnail = isVideoFile(targetPath)
-      ? path.join(this.targetDir, filename.replace(/\.mp4/i, '-thumb.png'))
+      ? path.join(this.targetDir, filename.replace(/\.[^\.]+$/i, '-thumb.png'))
       : null
 
 

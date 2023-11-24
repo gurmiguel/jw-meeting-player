@@ -57,12 +57,13 @@ export class CrawlerUtils {
 
     const downloadURL = files[0]?.file?.url
     const title = files[0]?.title as string ?? ''
+    const duration = files[0]?.duration ?? 0
 
     if (!downloadURL) return null
 
     const downloadingMedia = await this.download(downloadURL, 'mp4')
     
-    return { ...downloadingMedia, title }
+    return { ...downloadingMedia, title, duration }
   }
 
   async crawlUrl(url: string, addParsers: (handler: CrawlerHandler) => void) {
