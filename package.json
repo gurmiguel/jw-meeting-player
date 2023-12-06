@@ -23,6 +23,7 @@
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "electron-log": "5.0.0-rc.1",
+    "electron-updater": "^6.1.7",
     "ffbinaries": "^1.1.5",
     "file-type": "^18.5.0",
     "fluent-ffmpeg": "^2.1.2",

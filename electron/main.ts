@@ -1,5 +1,6 @@
 import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen } from 'electron'
 import log from 'electron-log/main'
+import { autoUpdater } from 'electron-updater'
 import path from 'node:path'
 import { titleBar } from '../shared/constants'
 import { delay } from '../shared/utils'
@@ -17,6 +18,17 @@ import { attachEvents } from './events'
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
 process.env.FILES_PATH = path.join(app.getPath('userData'), 'files')
+
+const autoUpdaterLogger = log.create({ logId: 'auto-updater' })
+autoUpdaterLogger.transports.file!.level = 'debug'
+autoUpdater.logger = autoUpdaterLogger
+autoUpdater.autoInstallOnAppQuit = true
+autoUpdater.autoDownload = true
+autoUpdater.autoRunAppAfterInstall = true
+autoUpdater.checkForUpdatesAndNotify({
+  title: 'Uma nova atualização para este programa está disponível',
+  body: 'Feche o programa para atualizar',
+})
 
 log.initialize({ preload: true })
 
