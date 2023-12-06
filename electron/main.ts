@@ -41,6 +41,9 @@ const isDebugMode = !!VITE_DEV_SERVER_URL || ['1','true'].includes(process.env.D
 
 Menu.setApplicationMenu(null)
 
+if (process.platform === 'win32')
+  app.setAppUserModelId(app.getName())
+
 async function createWindows() {
   const displays = screen.getAllDisplays()
   const mainDisplay = !isDebugMode
