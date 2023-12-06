@@ -13,6 +13,7 @@ export class ChristianLifeMediaParser extends CrawlerParser {
 
     const $bibleStudy = Array.from($root.querySelectorAll('.pGroup > ul > li') ?? [])
       .find($li => $li.textContent?.includes('Estudo bíblico de congregação')) ?? null
+    const bibleStudyText = $bibleStudy?.textContent?.trim().replace(/:\s+\(\d+\smin\)\s/gi, ' :: ')
 
     const media = await Promise.all($discoursesAnchors.map<Promise<ParsingResult[] | null>>(async $anchor => {
       if (!$anchor) return null
@@ -49,15 +50,17 @@ export class ChristianLifeMediaParser extends CrawlerParser {
           ...media,
           group: 
             (isBibleStudy
-              ? [$bibleStudy?.querySelector('strong')?.textContent?.trim().replace(/:$/, '') ?? media.group, $anchor.text.trim()]
+              ? bibleStudyText ? [bibleStudyText] : [media.group, $anchor.text.trim()]
               : [ChristianLifeMediaParser.GROUP, media.group]
             ).filter(Boolean).join(' :: '),
         }))
       }
     }))
 
+    
     const nonNullableMedia = media.filter(Boolean) as NonNullableObject<typeof media>
+    const flatMedia = nonNullableMedia.flat()
 
-    return nonNullableMedia.flat()
+    return flatMedia
   }
 }
