@@ -119,24 +119,24 @@ export function ZoomTool({ gutter = 0, step = 0.05 }: Props) {
       <div
         ref={dragContainer}
         className={clsx([
-          'absolute absolute-center aspect-video',
-          containerSize.mode === 'portrait' && 'w-full',
-          containerSize.mode === 'landscape' && 'h-full',
+          'absolute absolute-center aspect-video bg-black -z-10',
+          containerSize.mode === 'portrait' && 'h-full',
+          containerSize.mode === 'landscape' && 'w-full',
         ])}
         onDoubleClick={() => setZoomLevel(1)}
-      >
-        <div
-          ref={zoomBox}
-          {...dragHandlers}
-          className={clsx([
-            'zoom-indicator absolute border-inset-white cursor-grab aspect-video',
-            dragging && 'cursor-grabbing',
-          ])}
-          style={{
-            width: `${100 / zoomLevel}%`,
-          }}
-        />
-      </div>
+      />
+      <div
+        ref={zoomBox}
+        {...dragHandlers}
+        className={clsx([
+          'zoom-indicator absolute border-inset-white cursor-grab aspect-video',
+          dragging && 'cursor-grabbing',
+        ])}
+        style={{
+          width: `${100 / zoomLevel}%`,
+          transform: 'translate(0, -7px)',
+        }}
+      />
     </div>
   )
 }

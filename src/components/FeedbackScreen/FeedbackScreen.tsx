@@ -2,6 +2,7 @@ import { MagnifyingGlassPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
 import { useDraggable } from '../../hooks/useDraggable'
+import { useMeasure } from '../../hooks/useMeasure'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { initialState as initialPlayer, playerActions } from '../../store/player/slice'
 import { ZoomTool } from '../ZoomTool/ZoomTool'
@@ -18,6 +19,7 @@ export function FeedbackScreen({ sourceId }: Props) {
   const dispatch = useAppDispatch()
   
   const video = useRef<HTMLVideoElement>(null)
+  const image = useRef<HTMLImageElement>(null)
 
   const media = useAppSelector(state => ({
     type: state.player.type,
@@ -29,6 +31,8 @@ export function FeedbackScreen({ sourceId }: Props) {
   const [zoomMode, setZoomMode] = useState(false)
 
   const [dragHandlers, dragging] = useDraggable<HTMLDivElement>({ gutter: 8, disabled: zoomMode === true })
+
+  const imageSize = useMeasure(zoomMode ? image : null)
 
   const showStreamFeedback = !!sourceId && !zoomMode
 
@@ -75,9 +79,9 @@ export function FeedbackScreen({ sourceId }: Props) {
         'fixed z-10 rounded-md overflow-hidden',
         dragging && 'cursor-grabbing',
         !zoomMode && 'bottom-2 right-2 bg-black cursor-grab resize',
-        zoomMode && 'top-16 left-8 p-4 bg-zinc-800',
+        zoomMode && 'absolute-center aspect-video flex place-items-center mt-4 p-4 bg-zinc-800',
       ])} 
-      style={!zoomMode ? { width, height } : { width: 'calc(100% - 4.5rem)', height: 'calc(100% - 5.5rem)' }}
+      style={!zoomMode ? { width, height } : { height: 'calc(100% - 5.5rem)' }}
     >
       {showStreamFeedback && (
         <video
@@ -89,8 +93,16 @@ export function FeedbackScreen({ sourceId }: Props) {
 
       {zoomMode && (
         <>
-          <img src={media.file ?? ''} className="block w-full h-full object-contain" />
-          <ZoomTool gutter={16} />
+          <img
+            ref={image}
+            src={media.file ?? ''}
+            className={clsx([
+              'block object-contain',
+              imageSize.mode === 'landscape' && 'w-full',
+              imageSize.mode === 'portrait' && 'h-full',
+            ])}
+          />
+          {imageSize.height !== -Infinity && <ZoomTool gutter={16} />}
         </>
       )}
 

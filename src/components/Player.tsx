@@ -120,12 +120,11 @@ function Player() {
         <img
           key={media.timestamp}
           src={media.file}
-          className="absolute block w-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
+          className="absolute block w-full h-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
           alt=""
           style={{
             transformOrigin: '0 0',
             transform: `scale(${zoomLevel}) translate(-${position.left}%, -${position.top}%)`,
-            // transform: `scale(${zoomLevel}) translate(-${position.top}%, -${position.left}%)`,
           }}
         />
       )}

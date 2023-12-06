@@ -1,6 +1,6 @@
 import { RefObject, useLayoutEffect, useState } from 'react'
 
-export function useMeasure(elementRef: RefObject<HTMLElement>) {
+export function useMeasure(elementRef: RefObject<HTMLElement> | null) {
   const [{ width, height }, setDimensions] = useState({ width: -Infinity, height: -Infinity })
 
   const mode = width > height
@@ -8,7 +8,7 @@ export function useMeasure(elementRef: RefObject<HTMLElement>) {
     : 'portrait'
 
   useLayoutEffect(() => {
-    if (!elementRef.current) return
+    if (!elementRef?.current) return
 
     const { width, height } = elementRef.current.getBoundingClientRect()
 
