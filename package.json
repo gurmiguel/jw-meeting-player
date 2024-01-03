@@ -13,7 +13,6 @@
     "build-ci": "tsc && vite build",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
     "script": "ts-node --transpile-only --esm -P tsconfig.node.json electron/run-script.ts"
   },
   "dependencies": {
