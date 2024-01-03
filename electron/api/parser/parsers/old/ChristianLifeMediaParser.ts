@@ -1,5 +1,5 @@
-import { ParsingResult } from '../types'
-import { CrawlerParser } from './CrawlerParser'
+import { ParsingResult } from '../../types'
+import { CrawlerParser } from '../CrawlerParser'
 
 export class ChristianLifeMediaParser extends CrawlerParser {
   private static GROUP = 'Nossa Vida Cristã'

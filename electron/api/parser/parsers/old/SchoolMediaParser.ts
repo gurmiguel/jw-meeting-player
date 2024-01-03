@@ -1,5 +1,5 @@
-import { ParsingResult } from '../types'
-import { CrawlerParser } from './CrawlerParser'
+import { ParsingResult } from '../../types'
+import { CrawlerParser } from '../CrawlerParser'
 
 export class SchoolMediaParser extends CrawlerParser {
   private static GROUP = 'Faça seu Melhor no Ministério'

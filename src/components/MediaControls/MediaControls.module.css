@@ -8,7 +8,7 @@
 }
 
 .absoluteCenter {
-  @apply z-10 fixed bottom-3 left-1/2 transform -translate-x-1/2
+  @apply z-20 fixed bottom-3 left-1/2 transform -translate-x-1/2
 }
 
 .controlButton {

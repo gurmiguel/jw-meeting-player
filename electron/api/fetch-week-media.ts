@@ -5,10 +5,8 @@ import { WeekType } from '../../shared/models/WeekType'
 import { Downloader } from './Downloader'
 import MetadataLoader from './MetadataLoader'
 import { CrawlerHandler } from './parser/CrawlerHandler'
-import { ChristianLifeMediaParser } from './parser/parsers/ChristianLifeMediaParser'
-import { SchoolMediaParser } from './parser/parsers/SchoolMediaParser'
+import { NewMidWeekMeeting } from './parser/parsers/NewMidWeekMeeting'
 import { SongsParser } from './parser/parsers/SongsParser'
-import { TreasuresMediaParser } from './parser/parsers/TreasuresMediaParser'
 import { WeekendParser } from './parser/parsers/WeekendParser'
 import { ProcessedResult } from './parser/types'
 
@@ -58,9 +56,7 @@ async function fetchMidWeekMeetingMedia(url: string, downloader: Downloader) {
   const handler = new CrawlerHandler(url, downloader)
   
   handler.addParser(new SongsParser())
-  handler.addParser(new TreasuresMediaParser())
-  handler.addParser(new SchoolMediaParser())
-  handler.addParser(new ChristianLifeMediaParser())
+  handler.addParser(new NewMidWeekMeeting())
 
   const results = await handler.process()
 
