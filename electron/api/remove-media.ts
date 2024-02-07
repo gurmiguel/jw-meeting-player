@@ -5,7 +5,7 @@ import path from 'node:path'
 import { WeekType } from '../../shared/models/WeekType'
 import { Deleter } from './Deleter'
 import MetadataLoader from './MetadataLoader'
-import { ProcessedResult } from './parser/types'
+import { ProcessedResult } from './crawler/types'
 
 export async function removeMedia(item: ProcessedResult, date: Date, type: WeekType) {
   date = addMinutes(date, date.getTimezoneOffset())

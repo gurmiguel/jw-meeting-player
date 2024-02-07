@@ -1,4 +1,4 @@
-import { ProcessedResult } from '../../electron/api/parser/types'
+import { ProcessedResult } from '../../electron/api/crawler/types'
 import { WeekType } from './WeekType'
 
 export interface RemoveMediaRequest {

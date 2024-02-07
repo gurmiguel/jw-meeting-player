@@ -5,7 +5,7 @@ import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import MetadataLoader from './MetadataLoader'
 import { Uploader } from './Uploader'
-import { ParsedMedia, ProcessedResult } from './parser/types'
+import { ParsedMedia, ProcessedResult } from './crawler/types'
 
 export async function uploadMedia(date: Date, type: WeekType, files: UploadingFile[]) {
   date = addMinutes(date, date.getTimezoneOffset())

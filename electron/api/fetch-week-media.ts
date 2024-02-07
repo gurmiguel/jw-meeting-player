@@ -4,11 +4,11 @@ import { isEqual, unionWith } from 'lodash'
 import { WeekType } from '../../shared/models/WeekType'
 import { Downloader } from './Downloader'
 import MetadataLoader from './MetadataLoader'
-import { CrawlerHandler } from './parser/CrawlerHandler'
-import { NewMidWeekMeeting } from './parser/parsers/NewMidWeekMeeting'
-import { SongsParser } from './parser/parsers/SongsParser'
-import { WeekendParser } from './parser/parsers/WeekendParser'
-import { ProcessedResult } from './parser/types'
+import { CrawlerHandler } from './crawler/CrawlerHandler'
+import { NewMidWeekMeeting } from './crawler/parsers/NewMidWeekMeeting'
+import { SongsParser } from './crawler/parsers/SongsParser'
+import { WeekendParser } from './crawler/parsers/WeekendParser'
+import { ProcessedResult } from './crawler/types'
 
 // pnpm run -s script "./electron/api/fetch-week-media.ts" "fetchWeekMedia" "new Date('$(date)')" "0"
 

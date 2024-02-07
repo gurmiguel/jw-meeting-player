@@ -2,7 +2,7 @@ import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 import { FileSystemService } from './FileSystemService'
-import { ProcessedResult } from './parser/types'
+import { ProcessedResult } from './crawler/types'
 
 class MetadataLoader {
   static MATADATA_FILENAME = 'metadata.json'
