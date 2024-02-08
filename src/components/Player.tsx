@@ -84,7 +84,7 @@ function Player() {
   }
 
   return (
-    <div className="relative dark:bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
+    <div className="relative bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
       <SwitchTransition>
         <CSSTransition
           key={media?.timestamp ?? 'year-text'}

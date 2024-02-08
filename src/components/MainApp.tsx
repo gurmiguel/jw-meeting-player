@@ -3,7 +3,6 @@ import clsx from 'clsx'
 import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
 import { groupBy } from 'lodash-es'
 import { Children, MouseEventHandler, useEffect, useMemo, useState, useTransition } from 'react'
-import { titleBar } from '../../shared/constants'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { useApiEventHandler } from '../hooks/useApiEventHandler'
@@ -15,7 +14,6 @@ import { useDialog } from './Dialog/DialogProvider'
 import { MediaItem } from './MediaItem/MediaItem'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
 import { SelectSongDialog } from './SelectSongDialog/SelectSongDialog'
-import { TitleBar } from './TitleBar/TitleBar'
 import { UploadMetadataDialog } from './UploadMetadataDialog/UploadMetadataDialog'
 
 function MainApp() {
@@ -105,10 +103,9 @@ function MainApp() {
 
   return (
     <>
-      <TitleBar title={document.title} />
       <div className="h-screen overflow-hidden overflow-y-scroll">
         <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/']} className="dark:bg-zinc-900 flex-1 w-full">
-          <div className="flex flex-col p-10" style={{ minHeight: `calc(100vh - ${titleBar.height}px)` }}>
+          <div className="flex flex-col p-10 min-h-screen">
             <div className="flex flex-row items-center justify-end">
               <h1 className="cursor-default ml-0 mr-auto">Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
             </div>

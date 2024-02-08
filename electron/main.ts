@@ -50,6 +50,7 @@ async function createWindows() {
     : displays.find(display => display.id !== screen.getPrimaryDisplay().id) ?? screen.getPrimaryDisplay()
   
   windows.main = new BrowserWindow({
+    backgroundColor: '#18181b',
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       nodeIntegrationInWorker: true,
@@ -60,15 +61,15 @@ async function createWindows() {
     minHeight: 600,
     x: mainDisplay?.bounds.x,
     y: mainDisplay?.bounds.y,
-    titleBarStyle: 'hidden',
+    titleBarStyle: 'default',
     titleBarOverlay: titleBar,
   })
-
-  nativeTheme.themeSource = 'dark'
 
   windows.main.setSize(1200, 900, false)
 
   const playerDisplay = displays.find(display => display.id !== mainDisplay.id)
+
+  nativeTheme.themeSource = 'dark'
   
   windows.player = new BrowserWindow({
     frame: false,
@@ -76,6 +77,7 @@ async function createWindows() {
     alwaysOnTop: !isDebugMode,
     kiosk: true,
     movable: false,
+    backgroundColor: '#000',
     webPreferences: {
       webSecurity: false,
       preload: path.join(__dirname, 'preload.js'),
@@ -113,7 +115,6 @@ async function createWindows() {
     await windows.main.loadURL(VITE_DEV_SERVER_URL)
     await windows.player.loadURL(VITE_DEV_SERVER_URL + 'player.html')
   } else {
-    // win.loadFile('dist/index.html')
     await windows.main.loadFile(path.join(process.env.DIST, 'index.html'))
     await windows.player.loadFile(path.join(process.env.DIST, 'player.html'))
   }
