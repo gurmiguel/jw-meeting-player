@@ -1,19 +1,16 @@
 import React, { RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { titleBar } from '../../../shared/constants'
 import { delay } from '../../../shared/utils'
+import { getContainerBoundaries } from '../../lib/utils'
 
 interface DragOptions {
   container?: RefObject<HTMLElement>
   gutter?: number
-  sizing?: boolean
   disabled?: boolean
   onDrag?: (top: number, left: number) => void
 }
 
-export function useDraggable<E extends HTMLElement>({ container, gutter = 0, sizing = true, disabled = false, onDrag }: DragOptions) {
+export function useDraggable<E extends HTMLElement>({ container, gutter = 0, disabled = false, onDrag }: DragOptions) {
   const ref = useRef<E>(null)
-  
-  const initialSize = useRef({ width: Infinity, height: Infinity })
   
   const [dragged, setDragged] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -48,20 +45,11 @@ export function useDraggable<E extends HTMLElement>({ container, gutter = 0, siz
   const resetPosition = useCallback(async () => {
     if (!ref.current) return
     
-    const { width, height } = initialSize.current
-    
-    if ([width, height].includes(Infinity)) return
-    
-    if (sizing) {
-      ref.current.style.width = `${width}px`
-      ref.current.style.height = `${height}px`
-    }
-
     await delay()
 
     setNewPosition(window.innerWidth, window.innerHeight)
     setDragged(false)
-  }, [sizing, setNewPosition])
+  }, [setNewPosition])
   
   function onMouseDown(e: React.MouseEvent<HTMLElement>) {
     if (!ref.current || disabled) return
@@ -116,23 +104,6 @@ export function useDraggable<E extends HTMLElement>({ container, gutter = 0, siz
     
     resetPosition()
   }
-
-  const calculateInitialSize = useCallback((width?: number, height?: number) => {    
-    if (!ref.current) return
-
-    const rect = ref.current.getBoundingClientRect()
-    width ??= rect.width
-    height ??= rect.height
-    initialSize.current = {
-      width,
-      height,
-    }
-  }, [])
-  
-  useLayoutEffect(() => {
-    if (!disabled)
-      calculateInitialSize()
-  }, [calculateInitialSize, disabled])
   
   useEffect(() => {
     if (disabled) return
@@ -149,13 +120,11 @@ export function useDraggable<E extends HTMLElement>({ container, gutter = 0, siz
       } else {
         await resetPosition()
       }
-
-      calculateInitialSize(initialSize.current.width, initialSize.current.height)
     }
     
     window.addEventListener('resize', onWindowResize)
     return () => window.removeEventListener('resize', onWindowResize)
-  }, [calculateInitialSize, disabled, dragged, resetPosition, setNewPosition])
+  }, [disabled, dragged, resetPosition, setNewPosition])
 
   useLayoutEffect(() => {
     if (!ref.current) return
@@ -172,21 +141,4 @@ export function useDraggable<E extends HTMLElement>({ container, gutter = 0, siz
     onMouseDown,
     onDoubleClick,
   }, dragging, dragged] as const
-}
-
-function getContainerBoundaries(container: HTMLElement | Window = window, gutter = 0) {
-  if (container instanceof Window)
-    return {
-      top: titleBar.height + gutter,
-      left: gutter,
-      bottom: window.innerHeight - gutter,
-      right: window.innerWidth - gutter - (window.scrollbars.visible ? 20 : 0),
-    }
-  else
-    return {
-      top: gutter,
-      left: gutter,
-      bottom: container.offsetHeight,
-      right: container.offsetWidth,
-    }
 }

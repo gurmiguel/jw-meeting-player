@@ -85,6 +85,7 @@ export function PlayerInterface() {
 
       <FeedbackScreen
         sourceId={feedbackSourceId ?? null}
+        handleClose={handleStop}
       />
     </>
   )

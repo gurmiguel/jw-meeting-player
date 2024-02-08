@@ -39,7 +39,6 @@ export function ZoomTool({ gutter = 0, step = 0.05 }: Props) {
   const [{ ref: zoomBox, ...dragHandlers }, dragging] = useDraggable<HTMLDivElement>({
     container: dragContainer,
     disabled: containerSize.width === -Infinity,
-    sizing: false,
     onDrag: useMemo(() => throttle(sendZoomLevel, 50), [sendZoomLevel]),
   })
 
