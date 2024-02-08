@@ -40,6 +40,7 @@ contextBridge.exposeInMainWorld('bridge', {
 
 contextBridge.exposeInMainWorld('common', <CommonBridge>{
   windowShow: () => ipcRenderer.send('window-show'),
+  platform: process.platform,
 })
 
 contextBridge.exposeInMainWorld('api', <API>{
@@ -50,6 +51,14 @@ contextBridge.exposeInMainWorld('api', <API>{
       throw response.error
 
     return response
+  },
+  listen(topic, handler) {
+    function listener(_: unknown, data: any) {
+      handler(data)
+    }
+
+    ipcRenderer.on(topic, listener)
+    return () => ipcRenderer.removeListener(topic, listener)
   },
 })
 

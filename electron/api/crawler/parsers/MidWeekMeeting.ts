@@ -1,7 +1,7 @@
 import { ParsingResult } from '../types'
 import { ArticleMediaParser } from './ArticleMediaParser'
 
-export class NewMidWeekMeeting extends ArticleMediaParser {
+export class MidWeekMeeting extends ArticleMediaParser {
   constructor() {
     super(['video', 'image'])
   }

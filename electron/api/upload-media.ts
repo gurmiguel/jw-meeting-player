@@ -24,9 +24,9 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
       const { path, thumbnail, type, duration } = await uploader.enqueue(file.path, file.name)
 
       const media: ProcessedResult['media'] = []
-      media.push(omitBy({ path, type, duration }, isUndefined) as unknown as ParsedMedia)
+      media.push(omitBy({ path, type, duration, downloadProgress: 100 }, isUndefined) as unknown as ParsedMedia)
       if (thumbnail)
-        media.push({ path: thumbnail, type: 'image' })
+        media.push({ path: thumbnail, type: 'image', downloadProgress: 100 })
 
       return {
         group,

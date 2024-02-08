@@ -5,6 +5,7 @@ import path from 'node:path'
 import { titleBar } from '../shared/constants'
 import { delay } from '../shared/utils'
 import { attachEvents } from './events'
+import { windows } from './windows'
 
 // The built directory structure
 //
@@ -32,8 +33,6 @@ autoUpdater.checkForUpdatesAndNotify({
 
 log.initialize({ preload: true })
 
-let mainWindow: BrowserWindow | null
-let playerWindow: BrowserWindow | null
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
@@ -50,7 +49,7 @@ async function createWindows() {
     ? screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
     : displays.find(display => display.id !== screen.getPrimaryDisplay().id) ?? screen.getPrimaryDisplay()
   
-  mainWindow = new BrowserWindow({
+  windows.main = new BrowserWindow({
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       nodeIntegrationInWorker: true,
@@ -67,11 +66,11 @@ async function createWindows() {
 
   nativeTheme.themeSource = 'dark'
 
-  mainWindow.setSize(1200, 900, false)
+  windows.main.setSize(1200, 900, false)
 
   const playerDisplay = displays.find(display => display.id !== mainDisplay.id)
   
-  playerWindow = new BrowserWindow({
+  windows.player = new BrowserWindow({
     frame: false,
     fullscreen: true,
     alwaysOnTop: !isDebugMode,
@@ -88,39 +87,39 @@ async function createWindows() {
   await delay()
 
   if (isDebugMode) {
-    playerWindow?.minimize()
-    playerWindow.once('ready-to-show', () => playerWindow?.minimize())
+    windows.player?.minimize()
+    windows.player.once('ready-to-show', () => windows.player?.minimize())
   } else {
-    playerWindow.maximize()
-    mainWindow.maximize()
+    windows.player.maximize()
+    windows.main.maximize()
   }
 
   // Test active push message to Renderer-process.
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow?.webContents.send('main-process-message', (new Date).toLocaleString())
+  windows.main.webContents.on('did-finish-load', () => {
+    windows.main?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
 
-  mainWindow.on('closed', () => {
-    playerWindow?.close()
+  windows.main.on('closed', () => {
+    windows.player?.close()
   })
 
-  playerWindow.on('close', e => {
-    if (!mainWindow?.isDestroyed()) e.preventDefault()
+  windows.player.on('close', e => {
+    if (!windows.main?.isDestroyed()) e.preventDefault()
   })
 
-  attachEvents(mainWindow, playerWindow)
+  attachEvents(windows.main, windows.player)
 
   if (VITE_DEV_SERVER_URL) {
-    await mainWindow.loadURL(VITE_DEV_SERVER_URL)
-    await playerWindow.loadURL(VITE_DEV_SERVER_URL + 'player.html')
+    await windows.main.loadURL(VITE_DEV_SERVER_URL)
+    await windows.player.loadURL(VITE_DEV_SERVER_URL + 'player.html')
   } else {
     // win.loadFile('dist/index.html')
-    await mainWindow.loadFile(path.join(process.env.DIST, 'index.html'))
-    await playerWindow.loadFile(path.join(process.env.DIST, 'player.html'))
+    await windows.main.loadFile(path.join(process.env.DIST, 'index.html'))
+    await windows.player.loadFile(path.join(process.env.DIST, 'player.html'))
   }
 
   if (isDebugMode) {
-    [mainWindow, playerWindow].forEach(win => {
+    [windows.main, windows.player].forEach(win => {
       win.setThumbarButtons([
         {
           tooltip: 'Open Dev Tools',
@@ -142,12 +141,14 @@ async function createWindows() {
     })
   }
 
-  mainWindow.webContents.send('set-feedback-source', { sourceId: playerWindow.getMediaSourceId() })
+  windows.main.webContents.send('set-feedback-source', { sourceId: windows.player.getMediaSourceId() })
 }
 
 app.on('window-all-closed', () => {
-  mainWindow = null
-  playerWindow = null
+  // @ts-expect-error "Just removing window references for cleanup"
+  windows.main = null
+  // @ts-expect-error "Just removing window references for cleanup"
+  windows.player = null
 
   if (process.platform !== 'darwin')
     app.quit()

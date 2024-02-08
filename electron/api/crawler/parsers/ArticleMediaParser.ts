@@ -70,7 +70,7 @@ export class ArticleMediaParser extends CrawlerParser {
     const { path } = await this.utils.download(fullSrc, format ?? 'jpeg')
 
     return {
-      media: [ { path, type: 'image' } ],
+      media: [ { path, type: 'image', downloadProgress: 0 } ],
       label: alt,
     }
   }
@@ -87,8 +87,8 @@ export class ArticleMediaParser extends CrawlerParser {
     return {
       label: video.title,
       media: [
-        { path: video.path, type: 'video', duration: video.duration },
-        { path: video.thumbnail!, type: 'image' },
+        { path: video.path, type: 'video', duration: video.duration, downloadProgress: 0 },
+        { path: video.thumbnail!, type: 'image', downloadProgress: 0 },
       ],
     }
   }

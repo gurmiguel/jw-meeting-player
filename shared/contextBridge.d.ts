@@ -47,12 +47,14 @@ declare global {
 
   interface CommonBridge {
     windowShow(): void
+    platform: NodeJS.Platform
   }
 
   const common: CommonBridge
 
   interface API {
     fetch<T = any>(endpoint: string, payload: any): Promise<T>
+    listen<T = any>(topic: string, handler: (data: T) => void): IpcRendererCallbackUnsubscriber
   }
 
   const api: API

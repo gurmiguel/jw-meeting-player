@@ -5,6 +5,7 @@ import path from 'node:path'
 import { JWLIBRARY_VIDEO_PATH } from '../paths'
 import { decideFileMediaType } from '../utils/file-type'
 import { generateThumbnail, isVideoFile } from '../utils/video-utils'
+import { windows } from '../windows'
 import { FileSystemService } from './FileSystemService'
 
 export class Downloader extends FileSystemService {
@@ -51,8 +52,16 @@ export class Downloader extends FileSystemService {
         log.debug('Using existing file from JW Library', filename)
       } catch {
         await new Promise<void>(resolve => http.get(url, response => {
+          const contentSize = parseInt(response.headers['content-length'] ?? '0')
           response.pipe(file)
   
+          if (contentSize) {
+            let downloadedSize = 0
+            response.on('data', (chunk: Buffer) => {
+              downloadedSize += chunk.byteLength
+              updateProgress(filename, downloadedSize * 100 / contentSize)
+            })
+          }
           file.on('finish', async () => {
             file.close()
             resolve()
@@ -64,6 +73,8 @@ export class Downloader extends FileSystemService {
       if (thumbnail && type === 'video')
         await generateThumbnail(targetPath, thumbnail)
           .catch((err: Error) => log.error(`Error generating thumbnail for "${thumbnail}":`, err))
+
+      updateProgress(filename, 100)
     }))
     this.downloadQueue = []
     return downloads.length
@@ -71,3 +82,7 @@ export class Downloader extends FileSystemService {
 }
 
 export default Downloader
+
+function updateProgress(path: string, progress: number) {
+  windows.main.webContents.send(`media-progress/${path}`, { progress })
+}

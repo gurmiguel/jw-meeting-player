@@ -10,3 +10,10 @@ export interface PlayerState {
   zoomLevel: number
   position: { top: number, left: number }
 }
+
+export type MediaItem = NonNullableObject<Pick<PlayerState, 'type' | 'file'>> & ({
+  type: 'video' | 'image'
+  thumbnail: string
+} | {
+  type: 'audio'
+})

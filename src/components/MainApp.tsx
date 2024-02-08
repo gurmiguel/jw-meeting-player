@@ -1,50 +1,27 @@
-import { ArrowPathIcon, PhotoIcon, PlusIcon, SpeakerWaveIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
 import { groupBy } from 'lodash-es'
-import { Children, ComponentType, MouseEventHandler, createElement, useEffect, useMemo, useState, useTransition } from 'react'
-import { ProcessedResult } from '../../electron/api/crawler/types'
+import { Children, MouseEventHandler, useEffect, useMemo, useState, useTransition } from 'react'
 import { titleBar } from '../../shared/constants'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
-import { PlayerState } from '../../shared/state'
-import { formatDuration } from '../../shared/utils'
-import { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, useRemoveMediaMutation, useUploadMediaMutation } from '../store/api/week'
-import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { useApiEventHandler } from '../hooks/useApiEventHandler'
+import weekApiEndpoints, { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, useUploadMediaMutation } from '../store/api/week'
+import { useAppDispatch } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
-import { AudioPlaceholder } from './AudioPlaceholder/AudioPlaceholder'
-import { useConfirmDialog } from './ConfirmDialog/hook'
 import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
 import { useDialog } from './Dialog/DialogProvider'
+import { MediaItem } from './MediaItem/MediaItem'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
 import { SelectSongDialog } from './SelectSongDialog/SelectSongDialog'
 import { TitleBar } from './TitleBar/TitleBar'
 import { UploadMetadataDialog } from './UploadMetadataDialog/UploadMetadataDialog'
 
-type MediaItem = NonNullableObject<Pick<PlayerState, 'type' | 'file'>> & ({
-  type: 'video' | 'image'
-  thumbnail: string
-} | {
-  type: 'audio'
-})
-
-const mediaIcons: Record<MediaItem['type'], ComponentType<any>> = {
-  image: PhotoIcon,
-  audio: SpeakerWaveIcon,
-  video: VideoCameraIcon,
-}
-
-const mediaTips: Record<MediaItem['type'], string> = {
-  image: 'Imagem',
-  audio: 'Áudio',
-  video: 'Vídeo',
-}
-
 function MainApp() {
   const dispatch = useAppDispatch()
 
   const { show: showDialog } = useDialog()
-  const promptConfirm = useConfirmDialog()
 
   const today = useMemo(() => new Date(), [])
   const [,startTransition] = useTransition()
@@ -57,42 +34,25 @@ function MainApp() {
     return isWeekend(today) ? WeekType.WEEKEND : WeekType.MIDWEEK
   })
 
-  const currentPlayingFile = useAppSelector(state => state.player.file)
-
   const [ refetchWeekData, { isFetching: isRefreshing } ] = useLazyRefetchWeekMediaQuery()
-  const { currentData, isFetching } = useFetchWeekMediaQuery({
+  const { currentData: data, isFetching } = useFetchWeekMediaQuery({
     isoDate: currentWeekStart.toISOString(),
     type,
   }, { refetchOnMountOrArgChange: true })
 
-  const data = isRefreshing ? undefined : currentData
-
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
-  const [ removeMedia ] = useRemoveMediaMutation()
   const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
+
+  useApiEventHandler<{ type: WeekType, items: typeof data }>('parsed-results', (response) => {
+    if (response.type === type)
+      dispatch(weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate: currentWeekStart.toISOString(), type }, response.items ?? []))
+  }, [dispatch, currentWeekStart, type])
 
   const isFetchingData = isFetching || isRefreshing
 
   const mediaGroups = useMemo(() => {
     return groupBy(data ?? [], 'group')
   }, [data])
-
-  const createMediaOpenHandler = (item: ProcessedResult): MouseEventHandler => async (e) => {
-    e.preventDefault()
-
-    dispatch(playerActions.start({ type: item.type, file: item.media[0].path }))
-  }
-
-  const createMediaRemoveHandler = (item: ProcessedResult): MouseEventHandler => async (e) => {
-    e.preventDefault()
-
-    if (await promptConfirm('Deseja realmente excluir este item?')) {
-      await removeMedia({ isoDate: currentWeekStart.toISOString(), type, item })
-
-      if (currentPlayingFile === item.media[0].path)
-        dispatch(playerActions.stop())
-    }
-  }
 
   const createAddSongHandler = (group: string): MouseEventHandler => async (e) => {
     e.preventDefault()
@@ -170,7 +130,7 @@ function MainApp() {
                 className="flex items-center p-2 px-4 bg-transparent border enabled:hover:bg-zinc-500/50 disabled:opacity-50 transition-colors"
                 disabled={isFetchingData}
               >
-              Recarregar
+                Recarregar
                 <ArrowPathIcon className="h-5 ml-1.5 data-[loading=true]:animate-spin" data-loading={isFetchingData} />
               </button>
             </div>
@@ -189,27 +149,11 @@ function MainApp() {
                   <summary className="p-2 pl-4 cursor-pointer hover:bg-zinc-300/5">{group}</summary>
                   <div className="flex flex-wrap w-full items-start gap-5 mt-3 mb-3">
                     {Children.toArray(items.map(item => (
-                      <div className="relative w-[180px]" title={item.label}>
-                        <a href="#" onClick={createMediaOpenHandler(item)} className="relative flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
-                          {item.type === 'audio'
-                            ? <AudioPlaceholder file={item.media[0].path} />
-                            : <img src={item.media.find(it => it.type === 'image')?.path} alt="" className="w-full aspect-square object-cover" />}
-                          <div className="absolute top-2 right-2 icon-shadow" title={mediaTips[item.type]}>
-                            {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5 })}
-                          </div>
-                          {item.media[0].duration && (
-                            <div className="absolute bottom-0 right-0 shadow-sm px-1.5 font-semibold text-white bg-zinc-800">
-                              {formatDuration(item.media[0].duration)}
-                            </div>
-                          )}
-                        </a>
-                        {item.manual && (
-                          <button className="appearance-none absolute top-2 left-2 bg-transparent icon-shadow" title="Excluir" type="button" onClick={createMediaRemoveHandler(item)}>
-                            <XMarkIcon className="h-6 text-red-700" strokeWidth="3" />
-                          </button>
-                        )}
-                        <p className="cursor-default text-md w-full mt-1.5 line-clamp-2 leading-5">{item.label}</p>
-                      </div>
+                      <MediaItem
+                        item={item}
+                        type={type}
+                        currentWeekStart={currentWeekStart}
+                      />
                     )))}
                     {group.toLowerCase() === 'cânticos' && (
                       <button

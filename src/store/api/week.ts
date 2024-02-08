@@ -5,6 +5,7 @@ import { FetchWeekDataRequest } from '../../../shared/models/FetchWeekData'
 import { RemoveMediaRequest } from '../../../shared/models/RemoveMedia'
 import { UploadMediaRequest } from '../../../shared/models/UploadMedia'
 import { fileLocalPath, fileURL } from '../../../shared/utils'
+import { getFilename } from '../../lib/utils'
 
 const weekApiEndpoints = electronApi.injectEndpoints({
   endpoints: build => ({
@@ -40,6 +41,10 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       },
       async onQueryStarted({ isoDate, type }, { dispatch, queryFulfilled }) {
         try {
+          dispatch(
+            weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate, type }, []),
+          )
+
           const { data } = await queryFulfilled
 
           dispatch(
@@ -79,6 +84,23 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       }),
       invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
     }),
+    updateMediaProgress: build.mutation<null, FetchWeekDataRequest & { mediaPath: string, progress: number }>({
+      queryFn({ isoDate, type, mediaPath, progress }, { dispatch }) {
+        dispatch(
+          weekApiEndpoints.util.updateQueryData('fetchWeekMedia', { isoDate, type }, data => {
+            data.forEach(item => {
+              item.media.forEach(media => {
+                if (getFilename(media.path) === mediaPath) {
+                  media.downloadProgress = progress
+                }
+              })
+            })
+          }),
+        )
+
+        return { data: null }
+      },
+    }),
   }),
 })
 
@@ -88,6 +110,7 @@ export const {
   useRemoveMediaMutation,
   useAddSongMutation,
   useLazyRefetchWeekMediaQuery,
+  useUpdateMediaProgressMutation,
 } = weekApiEndpoints
 
 export default weekApiEndpoints
