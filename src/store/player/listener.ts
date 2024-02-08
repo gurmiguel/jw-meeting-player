@@ -1,5 +1,4 @@
 import { createListenerMiddleware } from '@reduxjs/toolkit'
-import { delay } from '../../../shared/utils'
 import { RootState } from '../index'
 import { playerActions } from './slice'
 
@@ -8,8 +7,6 @@ export const playerListener = createListenerMiddleware()
 playerListener.startListening({
   actionCreator: playerActions.start,
   async effect(_, { getState }) {
-    bridge.stop({ propagate: false })
-    await delay()
     bridge.start((getState() as RootState).player)
   },
 })

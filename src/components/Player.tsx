@@ -1,4 +1,5 @@
 import { SyntheticEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import { PlayerEvents } from '../../electron/events/player'
 import { DEFAULT_SPEED } from '../../shared/constants'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
@@ -39,6 +40,7 @@ function Player() {
   }, [])
 
   useBridgeEventHandler('stop', () => {
+    player.current?.pause()
     setMedia(undefined)
     setCurrentSpeed(DEFAULT_SPEED)
   }, [])
@@ -83,51 +85,65 @@ function Player() {
 
   return (
     <div className="relative dark:bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
-      {[null, 'audio'].includes(media?.type ?? null) && !!yearText && (
-        <>
-          <div className={classes.yearText} dangerouslySetInnerHTML={{ __html: yearText }} />
-          <div className={classes.yearTextLogo}>
-            <div className={classes.yearTextLogoInner}></div>
-          </div>
-        </>
-      )}
-
-      {media?.file && media.type === 'video' && (
-        <video
-          key={media.timestamp}
-          ref={player}
-          src={media.file}
-          className="block w-full h-full object-contain"
-          controls={false}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleMediaEnded}
-          autoPlay
-        />
-      )}
-      {media?.file && media.type === 'audio' && (
-        <audio
-          key={media.timestamp}
-          ref={player}
-          src={media.file}
-          className="block w-full h-full object-contain"
-          controls={false}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleMediaEnded}
-          autoPlay
-        />
-      )}
-      {media?.file && media.type === 'image' && (
-        <img
-          key={media.timestamp}
-          src={media.file}
-          className="absolute block w-full h-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
-          alt=""
-          style={{
-            transformOrigin: '0 0',
-            transform: `scale(${zoomLevel}) translate(-${position.left}%, -${position.top}%)`,
+      <SwitchTransition>
+        <CSSTransition
+          key={media?.timestamp ?? 'year-text'}
+          classNames={{
+            enter: 'animate-[fade-in_500ms_ease_both]',
+            exit: 'animate-[fade-out_500ms_ease_both]',
           }}
-        />
-      )}
+          timeout={500}
+          unmountOnExit
+        >
+          <div className="absolute-fill" style={{ backgroundColor: 'inherit' }}>
+            {[null, 'audio'].includes(media?.type ?? null) && !!yearText && (
+              <>
+                <div className={classes.yearText} dangerouslySetInnerHTML={{ __html: yearText }} />
+                <div className={classes.yearTextLogo}>
+                  <div className={classes.yearTextLogoInner}></div>
+                </div>
+              </>
+            )}
+
+            {media?.file && media.type === 'video' && (
+              <video
+                key={media.timestamp}
+                ref={player}
+                src={media.file}
+                className="block w-full h-full object-contain"
+                controls={false}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleMediaEnded}
+                autoPlay
+              />
+            )}
+            {media?.file && media.type === 'audio' && (
+              <audio
+                key={media.timestamp}
+                ref={player}
+                src={media.file}
+                className="block w-full h-full object-contain"
+                controls={false}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleMediaEnded}
+                autoPlay
+              />
+            )}
+            {media?.file && media.type === 'image' && (
+              <img
+                key={media.timestamp}
+                src={media.file}
+                className="absolute block w-full h-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
+                alt=""
+                style={{
+                  transformOrigin: '0 0',
+                  transform: `scale(${zoomLevel}) translate(-${position.left}%, -${position.top}%)`,
+                }}
+              />
+            )}
+          </div>
+        </CSSTransition>
+      </SwitchTransition>
     </div>
   )
 }

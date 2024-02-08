@@ -59,7 +59,8 @@ export class Downloader extends FileSystemService {
             let downloadedSize = 0
             response.on('data', (chunk: Buffer) => {
               downloadedSize += chunk.byteLength
-              updateProgress(filename, downloadedSize * 100 / contentSize)
+              // during progress, only update until 98%, so thumbnail is sure to be loaded on 100%
+              updateProgress(filename, Math.min(98, downloadedSize * 100 / contentSize))
             })
           }
           file.on('finish', async () => {
