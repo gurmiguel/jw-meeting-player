@@ -48,6 +48,10 @@ declare global {
   interface CommonBridge {
     windowShow(): void
     platform: NodeJS.Platform
+    storage: {
+      get<T = unknown>(key: string): Promise<T>
+      set<T = unknown>(key: string, value: T): Promise<void>
+    }
   }
 
   const common: CommonBridge

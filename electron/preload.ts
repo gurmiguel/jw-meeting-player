@@ -41,6 +41,14 @@ contextBridge.exposeInMainWorld('bridge', {
 contextBridge.exposeInMainWorld('common', <CommonBridge>{
   windowShow: () => ipcRenderer.send('window-show'),
   platform: process.platform,
+  storage: {
+    async get(key: string) {
+      return await ipcRenderer.invoke('storage:get', key)
+    },
+    async set(key, value) {
+      ipcRenderer.invoke('storage:set', key, value)
+    },
+  },
 })
 
 contextBridge.exposeInMainWorld('api', <API>{

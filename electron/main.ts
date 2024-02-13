@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen } from 'electron'
+import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen, shell } from 'electron'
 import log from 'electron-log/main'
 import { autoUpdater } from 'electron-updater'
 import path from 'node:path'
@@ -95,6 +95,14 @@ async function createWindows() {
     windows.player.maximize()
     windows.main.maximize()
   }
+
+  windows.main.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http')) {
+      shell.openExternal(url)
+      return { action: 'deny' }
+    } else
+      return { action: 'allow' }
+  })
 
   // Test active push message to Renderer-process.
   windows.main.webContents.on('did-finish-load', () => {

@@ -39,6 +39,7 @@ export function attachApiEvents() {
 function createApiHandler<T>(endpoint: string, handler: (e: IpcMainInvokeEvent, params: T) => Promise<unknown>) {
   ipcMain.handle(endpoint, async (e, params: T) => {
     try {
+      log.info('======================')
       log.debug('Initiating Request: [EVENT]', endpoint)
       
       return await handler(e, params)

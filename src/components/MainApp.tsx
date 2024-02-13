@@ -1,12 +1,16 @@
-import { ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import { addDays, format as formatDate, isWeekend, startOfWeek } from 'date-fns'
+import { addDays, addWeeks, format as formatDate, getWeek, isWeekend, startOfWeek } from 'date-fns'
 import { groupBy } from 'lodash-es'
 import { Children, MouseEventHandler, useEffect, useMemo, useState, useTransition } from 'react'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
+import { StorageKeys } from '../../shared/storage-keys'
+import { getWOLUrl } from '../../shared/utils'
+import loadingGif from '../assets/loading.gif?asset'
 import { useApiEventHandler } from '../hooks/useApiEventHandler'
-import weekApiEndpoints, { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, useUploadMediaMutation } from '../store/api/week'
+import { useStorageValue } from '../hooks/useStorageValue'
+import weekApiEndpoints, { useAddSongMutation, useLazyFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, usePreloadMeetingMutation, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
 import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
@@ -18,39 +22,85 @@ import { UploadMetadataDialog } from './UploadMetadataDialog/UploadMetadataDialo
 
 function MainApp() {
   const dispatch = useAppDispatch()
+  
+  const [,startTransition] = useTransition()
 
   const { show: showDialog } = useDialog()
 
-  const today = useMemo(() => new Date(), [])
-  const [,startTransition] = useTransition()
+  const [date, setDate] = useState(() => new Date())
+  const isToday = useMemo(() => formatDate(date, 'yyyy-MM-dd') === formatDate(new Date(), 'yyyy-MM-dd'),[date])
+
+  const [autoLoadNextMeeting, setAutoLoadNextMeeting] = useStorageValue<boolean>(StorageKeys.autoLoadNextMeeting)
 
   const currentWeekStart = useMemo(() => {
-    return startOfWeek(today, { weekStartsOn: 1 })
-  }, [today])
+    return startOfWeek(date, { weekStartsOn: 1 })
+  }, [date])
+  const weekNumber = useMemo(() => getWeek(currentWeekStart, { weekStartsOn: 1 }), [currentWeekStart])
 
   const [type, setType] = useState(() => {
-    return isWeekend(today) ? WeekType.WEEKEND : WeekType.MIDWEEK
+    return isWeekend(date) ? WeekType.WEEKEND : WeekType.MIDWEEK
   })
 
   const [ refetchWeekData, { isFetching: isRefreshing } ] = useLazyRefetchWeekMediaQuery()
-  const { currentData: data, isFetching } = useFetchWeekMediaQuery({
-    isoDate: currentWeekStart.toISOString(),
-    type,
-  }, { refetchOnMountOrArgChange: true })
+  const [ fetchWeekData, { currentData: data, isFetching }] = useLazyFetchWeekMediaQuery()
+  const [preloadMeeting] = usePreloadMeetingMutation()
+
+  useEffect(() => {
+    fetchWeekData({
+      isoDate: currentWeekStart.toISOString(),
+      type,
+    }, false)
+      .unwrap()
+      .then(async () => {
+        const autoLoadNextMeeting = await common.storage.get<boolean>(StorageKeys.autoLoadNextMeeting)
+        if (autoLoadNextMeeting){
+          let nextMeetingDate = currentWeekStart
+          if (type === WeekType.WEEKEND)
+            nextMeetingDate = addWeeks(nextMeetingDate, 1)
+          const nextMeetingType = Object.values(WeekType).find(it => typeof it === typeof type && it !== type) as WeekType
+        
+          console.log('Loading next meeting media', nextMeetingDate.toISOString(), WeekType[nextMeetingType])
+
+          preloadMeeting({ isoDate: nextMeetingDate.toISOString(), type: nextMeetingType })
+        }
+      })
+  }, [currentWeekStart, fetchWeekData, preloadMeeting, type])
 
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
   const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
 
-  useApiEventHandler<{ type: WeekType, items: typeof data }>('parsed-results', (response) => {
+  useApiEventHandler<{ type: WeekType, week: number, items: typeof data }>(`parsed-results/${weekNumber}`, (response) => {
     if (response.type === type)
       dispatch(weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate: currentWeekStart.toISOString(), type }, response.items ?? []))
   }, [dispatch, currentWeekStart, type])
 
   const isFetchingData = isFetching || isRefreshing
 
+  const hasFoundMedia = useMemo(() => data?.some(it => !it.manual) ?? true, [data])
+
   const mediaGroups = useMemo(() => {
-    return groupBy(data ?? [], 'group')
-  }, [data])
+    return !data
+      ? {}
+      : data.length || isFetchingData
+        ? groupBy(data ?? [], 'group')
+        : { 'Cânticos': [] }
+  }, [data, isFetchingData])
+
+  const createWeekChangeHandler = (action: 'before' | 'after'): MouseEventHandler => async (e) => {
+    e.preventDefault()
+
+    let gotoWeek: Date
+    switch (action) {
+      case 'before':
+        gotoWeek = addWeeks(date, -1)
+        break
+      case 'after':
+        gotoWeek = addWeeks(date, 1)
+        break
+    }
+
+    setDate(gotoWeek)
+  }
 
   const createAddSongHandler = (group: string): MouseEventHandler => async (e) => {
     e.preventDefault()
@@ -95,6 +145,10 @@ function MainApp() {
     } catch { /* empty */ }
   }
 
+  function handleRefreshData() {
+    refetchWeekData({ isoDate: currentWeekStart.toISOString(), type })
+  }
+
   useEffect(() => {
     return () => {
       dispatch(playerActions.stop())
@@ -106,8 +160,52 @@ function MainApp() {
       <div className="h-screen overflow-hidden overflow-y-scroll">
         <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/']} className="dark:bg-zinc-900 flex-1 w-full">
           <div className="flex flex-col p-10 min-h-screen">
-            <div className="flex flex-row items-center justify-end">
-              <h1 className="cursor-default ml-0 mr-auto">Semana - {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}</h1>
+            <div key={date.getTime()} className="flex flex-row items-center justify-start gap-3 -mx-2 mb-2">
+              <button
+                type="button"
+                className="appearance-none bg-transparent p-2 border-0 hover:opacity-80"
+                onClick={createWeekChangeHandler('before')}
+                title="Abrir a semana anterior"
+              >
+                <ChevronLeftIcon className="h-5" />
+              </button>
+              <h1 className="mb-0 cursor-default flex items-center gap-3">
+                <button
+                  type="button"
+                  className="appearance-none bg-transparent p-2 border-0 hover:opacity-80 disabled:opacity-40"
+                  onClick={() => setDate(new Date())}
+                  title="Abrir semana para hoje"
+                  disabled={isToday}
+                >
+                  <CalendarDaysIcon className="h-5" />
+                </button>
+
+                Semana • {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}
+
+                <a href={getWOLUrl(date)} target="_blank" className="-mt-3" title="Abrir na Biblioteca Online">
+                  <ArrowTopRightOnSquareIcon className="h-4" />
+                </a>
+              </h1>
+              <button
+                type="button"
+                className="appearance-none bg-transparent p-2 border-0 hover:opacity-80"
+                onClick={createWeekChangeHandler('after')}
+                title="Abrir a próxima semana"
+              >
+                <ChevronRightIcon className="h-5" />
+              </button>
+
+              <div className="flex items-center ml-auto mr-0">
+                <label className="flex flex-row items-center gap-3">
+                  <span className="text-sm italic">Pré-carregar próxima reunião</span>
+                  <input
+                    type="checkbox"
+                    checked={autoLoadNextMeeting}
+                    onChange={() => setAutoLoadNextMeeting(value => !value)}
+                    style={{ appearance: 'checkbox' }}
+                  />
+                </label>
+              </div>
             </div>
 
             <div className="flex justify-between items-center">
@@ -123,7 +221,7 @@ function MainApp() {
 
               <button
                 type="button"
-                onClick={() => refetchWeekData({ isoDate: currentWeekStart.toISOString(), type })}
+                onClick={handleRefreshData}
                 className="flex items-center p-2 px-4 bg-transparent border enabled:hover:bg-zinc-500/50 disabled:opacity-50 transition-colors"
                 disabled={isFetchingData}
               >
@@ -137,8 +235,12 @@ function MainApp() {
             <div className="flex flex-wrap flex-col w-full">
               {isFetchingData && !data?.length && <div>Carregando mídias...</div>}
 
-              {!isFetchingData && !data?.length && (
-                <h4 className="text-xl italic border p-2 px-4">Nenhuma mídia encontrada</h4>
+              {!isFetchingData && !hasFoundMedia && (
+                <h4 className="flex items-center gap-1 text-sm italic mb-4 underline underline-offset-4">
+                  <XMarkIcon className="h-4 text-red-700" />
+                  Nenhuma mídia encontrada
+                  <XMarkIcon className="h-4 text-red-700" />
+                </h4>
               )}
 
               {Object.entries(mediaGroups).map(([ group, items ]) => (
@@ -167,7 +269,7 @@ function MainApp() {
                         disabled={isAddingSong}
                       >
                         {isAddingSong
-                          ? <ArrowPathIcon className="w-20 animate-spin" />
+                          ? <img src={loadingGif} className="w-full aspect-square object-cover" />
                           : <PlusIcon className="w-20" />}
                       </button>
                     )}

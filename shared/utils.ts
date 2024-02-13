@@ -1,4 +1,4 @@
-import { intervalToDuration } from 'date-fns'
+import { format as formatDate, intervalToDuration } from 'date-fns'
 
 export function fileURL(url: string) {
   return 'file://' + url.replace(/\\/g, '/')
@@ -23,4 +23,8 @@ export function formatDuration(duration: number) {
     .filter(Boolean)
     .map(it => String(it).padStart(2, '0'))
     .join(':')
+}
+
+export function getWOLUrl(date: Date) {
+  return `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${formatDate(date, 'yyyy\/w')}`
 }

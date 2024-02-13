@@ -42,7 +42,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       async onQueryStarted({ isoDate, type }, { dispatch, queryFulfilled }) {
         try {
           dispatch(
-            weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate, type }, []),
+            weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate, type }, undefined as any),
           )
 
           const { data } = await queryFulfilled
@@ -52,6 +52,13 @@ const weekApiEndpoints = electronApi.injectEndpoints({
           )
         } catch { /* empty */ }
       },
+    }),
+    preloadMeeting: build.mutation<void, FetchWeekDataRequest>({
+      query: ({ isoDate, type }) => ({
+        url: 'fetch-week-data',
+        body: { isoDate, type },
+      }),
+      invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
     }),
     uploadMedia: build.mutation<APIEvents.UploadMediaResponse, UploadMediaRequest>({
       query: ({ files, type, isoDate }) => ({
@@ -105,7 +112,8 @@ const weekApiEndpoints = electronApi.injectEndpoints({
 })
 
 export const {
-  useFetchWeekMediaQuery,
+  useLazyFetchWeekMediaQuery,
+  usePreloadMeetingMutation,
   useUploadMediaMutation,
   useRemoveMediaMutation,
   useAddSongMutation,

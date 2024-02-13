@@ -1,7 +1,8 @@
-import { addMinutes, format as formatDate } from 'date-fns'
+import { addMinutes, format as formatDate, getWeek } from 'date-fns'
 import log from 'electron-log/main'
 import { isEqual, unionWith } from 'lodash'
 import { WeekType } from '../../shared/models/WeekType'
+import { getWOLUrl } from '../../shared/utils'
 import { windows } from '../windows'
 import { Downloader } from './Downloader'
 import MetadataLoader from './MetadataLoader'
@@ -23,7 +24,7 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
   const downloader = new Downloader()
   downloader.setContext(formatDate(date, 'yyyy-w') + `--${type + 1}`)
 
-  const jwURL = `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${formatDate(date, 'yyyy\/w')}`
+  const jwURL = getWOLUrl(date)
   
   const metadataLoader = new MetadataLoader(downloader)
   const loadedMetadata = await metadataLoader.loadMetadata(force)
@@ -39,7 +40,8 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
           break
       }
     }
-    windows.main.webContents.send('parsed-results', {
+    const weekNumber = getWeek(date, { weekStartsOn: 1 })
+    windows.main.webContents.send(`parsed-results/${weekNumber}`, {
       type,
       items: parsingResult,
     })
