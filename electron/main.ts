@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, Menu, nativeImage, nativeTheme, screen, shell } from 'electron'
+import { BrowserWindow, Menu, app, globalShortcut, nativeImage, nativeTheme, screen, shell } from 'electron'
 import log from 'electron-log/main'
 import { autoUpdater } from 'electron-updater'
 import path from 'node:path'
@@ -29,7 +29,14 @@ autoUpdater.autoRunAppAfterInstall = true
 autoUpdater.checkForUpdatesAndNotify({
   title: 'Uma nova atualização para este programa está disponível',
   body: 'Feche o programa para atualizar',
+}).then(async it => {
+  if (!it) return
+
+  await it.downloadPromise
+
+  hasUpdateAvailable = true
 })
+let hasUpdateAvailable = false
 
 log.initialize({ preload: true })
 
@@ -74,9 +81,9 @@ async function createWindows() {
   windows.player = new BrowserWindow({
     frame: false,
     fullscreen: true,
-    alwaysOnTop: !isDebugMode,
     kiosk: true,
     movable: false,
+    paintWhenInitiallyHidden: !isDebugMode,
     backgroundColor: '#000',
     webPreferences: {
       webSecurity: false,
@@ -107,6 +114,13 @@ async function createWindows() {
   // Test active push message to Renderer-process.
   windows.main.webContents.on('did-finish-load', () => {
     windows.main?.webContents.send('main-process-message', (new Date).toLocaleString())
+  })
+
+  windows.main.once('close', () => {
+    if (hasUpdateAvailable)
+      autoUpdater.quitAndInstall(false, true)
+    else
+      log.debug('No update available.')
   })
 
   windows.main.on('closed', () => {
@@ -153,7 +167,7 @@ async function createWindows() {
   windows.main.webContents.send('set-feedback-source', { sourceId: windows.player.getMediaSourceId() })
 }
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   // @ts-expect-error "Just removing window references for cleanup"
   windows.main = null
   // @ts-expect-error "Just removing window references for cleanup"
