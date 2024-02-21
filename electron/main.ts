@@ -76,7 +76,9 @@ async function createWindows() {
 
   windows.main.setSize(1200, 900, false)
 
-  const playerDisplay = displays.find(display => display.id !== mainDisplay.id)
+  const getPlayerDisplay = (mainDisplay: Electron.Display) => displays.find(display => display.id !== mainDisplay.id)
+
+  const playerDisplay = getPlayerDisplay(mainDisplay)
 
   nativeTheme.themeSource = 'dark'
   
@@ -85,6 +87,8 @@ async function createWindows() {
     fullscreen: true,
     kiosk: true,
     movable: false,
+    alwaysOnTop: displays.length > 1,
+    minimizable: false,
     paintWhenInitiallyHidden: true,
     backgroundColor: '#000',
     darkTheme: true,
@@ -102,13 +106,30 @@ async function createWindows() {
 
   await delay()
 
-  if (isDebugMode) {
-    windows.player?.minimize()
-    windows.player.once('ready-to-show', () => windows.player?.minimize())
-  } else {
+  if (displays.length > 1)
     windows.player.maximize()
+  if (!isDebugMode)
     windows.main.maximize()
-  }
+
+  screen.on('display-removed', () => {
+    const displays = screen.getAllDisplays()
+
+    if (displays.length <= 1)
+      windows.player.setAlwaysOnTop(false)
+  })
+
+  screen.on('display-added', () => {
+    const newDisplays = screen.getAllDisplays()
+
+    if (displays.length <= 1 && newDisplays.length > 1) {
+      const mainDisplay = screen.getDisplayNearestPoint(windows.main.getNormalBounds())
+      const playerDisplay = getPlayerDisplay(mainDisplay)
+      const { x, y } = playerDisplay!.bounds
+
+      windows.player.setPosition(x, y, false)
+      windows.player.setAlwaysOnTop(true)
+    }
+  })
 
   windows.main.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http')) {

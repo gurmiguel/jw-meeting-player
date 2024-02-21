@@ -1,6 +1,5 @@
 #pragma comment (lib, "Dwmapi")
 #include "napi.h"
-#include <format>
 
 #include <dwmapi.h>
 
