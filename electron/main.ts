@@ -1,10 +1,12 @@
 import { BrowserWindow, Menu, app, globalShortcut, nativeImage, nativeTheme, screen, shell } from 'electron'
 import log from 'electron-log/main'
 import { autoUpdater } from 'electron-updater'
+import os from 'node:os'
 import path from 'node:path'
 import { titleBar } from '../shared/constants'
 import { delay } from '../shared/utils'
 import { attachEvents } from './events'
+import disablePeek from './native_modules/disable_peek'
 import { windows } from './windows'
 
 // The built directory structure
@@ -83,8 +85,10 @@ async function createWindows() {
     fullscreen: true,
     kiosk: true,
     movable: false,
-    paintWhenInitiallyHidden: !isDebugMode,
+    paintWhenInitiallyHidden: true,
     backgroundColor: '#000',
+    darkTheme: true,
+    backgroundMaterial: 'none',
     webPreferences: {
       webSecurity: false,
       preload: path.join(__dirname, 'preload.js'),
@@ -92,6 +96,9 @@ async function createWindows() {
     x: playerDisplay?.bounds.x,
     y: playerDisplay?.bounds.y,
   })
+
+  if (os.platform() === 'win32')
+    disablePeek(windows.player.getNativeWindowHandle())
 
   await delay()
 
@@ -114,6 +121,10 @@ async function createWindows() {
   // Test active push message to Renderer-process.
   windows.main.webContents.on('did-finish-load', () => {
     windows.main?.webContents.send('main-process-message', (new Date).toLocaleString())
+  })
+
+  windows.main.webContents.on('crashed', () => {
+    windows.main.close()
   })
 
   windows.main.once('close', () => {
@@ -167,7 +178,7 @@ async function createWindows() {
   windows.main.webContents.send('set-feedback-source', { sourceId: windows.player.getMediaSourceId() })
 }
 
-app.on('window-all-closed', async () => {
+async function cleanup() {
   // @ts-expect-error "Just removing window references for cleanup"
   windows.main = null
   // @ts-expect-error "Just removing window references for cleanup"
@@ -175,7 +186,10 @@ app.on('window-all-closed', async () => {
 
   if (process.platform !== 'darwin')
     app.quit()
-})
+}
+
+app.on('window-all-closed', cleanup)
 
 app.whenReady()
   .then(createWindows)
+  .catch(cleanup)

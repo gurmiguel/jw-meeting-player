@@ -9,6 +9,8 @@ lerna-debug.log*
 
 node_modules
 dist
+bin
+build
 dist-ssr
 dist-electron
 release

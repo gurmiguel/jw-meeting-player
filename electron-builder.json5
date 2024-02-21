@@ -11,7 +11,8 @@
   },
   "files": [
     "dist-electron",
-    "dist"
+    "dist",
+    "build"
   ],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
@@ -38,6 +39,7 @@
     "deleteAppDataOnUninstall": false
   },
   "asarUnpack":[
+    "*.{node,dll}",
     "node_modules/ffmpeg-static/bin/${os}/${arch}/ffmpeg",
     "node_modules/ffmpeg-static/index.js",
     "node_modules/ffmpeg-static/package.json"
