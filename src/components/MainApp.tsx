@@ -2,7 +2,7 @@ import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CalendarDaysIcon, ChevronLeft
 import clsx from 'clsx'
 import { addDays, addWeeks, format as formatDate, getWeek, isWeekend, startOfWeek } from 'date-fns'
 import { groupBy } from 'lodash-es'
-import { Children, MouseEventHandler, useEffect, useMemo, useState, useTransition } from 'react'
+import { Children, MouseEventHandler, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { StorageKeys } from '../../shared/storage-keys'
@@ -69,6 +69,8 @@ function MainApp() {
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
   const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
 
+  const lastSelectedGroup = useRef('Outros')
+
   useApiEventHandler<{ type: WeekType, week: number, items: typeof data }>(`parsed-results/${weekNumber}`, (response) => {
     if (response.type === type)
       dispatch(weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate: currentWeekStart.toISOString(), type }, response.items ?? []))
@@ -130,7 +132,7 @@ function MainApp() {
             <UploadMetadataDialog
               onSubmit={resolve}
               groups={Object.keys(mediaGroups)}
-              defaultGroup="Outros"
+              defaultGroup={lastSelectedGroup.current}
               defaultLabel={file.name}
             />
           ), {
@@ -139,6 +141,7 @@ function MainApp() {
           })
         })
         uploadingFiles.push({ file: { name: file.name, path: file.path }, group, label })
+        lastSelectedGroup.current = group
       }
 
       await uploadMedia({ isoDate: currentWeekStart.toISOString(), type, files: uploadingFiles }).unwrap()

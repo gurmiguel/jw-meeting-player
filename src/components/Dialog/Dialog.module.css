@@ -4,7 +4,9 @@
 
 .dialog {
   @apply flex flex-col my-auto mx-auto bg-zinc-100 dark:bg-zinc-900 py-4 px-6 rounded-sm text-center;
-  @apply max-w-3xl min-w-[480px] shadow-md
+  @apply max-w-3xl min-w-[480px] shadow-md;
+  @apply animate-fade-in;
+  animation-duration: 200ms;
 }
 
 .title {
