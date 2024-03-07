@@ -1,3 +1,4 @@
+import { error } from 'electron-log/main'
 import { type Downloader } from '../Downloader'
 import { CrawlerHandler } from './CrawlerHandler'
 import { ArticleMediaParser } from './parsers/ArticleMediaParser'
@@ -34,17 +35,24 @@ export class CrawlerUtils {
   async fetchPublicationVideo(dataVideo: string) {
     const params = new URL(dataVideo).searchParams
     const pub = params.get('pub')
+    const docid = params.get('docid')
     const track = params.get('track')
     const issue = params.get('issue')
 
-    if (!pub || !track) return null
+    if ((!pub && !docid) || !track) {
+      error('Could not load video, data-video parameter not valid', dataVideo)
+      return null
+    }
 
     const pubmediaEndpoint = new URL('https://b.jw-cdn.org/apis/pub-media/GETPUBMEDIALINKS')
     pubmediaEndpoint.searchParams.set('output', 'json')
     pubmediaEndpoint.searchParams.set('fileformat', 'mp4')
     pubmediaEndpoint.searchParams.set('alllangs', '0')
     pubmediaEndpoint.searchParams.set('langwritten', 'T')
-    pubmediaEndpoint.searchParams.set('pub', pub)
+    if (pub)
+      pubmediaEndpoint.searchParams.set('pub', pub)
+    if (docid)
+      pubmediaEndpoint.searchParams.set('docid', docid)
     pubmediaEndpoint.searchParams.set('track', track)
     if (issue)
       pubmediaEndpoint.searchParams.set('issue', issue)

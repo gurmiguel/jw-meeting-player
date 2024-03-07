@@ -54,6 +54,7 @@ export class MidWeekMeeting extends ArticleMediaParser {
                     type: 'video',
                     ...video,
                   })
+                  
               } else {
                 const articleURL = $el.href
 
