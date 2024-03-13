@@ -46,6 +46,8 @@ autoUpdater.checkForUpdates()
 
     await downloadPromise
 
+    if (autoUpdater.currentVersion.compare(updateInfo.version) > -1) return
+
     hasUpdateAvailable = true
     
     windows.main.webContents.send('update-available', updateInfo)
