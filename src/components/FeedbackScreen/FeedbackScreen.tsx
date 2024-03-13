@@ -82,7 +82,7 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
           'fixed z-10 rounded-md overflow-hidden',
           dragging && 'cursor-grabbing',
           !zoomMode && 'bottom-2 right-2 bg-black cursor-grab',
-          zoomMode && 'absolute-center aspect-video flex place-items-center mt-4 p-4 bg-zinc-800',
+          zoomMode && 'absolute-center aspect-video flex items-center justify-center mt-4 p-4 bg-zinc-800',
         ])} 
         style={!zoomMode ? { width, height } : { height: 'calc(100% - 5.5rem)' }}
       >
@@ -100,7 +100,7 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
               ref={image}
               src={media.file ?? ''}
               className={clsx([
-                'block object-contain',
+                'block object-contain aspect-video',
                 imageSize.mode === 'landscape' && 'w-full',
                 imageSize.mode === 'portrait' && 'h-full',
               ])}

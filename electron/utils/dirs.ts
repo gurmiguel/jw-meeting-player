@@ -45,3 +45,7 @@ export function getUserData(platform: NodeJS.Platform, appName: string) {
   return app.getPath('userData')
     || path.join(getAppData(platform), appName)
 }
+
+export function getJWLibraryVideosDir() {
+  return path.join(getHome(), 'Videos/JWLibrary')
+}

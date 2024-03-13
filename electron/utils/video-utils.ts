@@ -3,7 +3,7 @@ import { downloadBinaries } from 'ffbinaries'
 import ffmpeg, { ffprobe } from 'fluent-ffmpeg'
 import fs from 'fs'
 import path from 'path'
-import { getLibraryDir } from './dirs'
+import { getJWLibraryVideosDir, getLibraryDir } from './dirs'
 import { getNameAndVersion, isDev } from './electron-utils'
 
 const FALLBACK_VIDEO_THUMBNAIL = path.join(__dirname, '../../shared/assets/video-placeholder.png')
@@ -83,4 +83,24 @@ export async function getMediaDuration(filepath: string) {
       resolve(format.duration ?? 0)
     })
   })
+}
+
+export async function getMediaTitle(filepath: string) {
+  return new Promise<string>((resolve, reject) => {
+    ffprobe(filepath, (err, { format }) => {
+      if (err) return reject(err)
+      resolve(String(format.tags?.title ?? ''))
+    })
+  })
+}
+
+export async function existsInJWLibrary(filename: string) {
+  const filepath = path.join(getJWLibraryVideosDir(), filename)
+
+  try {
+    const check = await fs.promises.stat(filepath)
+    return check.isFile() ? filepath : false
+  } catch {
+    return false
+  }
 }

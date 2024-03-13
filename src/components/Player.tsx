@@ -130,16 +130,20 @@ function Player() {
               />
             )}
             {media?.file && media.type === 'image' && (
-              <img
-                key={media.timestamp}
-                src={media.file}
-                className="absolute block w-full h-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
-                alt=""
+              <div
+                className="absolute block w-full h-full" 
                 style={{
                   transformOrigin: '0 0',
                   transform: `scale(${zoomLevel}) translate(-${position.left}%, -${position.top}%)`,
                 }}
-              />
+              >
+                <img
+                  key={media.timestamp}
+                  src={media.file}
+                  className="block w-full h-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
+                  alt=""
+                />
+              </div>
             )}
           </div>
         </CSSTransition>

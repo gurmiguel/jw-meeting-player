@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { WeekType } from '../../shared/models/WeekType'
+import { existsInJWLibrary, getMediaDuration, getMediaTitle } from '../utils/video-utils'
 import { Deleter } from './Deleter'
 import Downloader from './Downloader'
 import { CrawlerUtils } from './crawler/CrawlerUtils'
@@ -14,7 +15,24 @@ export async function addSong(date: Date, type: WeekType, group: string, song: n
 
   const utils = new CrawlerUtils(downloader)
 
-  const downloadedSong = await utils.fetchPublicationVideo(utils.generateDataVideoURL(SongsParser.SONG_PUB_ID, song))
+  let downloadedSong: {
+    title: string;
+    duration: any;
+    path: string;
+    thumbnail: string | null;
+  } | null
+
+  const jwlibrarySongPath = await existsInJWLibrary(`${SongsParser.SONG_PUB_ID}_T_${String(song).padStart(3, '0')}_r720P.mp4`)
+
+  if (jwlibrarySongPath) {
+    downloadedSong = {
+      ...await downloader.enqueue(jwlibrarySongPath, 'mp4'),
+      title: await getMediaTitle(jwlibrarySongPath),
+      duration: await getMediaDuration(jwlibrarySongPath),
+    }
+  } else {
+    downloadedSong = await utils.fetchPublicationVideo(utils.generateDataVideoURL(SongsParser.SONG_PUB_ID, song))
+  }
   
   await downloader.flush()
 

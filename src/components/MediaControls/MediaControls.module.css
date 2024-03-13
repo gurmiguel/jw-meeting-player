@@ -1,5 +1,5 @@
 .container {
-  @apply bg-zinc-950 flex justify-between gap-2 p-2 rounded-md pointer-events-none
+  @apply self-center flex flex-col items-center pointer-events-none
 
 }
 
@@ -8,7 +8,11 @@
 }
 
 .absoluteCenter {
-  @apply z-20 fixed bottom-3 left-1/2 transform -translate-x-1/2
+  @apply z-20 sticky bottom-3 w-auto;
+}
+
+.controlsContainer {
+  @apply bg-zinc-950 flex justify-between gap-2 p-2 rounded-md;
 }
 
 .controlButton {
@@ -36,5 +40,5 @@
 }
 
 .progressBarContainer {
-  @apply absolute left-1/2 -translate-x-1/2 bottom-full mb-2 bg-zinc-950 rounded-md w-[480px] max-w-[80vw]
+  @apply mb-2 bg-zinc-950 rounded-md w-[480px] max-w-[80vw]
 }

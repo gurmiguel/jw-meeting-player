@@ -161,7 +161,7 @@ function MainApp() {
   return (
     <>
       <div className="h-screen overflow-hidden overflow-y-scroll">
-        <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/']} className="dark:bg-zinc-900 flex-1 w-full">
+        <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/']} className="dark:bg-zinc-900 flex flex-col flex-1 w-full">
           <div className="flex flex-col p-10 min-h-screen">
             <div key={date.getTime()} className="flex flex-row items-center justify-start gap-3 -mx-2 mb-2">
               <button

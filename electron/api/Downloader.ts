@@ -2,7 +2,7 @@ import log from 'electron-log/main'
 import fs from 'node:fs'
 import http from 'node:https'
 import path from 'node:path'
-import { JWLIBRARY_VIDEO_PATH } from '../paths'
+import { getJWLibraryVideosDir } from '../utils/dirs'
 import { decideFileMediaType } from '../utils/file-type'
 import { generateThumbnail, isVideoFile } from '../utils/video-utils'
 import { windows } from '../windows'
@@ -12,7 +12,7 @@ export class Downloader extends FileSystemService {
   protected downloadQueue: Array<{ targetPath: string, url: string, thumbnail: string | null }> = []
 
   async enqueue(url: string, type: string) {
-    let filename = url.split('/').pop()!
+    let filename = url.split(url.startsWith('http') ? '/' : path.sep).pop()!
 
     if (!filename.endsWith(`.${type}`))
       filename += `.${type}`
@@ -37,8 +37,8 @@ export class Downloader extends FileSystemService {
       const filename = path.basename(targetPath)
 
       try {
-        await fs.promises.access(path.join(JWLIBRARY_VIDEO_PATH, filename))
-        const readFile = fs.createReadStream(path.join(JWLIBRARY_VIDEO_PATH, filename))
+        await fs.promises.access(path.join(getJWLibraryVideosDir(), filename))
+        const readFile = fs.createReadStream(path.join(getJWLibraryVideosDir(), filename))
         readFile.pipe(file)
 
         await new Promise<void>((resolve, reject) => {
@@ -50,9 +50,16 @@ export class Downloader extends FileSystemService {
         })
 
         log.debug('Using existing file from JW Library', filename)
-      } catch {
+      } catch (err) {
+        log.debug('Downloading from:', url)
+        const jwlibraryCopyFile = url.match(/(jw\.org|akamaihd\.net)/i)
+          ? fs.createWriteStream(path.join(getJWLibraryVideosDir(), filename))
+          : null
+
         await new Promise<void>(resolve => http.get(url, response => {
           const contentSize = parseInt(response.headers['content-length'] ?? '0')
+          if (jwlibraryCopyFile)
+            response.pipe(jwlibraryCopyFile)
           response.pipe(file)
   
           if (contentSize) {

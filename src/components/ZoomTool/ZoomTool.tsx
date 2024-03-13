@@ -79,9 +79,9 @@ export function ZoomTool({ gutter = 0, step = 0.05 }: Props) {
     const targetCenter = mousePos.current
 
     const positionCentered = {
-      top: Math.floor(targetCenter.y - (rect.height / 2)),
+      top: Math.floor(targetCenter.y - (rect.height / 2)) - 2,
       bottom: -Infinity,
-      left: Math.floor(targetCenter.x - (rect.width / 2)),
+      left: Math.floor(targetCenter.x - (rect.width / 2)) - 2,
       right: -Infinity,
     }
     positionCentered.bottom = positionCentered.top + rect.height
@@ -128,7 +128,7 @@ export function ZoomTool({ gutter = 0, step = 0.05 }: Props) {
         ref={zoomBox}
         {...dragHandlers}
         className={clsx([
-          'zoom-indicator absolute border-inset-white cursor-grab aspect-video',
+          'zoom-indicator absolute border-inset-white cursor-grab aspect-video drop-shadow-hard',
           dragging && 'cursor-grabbing',
         ])}
         style={{

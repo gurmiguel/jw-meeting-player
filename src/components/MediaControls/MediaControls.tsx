@@ -41,24 +41,26 @@ export function MediaControls({ playing, type, playStatus, onPause, onPlay, onSt
         />
       </div>
 
-      {playStatus === 'play' && (
-        <button className={classes.controlButton} onClick={onPause} disabled={!playingMedia}>
-          <PauseIcon className="w-6 h-6" />
+      <div className={classes.controlsContainer}>
+        {playStatus === 'play' && (
+          <button className={classes.controlButton} onClick={onPause} disabled={!playingMedia}>
+            <PauseIcon className="w-6 h-6" />
+          </button>
+        )}
+        {['pause', undefined].includes(playStatus) && (
+          <button className={classes.controlButton} onClick={onPlay} disabled={!playingMedia}>
+            <PlayIcon className="w-6 h-6" />
+          </button>
+        )}
+        <button className={classes.controlButton} onClick={onStop} disabled={!playing}>
+          {type === 'image'
+            ? <XMarkIcon className="w-6 h-6" />
+            : <StopIcon className="w-6 h-6" />}
         </button>
-      )}
-      {['pause', undefined].includes(playStatus) && (
-        <button className={classes.controlButton} onClick={onPlay} disabled={!playingMedia}>
-          <PlayIcon className="w-6 h-6" />
+        <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)}>
+          <span className="font-semibold">{currentSpeed.toFixed(1)}x</span>
         </button>
-      )}
-      <button className={classes.controlButton} onClick={onStop} disabled={!playing}>
-        {type === 'image'
-          ? <XMarkIcon className="w-6 h-6" />
-          : <StopIcon className="w-6 h-6" />}
-      </button>
-      <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)}>
-        <span className="font-semibold">{currentSpeed.toFixed(1)}x</span>
-      </button>
+      </div>
       {speedOptsOpen && (
         <div ref={clickOutsideRef} className={clsx(classes.container, 'absolute flex flex-col-reverse bottom-0 right-0')}>
           {SPEED_OPTIONS.map(speed => (

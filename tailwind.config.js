@@ -22,6 +22,9 @@ module.exports = {
           '100%': { opacity: '0' },
         },
       },
+      dropShadow: {
+        'hard': '0 1px 1px rgb(0 0 0 / 0.5)',
+      },
     },
     container: {
       center: true,

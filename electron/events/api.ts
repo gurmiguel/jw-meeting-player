@@ -44,6 +44,7 @@ function createApiHandler<T>(endpoint: string, handler: (e: IpcMainInvokeEvent, 
       
       return await handler(e, params)
     } catch (err) {
+      log.error(err)
       return err
     }
   })
