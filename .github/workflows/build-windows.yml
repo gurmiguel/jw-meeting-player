@@ -34,7 +34,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'pnpm'
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: pnpm install
     - name: Build/release Electron app
       uses: paneron/action-electron-builder@v1.8.1
       with:
