@@ -1,8 +1,10 @@
 import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { addDays, addWeeks, format as formatDate, getWeek, isWeekend, startOfWeek } from 'date-fns'
+import { type UpdateInfo } from 'electron-updater'
 import { groupBy } from 'lodash-es'
 import { Children, MouseEventHandler, useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { StorageKeys } from '../../shared/storage-keys'
@@ -70,6 +72,19 @@ function MainApp() {
   const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
 
   const lastSelectedGroup = useRef('Outros')
+
+  useApiEventHandler<UpdateInfo>('update-available', updateInfo => {
+    toast(`Uma atualização está disponível - Versão ${updateInfo.version}`, {
+      duration: 60_000,
+      action: {
+        label: 'Instalar',
+        onClick(e) {
+          e.preventDefault()
+          window.close()
+        },
+      },
+    })
+  }, [])
 
   useApiEventHandler<{ type: WeekType, week: number, items: typeof data }>(`parsed-results/${weekNumber}`, (response) => {
     if (response.type === type)

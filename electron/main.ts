@@ -22,30 +22,37 @@ process.env.DIST = path.join(__dirname, '../dist')
 process.env.PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
 process.env.FILES_PATH = path.join(app.getPath('userData'), 'files')
 
-const autoUpdaterLogger = log.create({ logId: 'auto-updater' })
-autoUpdaterLogger.transports.file!.level = 'debug'
-autoUpdater.logger = autoUpdaterLogger
-autoUpdater.autoInstallOnAppQuit = true
-autoUpdater.autoDownload = true
-autoUpdater.autoRunAppAfterInstall = true
-autoUpdater.checkForUpdatesAndNotify({
-  title: 'Uma nova atualização para este programa está disponível',
-  body: 'Feche o programa para atualizar',
-}).then(async it => {
-  if (!it) return
-
-  await it.downloadPromise
-
-  hasUpdateAvailable = true
-})
-let hasUpdateAvailable = false
-
-log.initialize({ preload: true })
-
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 const isDebugMode = !!VITE_DEV_SERVER_URL || ['1','true'].includes(process.env.DEBUG ?? '')
+
+const autoUpdaterLogger = log.create({ logId: 'auto-updater' })
+if (isDebugMode) {
+  autoUpdater.updateConfigPath = path.join(app.getAppPath(), 'dev-app-update.yml')
+  autoUpdater.forceDevUpdateConfig = true
+}
+autoUpdaterLogger.transports.file!.level = 'debug'
+autoUpdater.logger = autoUpdaterLogger
+autoUpdater.disableWebInstaller = true
+autoUpdater.autoInstallOnAppQuit = true
+autoUpdater.autoDownload = true
+autoUpdater.autoRunAppAfterInstall = true
+autoUpdater.checkForUpdates()
+  .then(async (update) => {
+    if (!update) return
+
+    const { downloadPromise, updateInfo } = update
+
+    await downloadPromise
+
+    hasUpdateAvailable = true
+    
+    windows.main.webContents.send('update-available', updateInfo)
+  })
+let hasUpdateAvailable = false
+
+log.initialize({ preload: true })
 
 Menu.setApplicationMenu(null)
 

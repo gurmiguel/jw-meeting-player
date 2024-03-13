@@ -17,13 +17,6 @@ export default defineConfig(({ command }) => {
             define: {
               'process.env.FLUENTFFMPEG_COV': false,
             },
-            build: {
-              rollupOptions: {
-                external: [
-                  'canvas',
-                ],
-              },
-            },
             plugins: [
               command === 'serve' && notBundle(),
             ],
