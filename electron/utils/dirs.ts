@@ -49,3 +49,7 @@ export function getUserData(platform: NodeJS.Platform, appName: string) {
 export function getJWLibraryVideosDir() {
   return path.join(getHome(), 'Videos/JWLibrary')
 }
+
+export function getTempDir() {
+  return path.join(os.tmpdir(), 'jw-meeting-player')
+}

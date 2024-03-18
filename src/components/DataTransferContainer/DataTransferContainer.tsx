@@ -48,7 +48,9 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
     const files = Array.from(e.dataTransfer.files)
 
     const validFiles = files.filter(file => {
-      return (validFormats || [file.type])?.some(format => file.type.startsWith(format))
+      return (validFormats || [file.type])?.some(extOrFormat => 
+        file.type.startsWith(extOrFormat) || file.name.replace(/.*(\.[^.]+)$/, '$1').toLowerCase() === extOrFormat.toLowerCase(),
+      )
     })
 
     releasedDragging()

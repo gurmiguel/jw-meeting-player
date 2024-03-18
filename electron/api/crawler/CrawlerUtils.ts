@@ -1,4 +1,5 @@
 import { error } from 'electron-log/main'
+import latinize from 'latinize'
 import { type Downloader } from '../Downloader'
 import { CrawlerHandler } from './CrawlerHandler'
 import { ArticleMediaParser } from './parsers/ArticleMediaParser'
@@ -64,10 +65,12 @@ export class CrawlerUtils {
       ?.sort((a: any, b: typeof a) => parseInt(b.label) - parseInt(a.label)) ?? []
 
     const downloadURL = files[0]?.file?.url
-    const title = files[0]?.title as string ?? ''
-    const duration = files[0]?.duration ?? 0
-
     if (!downloadURL) return null
+
+    const title = latinize(files[0]?.title as string ?? '')
+      .replace(/[^a-z0-9_\-\s\+]/gi, '')
+      .replace(/\s+/g, ' ')
+    const duration = files[0]?.duration ?? 0
 
     const downloadingMedia = await this.download(downloadURL, 'mp4')
     

@@ -120,6 +120,9 @@ async function createWindows() {
   if (!isDebugMode)
     windows.main.maximize()
 
+  if (isDebugMode)
+    windows.player.once('ready-to-show', () => windows.player.minimize())
+
   screen.on('display-removed', () => {
     const displays = screen.getAllDisplays()
 

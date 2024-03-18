@@ -6,11 +6,12 @@ import classes from './UploadMetadataDialog.module.css'
 interface Props {
   defaultGroup?: string
   defaultLabel?: string
+  disableLabel?: boolean
   groups: string[]
   onSubmit(data: { group: string, label: string }): void
 }
 
-export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGroup, defaultLabel }: Props) {
+export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGroup, defaultLabel, disableLabel = false }: Props) {
   const groups = groupsProp.filter(group => group.toLowerCase() !== 'cânticos')
   const { onDismiss } = useDialogContent()
   const defaultGroupExists = !!defaultGroup && groups.includes(defaultGroup)
@@ -50,7 +51,7 @@ export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGrou
           )}
           <label>
             <span>Descrição</span>
-            <input type="text" name="label" defaultValue={defaultLabel} required autoFocus />
+            <input type="text" name="label" defaultValue={defaultLabel} required autoFocus disabled={disableLabel} />
           </label>
 
           <div className="dialog-buttons">

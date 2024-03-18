@@ -1,8 +1,10 @@
 import { addMinutes, format as formatDate } from 'date-fns'
 import log from 'electron-log/main'
 import { isEqual, isUndefined, omitBy, unionWith } from 'lodash'
+import nodepath from 'node:path'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
+import { extractMediaFromJWPUB } from '../utils/jwpub'
 import MetadataLoader from './MetadataLoader'
 import { Uploader } from './Uploader'
 import { ParsedMedia, ProcessedResult } from './crawler/types'
@@ -20,7 +22,22 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
 
   let uploadedItems: ProcessedResult[] = []
   try {
-    uploadedItems = await Promise.all(files.map<Promise<ProcessedResult>>(async ({ file, group, label }) => {
+    uploadedItems = Array.from(await Promise.all(files.flatMap<Promise<ProcessedResult[]>>(async function mapFiles({ file, group, label }) {
+      if (file.path.toLowerCase().endsWith('.jwpub')) {
+        const processed = new Array<ProcessedResult>()
+        for await (const item of extractMediaFromJWPUB(file.path)) {
+          processed.push(...await mapFiles.apply(this, [{
+            file: {
+              name: nodepath.basename(item.path),
+              path: item.path,
+            },
+            group,
+            label: item.name,
+          }]))
+        }
+        return processed
+      }
+
       const { path, thumbnail, type, duration } = await uploader.enqueue(file.path, file.name)
 
       const media: ProcessedResult['media'] = []
@@ -28,14 +45,14 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
       if (thumbnail)
         media.push({ path: thumbnail, type: 'image', downloadProgress: 100 })
 
-      return {
+      return [{
         group,
         label,
         type,
         media,
         manual: true,
-      }
-    }))
+      }]
+    }))).flat()
   } finally {
     log.info('Starting to upload')
     const count = await uploader.flush()
