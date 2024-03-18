@@ -24,22 +24,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2.4.0
-      with:
-        version: 8
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
     - name: Install dependencies
-      run: pnpm install
+      run: npm i
     - name: Build/release Electron app
       uses: paneron/action-electron-builder@v1.8.1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         release: true
         build_script_name: build-ci
-        package_manager: pnpm
+        package_manager: npm
         skip_package_manager_install: true

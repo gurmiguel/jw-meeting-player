@@ -3,7 +3,7 @@
   "displayName": "JW Meeting Player",
   "description": "Player for controlling media display/share on Jehova's Witnesses meetings",
   "private": true,
-  "version": "0.11.1",
+  "version": "0.12.0",
   "author": {
     "name": "Gustavo Miguel",
     "email": "gu.rmiguel@gmail.com"
@@ -42,7 +42,7 @@
     "react-transition-group": "^4.4.5",
     "redux": "^4.2.1",
     "sonner": "^1.4.3",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "5.1.6"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",

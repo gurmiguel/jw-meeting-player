@@ -17,6 +17,11 @@ export default defineConfig(({ command }) => {
             define: {
               'process.env.FLUENTFFMPEG_COV': false,
             },
+            build: {
+              rollupOptions: {
+                external: ['sqlite3'],
+              },
+            },
             plugins: [
               command === 'serve' && notBundle(),
             ],
