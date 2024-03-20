@@ -60,29 +60,29 @@ export function MediaControls({ playing, type, playStatus, onPause, onPlay, onSt
         <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)}>
           <span className="font-semibold">{currentSpeed.toFixed(1)}x</span>
         </button>
+        {speedOptsOpen && (
+          <div ref={clickOutsideRef} className={clsx(classes.container, 'absolute flex flex-col-reverse bottom-0 right-0 justify-between gap-2 p-2 rounded-md bg-zinc-950')}>
+            {SPEED_OPTIONS.map(speed => (
+              <button
+                key={speed}
+                className={clsx(
+                  classes.controlButton,
+                  classes.speedsButton,
+                  classes.controlButtonRelative,
+                  speed === currentSpeed && classes.controlButtonActive,
+                )}
+                onClick={() => {
+                  onSetSpeed(speed)
+                  setSpeedOptsOpen(false)
+                }}
+              >
+                {speed === currentSpeed && <span className="absolute right-full -mr-4 font-black">🠢</span>}
+                <span className="font-semibold">{speed.toFixed(1)}x</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-      {speedOptsOpen && (
-        <div ref={clickOutsideRef} className={clsx(classes.container, 'absolute flex flex-col-reverse bottom-0 right-0')}>
-          {SPEED_OPTIONS.map(speed => (
-            <button
-              key={speed}
-              className={clsx(
-                classes.controlButton,
-                classes.speedsButton,
-                classes.controlButtonRelative,
-                speed === currentSpeed && classes.controlButtonActive,
-              )}
-              onClick={() => {
-                onSetSpeed(speed)
-                setSpeedOptsOpen(false)
-              }}
-            >
-              {speed === currentSpeed && <span className="absolute right-full -mr-4 font-black">🠢</span>}
-              <span className="font-semibold">{speed.toFixed(1)}x</span>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
