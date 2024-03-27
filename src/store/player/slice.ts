@@ -24,8 +24,8 @@ export const playerSlice = createSlice({
       state.currentTime = initialState.currentTime
       state.duration = initialState.duration
     },
-    stop(state) {
-      Object.assign(state, initialState)
+    stop() {
+      return initialState
     },
     pause(state) {
       state.playState = 'pause'

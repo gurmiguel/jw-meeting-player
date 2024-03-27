@@ -1,8 +1,9 @@
-import { SyntheticEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { SyntheticEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import { PlayerEvents } from '../../electron/events/player'
 import { DEFAULT_SPEED } from '../../shared/constants'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
+import { useThrottleCallback } from '../hooks/useThrottleCallback'
 import { initialState as initialPlayer } from '../store/player/slice'
 import classes from './Player.module.css'
 
@@ -23,6 +24,13 @@ function Player() {
     position: initialPlayer.position,
   })
 
+  const throttleUpdateTime = useThrottleCallback(useCallback((currentTime: number, duration: number) => {
+    bridge.time({
+      current: currentTime,
+      duration: duration,
+    })
+  }, []), 500 * currentSpeed)
+
   useBridgeEventHandler('start', ({ type, file, playRate }) => {
     setCurrentSpeed(playRate)
     setMedia({ type, file, timestamp: Date.now() })
@@ -40,6 +48,7 @@ function Player() {
   }, [])
 
   useBridgeEventHandler('stop', () => {
+    throttleUpdateTime.cancel()
     player.current?.pause()
     setMedia(undefined)
     setCurrentSpeed(DEFAULT_SPEED)
@@ -73,13 +82,16 @@ function Player() {
   function handleTimeUpdate(e: SyntheticEvent<HTMLVideoElement>) {
     const video = e.currentTarget
 
-    bridge.time({
-      current: video.currentTime,
-      duration: video.duration,
-    })
+    if (!video.paused)
+      throttleUpdateTime(video.currentTime, video.duration)
+  }
+
+  function handlePause() {
+    throttleUpdateTime.flush()
   }
 
   function handleMediaEnded() {
+    throttleUpdateTime.cancel()
     bridge.stop({ propagate: true })
   }
 
@@ -87,7 +99,7 @@ function Player() {
     <div className="relative bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
       <SwitchTransition>
         <CSSTransition
-          key={media?.timestamp ?? 'year-text'}
+          key={(media?.type !== 'audio' ? media?.timestamp : null) ?? 'year-text'}
           classNames={{
             enter: 'animate-[fade-in_500ms_ease_both]',
             exit: 'animate-[fade-out_500ms_ease_both]',
@@ -113,6 +125,7 @@ function Player() {
                 className="block w-full h-full object-contain"
                 controls={false}
                 onTimeUpdate={handleTimeUpdate}
+                onPause={handlePause}
                 onEnded={handleMediaEnded}
                 autoPlay
               />
@@ -125,6 +138,7 @@ function Player() {
                 className="block w-full h-full object-contain"
                 controls={false}
                 onTimeUpdate={handleTimeUpdate}
+                onPause={handlePause}
                 onEnded={handleMediaEnded}
                 autoPlay
               />

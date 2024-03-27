@@ -1,6 +1,6 @@
-import { MouseEvent, useRef, useState } from 'react'
-import classes from './ProgressSlider.module.css'
 import clsx from 'clsx'
+import { MouseEvent, useCallback, useRef, useState } from 'react'
+import classes from './ProgressSlider.module.css'
 
 interface Props {
   currentTime: number
@@ -16,21 +16,15 @@ export function ProgressSlider({ currentTime, duration, onChange, disabled = fal
 
   const [dragging, setDragging] = useState<number | false>(false)
 
-  function formatSeconds(seconds: number) {
-    const minutes = Math.floor(seconds / 60).toString()
-    const remainingSeconds = Math.floor(seconds % 60).toString()
-
-    return `${minutes.padStart(2, '0')}:${remainingSeconds.padStart(2, '0')}`
-  }
-
-  function percentageToSeconds(percentage: number) {
+  const percentageToSeconds = useCallback((percentage: number) => {
     const progressInSeconds = duration * percentage / 100
 
     return progressInSeconds
-  }
+  }, [duration])
 
   function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
     e.preventDefault()
+
     if (disabled) return
 
     const trackRect = e.currentTarget.getBoundingClientRect()
@@ -86,4 +80,11 @@ export function ProgressSlider({ currentTime, duration, onChange, disabled = fal
       <div className={classes.time}>{formatSeconds(duration)}</div>
     </div>
   )
+}
+
+function formatSeconds(seconds: number) {
+  const minutes = Math.floor(seconds / 60).toString()
+  const remainingSeconds = Math.floor(seconds % 60).toString()
+
+  return `${minutes.padStart(2, '0')}:${remainingSeconds.padStart(2, '0')}`
 }

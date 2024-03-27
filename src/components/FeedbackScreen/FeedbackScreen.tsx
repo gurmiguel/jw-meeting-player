@@ -14,6 +14,7 @@ interface Props {
 }
 
 const ASPECT_RATIO = 16 / 9
+const RESOLUTION = 480
 const height = 270
 const width = height * ASPECT_RATIO
 
@@ -48,7 +49,9 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
         mandatory: {
           chromeMediaSource: 'desktop',
           chromeMediaSourceId: sourceId,
-          aspectRatio: ASPECT_RATIO,
+          maxWidth: RESOLUTION * ASPECT_RATIO,
+          maxHeight: RESOLUTION,
+          frameRate: { max: 10 },
         },
       },
     }).then(stream => {
