@@ -6,4 +6,4 @@ export const titleBar = {
 
 export const DEFAULT_SPEED = 1.0
 
-export const MAX_SONG_NUMBER = 151 // TODO: make this dynamic
+export const MAX_SONG_NUMBER = 157 // TODO: make this dynamic
