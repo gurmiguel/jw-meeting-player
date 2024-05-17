@@ -3,7 +3,7 @@
   "displayName": "JW Meeting Player",
   "description": "Player for controlling media display/share on Jehova's Witnesses meetings",
   "private": true,
-  "version": "0.13.1",
+  "version": "0.13.2",
   "author": {
     "name": "Gustavo Miguel",
     "email": "gu.rmiguel@gmail.com"
@@ -15,7 +15,7 @@
     "build": "tsc && node-gyp build && vite build && electron-builder",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "script": "ts-node --transpile-only --esm -P tsconfig.node.json electron/run-script.ts",
-    "postinstall": "electron-builder install-app-deps && node-gyp configure && node-gyp build"
+    "postinstall": "patch-package && electron-builder install-app-deps && node-gyp configure && node-gyp build"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
