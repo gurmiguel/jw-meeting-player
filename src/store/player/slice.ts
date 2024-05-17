@@ -45,6 +45,9 @@ export const playerSlice = createSlice({
       state.zoomLevel = action.payload.zoomLevel
       state.position = action.payload.position
     },
+    toggleZoomScreen() {
+      //
+    },
   },
 })
 

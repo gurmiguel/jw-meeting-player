@@ -1,5 +1,6 @@
 import { SyntheticEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
+import { APIEvents } from '../../electron/events/api'
 import { PlayerEvents } from '../../electron/events/player'
 import { DEFAULT_SPEED } from '../../shared/constants'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
@@ -13,9 +14,11 @@ type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
 
 function Player() {
   const player = useRef<HTMLVideoElement & HTMLAudioElement>(null)
+  const mirrorScreen = useRef<HTMLVideoElement>(null)
 
   const [media, setMedia] = useState<MediaItem>()
   const [yearText, setYearText] = useState<string>()
+  const [zoomSharingScreen, setZoomSharingScreen] = useState<string>()
 
   const [currentSpeed, setCurrentSpeed] = useState(initialPlayer.playRate)
 
@@ -64,6 +67,22 @@ function Player() {
     player.current.currentTime = position
   }, [])
 
+  useBridgeEventHandler('toggleZoomScreen', async () => {
+    if (zoomSharingScreen) {
+      setZoomSharingScreen(undefined)
+      return
+    }
+
+    try {
+      const response = await api.fetch<APIEvents.GetZoomScreenIdResponse>('get-zoom-screen', null)
+
+      setZoomSharingScreen(response.windowId)
+    } catch {
+      setZoomSharingScreen(undefined)
+      bridge.zoomScreenNotFound()
+    }
+  }, [zoomSharingScreen])
+
   useBridgeEventHandler('zoom', ({ zoomLevel, top, left }) => {
     setZoomNPos({ zoomLevel, position: { top, left } })
   }, [])
@@ -95,73 +114,113 @@ function Player() {
     bridge.stop({ propagate: true })
   }
 
-  return (
-    <div className="relative bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
-      <SwitchTransition>
-        <CSSTransition
-          key={(media?.type !== 'audio' ? media?.timestamp : null) ?? 'year-text'}
-          classNames={{
-            enter: 'animate-[fade-in_500ms_ease_both]',
-            exit: 'animate-[fade-out_500ms_ease_both]',
-          }}
-          timeout={500}
-          unmountOnExit
-        >
-          <div className="absolute-fill" style={{ backgroundColor: 'inherit' }}>
-            {[null, 'audio'].includes(media?.type ?? null) && !!yearText && (
-              <>
-                <div className={classes.yearText} dangerouslySetInnerHTML={{ __html: yearText }} />
-                <div className={classes.yearTextLogo}>
-                  <div className={classes.yearTextLogoInner}></div>
-                </div>
-              </>
-            )}
+  function startShareZoomWindow() {
+    if (!mirrorScreen.current || !zoomSharingScreen) return
+  
+    const mirror = mirrorScreen.current
 
-            {media?.file && media.type === 'video' && (
-              <video
-                key={media.timestamp}
-                ref={player}
-                src={media.file}
-                className="block w-full h-full object-contain"
-                controls={false}
-                onTimeUpdate={handleTimeUpdate}
-                onPause={handlePause}
-                onEnded={handleMediaEnded}
-                autoPlay
-              />
-            )}
-            {media?.file && media.type === 'audio' && (
-              <audio
-                key={media.timestamp}
-                ref={player}
-                src={media.file}
-                className="block w-full h-full object-contain"
-                controls={false}
-                onTimeUpdate={handleTimeUpdate}
-                onPause={handlePause}
-                onEnded={handleMediaEnded}
-                autoPlay
-              />
-            )}
-            {media?.file && media.type === 'image' && (
-              <div
-                className="absolute block w-full h-full" 
-                style={{
-                  transformOrigin: '0 0',
-                  transform: `scale(${zoomLevel}) translate(-${position.left}%, -${position.top}%)`,
-                }}
-              >
-                <img
-                  key={media.timestamp}
-                  src={media.file}
-                  className="block w-full h-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
-                  alt=""
+    navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        // @ts-ignore
+        mandatory: {
+          chromeMediaSource: 'desktop',
+          chromeMediaSourceId: zoomSharingScreen,
+          frameRate: { max: 10 },
+        },
+      },
+    }).then(stream => {
+      mirror.srcObject = stream
+      mirror.classList.add('animate-[fade-in_500ms_ease_both]')
+    }).catch(err => {
+      console.log('Could not get media from screen')
+      console.error(err)
+    })
+  }
+
+  return (
+    <div className="fixed w-full h-full cursor-none">
+      <div className="relative bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
+        <SwitchTransition>
+          <CSSTransition
+            key={zoomSharingScreen || ((media?.type !== 'audio' ? media?.timestamp : null) ?? 'year-text')}
+            classNames={{
+              enter: 'animate-[fade-in_500ms_ease_both]',
+              exit: 'animate-[fade-out_500ms_ease_both]',
+            }}
+            onEnter={() => {
+              if (zoomSharingScreen)
+                startShareZoomWindow()
+            }}
+            timeout={500}
+            unmountOnExit
+          >
+            <div className="absolute-fill" style={{ backgroundColor: 'inherit' }}>
+              {zoomSharingScreen ? (
+                <video
+                  ref={mirrorScreen}
+                  onLoadedMetadata={() => mirrorScreen.current?.play()}
+                  className="block w-full h-full object-contain"
                 />
-              </div>
-            )}
-          </div>
-        </CSSTransition>
-      </SwitchTransition>
+              ) : (
+                <>
+                  {[null, 'audio'].includes(media?.type ?? null) && !!yearText && (
+                    <>
+                      <div className={classes.yearText} dangerouslySetInnerHTML={{ __html: yearText }} />
+                      <div className={classes.yearTextLogo}>
+                        <div className={classes.yearTextLogoInner}></div>
+                      </div>
+                    </>
+                  )}
+
+                  {media?.file && media.type === 'video' && (
+                    <video
+                      key={media.timestamp}
+                      ref={player}
+                      src={media.file}
+                      className="block w-full h-full object-contain"
+                      controls={false}
+                      onTimeUpdate={handleTimeUpdate}
+                      onPause={handlePause}
+                      onEnded={handleMediaEnded}
+                      autoPlay
+                    />
+                  )}
+                  {media?.file && media.type === 'audio' && (
+                    <audio
+                      key={media.timestamp}
+                      ref={player}
+                      src={media.file}
+                      className="block w-full h-full object-contain"
+                      controls={false}
+                      onTimeUpdate={handleTimeUpdate}
+                      onPause={handlePause}
+                      onEnded={handleMediaEnded}
+                      autoPlay
+                    />
+                  )}
+                  {media?.file && media.type === 'image' && (
+                    <div
+                      className="absolute block w-full h-full" 
+                      style={{
+                        transformOrigin: '0 0',
+                        transform: `scale(${zoomLevel}) translate(-${position.left}%, -${position.top}%)`,
+                      }}
+                    >
+                      <img
+                        key={media.timestamp}
+                        src={media.file}
+                        className="block w-full h-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
+                        alt=""
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </CSSTransition>
+        </SwitchTransition>
+      </div>
     </div>
   )
 }

@@ -53,3 +53,10 @@ playerListener.startListening({
     bridge.zoom({ zoomLevel: payload.zoomLevel, ...payload.position })
   },
 })
+
+playerListener.startListening({
+  actionCreator: playerActions.toggleZoomScreen,
+  effect() {
+    bridge.toggleZoomScreen()
+  },
+})

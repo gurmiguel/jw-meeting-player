@@ -15,3 +15,5 @@ O propósito desse projeto é criar uma aplicação capaz de suprir todas as nec
 
 - Sincronizar as mídias com o Zoom, seja automaticamente ou por ação manual, exemplo: compartilhar no zoom ao reproduzir um vídeo;
 - Controlar rotinas padrão de controle da reunião no Zoom, como iniciar a reunião já habilitando a enquete e os controles pertinentes;
+
+[Zoom Electron SDK Docs](https://developers.zoom.us/docs/meeting-sdk/electron/)

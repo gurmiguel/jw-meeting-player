@@ -27,6 +27,10 @@ declare global {
     onSeek(callback: IpcRendererCallback<PlayerEvents.Seek>): IpcRendererCallbackUnsubscriber
     zoom(payload: PlayerEvents.Zoom): void
     onZoom(callback: IpcRendererCallback<PlayerEvents.Zoom>): IpcRendererCallbackUnsubscriber
+    toggleZoomScreen(): void
+    onToggleZoomScreen(callback: IpcRendererCallback<void>): IpcRendererCallbackUnsubscriber
+    zoomScreenNotFound(): void
+    onZoomScreenNotFound(callback: IpcRendererCallback<void>): IpcRendererCallbackUnsubscriber
   }
 
   type EventHandlers = Exclude<{
@@ -47,6 +51,7 @@ declare global {
 
   interface CommonBridge {
     windowShow(): void
+    requestPlayerWindow(): void
     platform: NodeJS.Platform
     storage: {
       get<T = unknown>(key: string): Promise<T>

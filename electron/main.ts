@@ -8,7 +8,7 @@ import { delay } from '../shared/utils'
 import { attachEvents } from './events'
 import disablePeek from './native_modules/disable_peek'
 import { trySetPlayerAlwaysOnTop } from './utils/player-display'
-import { alwaysOnTopState, windows } from './windows'
+import { alwaysOnTopState, playerWindowLoad, windows } from './windows'
 
 // The built directory structure
 //
@@ -192,7 +192,7 @@ async function createWindows() {
     })
   }
 
-  windows.main.webContents.send('set-feedback-source', { sourceId: windows.player.getMediaSourceId() })
+  windows.player.webContents.on('did-finish-load', () => playerWindowLoad.resolve())
 }
 
 async function cleanup() {

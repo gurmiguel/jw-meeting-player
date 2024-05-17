@@ -1,6 +1,7 @@
 import { MagnifyingGlassPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
+import zoomIcon from '../../assets/zoom-icon.png'
 import { useDraggable } from '../../hooks/useDraggable'
 import { useMeasure } from '../../hooks/useMeasure'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
@@ -77,6 +78,12 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
     dispatch(playerActions.zoomLevel({ zoomLevel: initialPlayer.zoomLevel, position: initialPlayer.position }))
   }
 
+  function handleMirrorZoomScreen(e: MouseEvent) {
+    e.preventDefault()
+
+    dispatch(playerActions.toggleZoomScreen())
+  }
+
   return (
     <Resizer gutter={8} disabled={zoomMode === true}>
       <div
@@ -124,6 +131,14 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
           {media.type !== null && !zoomMode && (
             <button type="button" className="ml-auto p-2 icon-shadow transition appearance-none bg-transparent" onClick={handleClose}>
               <XMarkIcon className="h-6" />
+            </button>
+          )}
+        </div>
+
+        <div className="controls absolute flex bottom-2 right-2 z-10">
+          {!zoomMode && (
+            <button type="button" className="ml-auto p-2 icon-shadow transition appearance-none bg-transparent" onClick={handleMirrorZoomScreen}>
+              <img src={zoomIcon} className="size-8" />
             </button>
           )}
         </div>

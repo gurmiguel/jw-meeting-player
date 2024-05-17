@@ -22,6 +22,8 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   registerTwoWayEvent('time')
   registerTwoWayEvent('seek')
   registerTwoWayEvent('zoom')
+  registerTwoWayEvent('toggleZoomScreen')
+  registerTwoWayEvent('zoomScreenNotFound')
 
   function registerTwoWayEvent<E extends EventNames, Payload = Parameters<PlayerBridge[E]>[0]>(
     eventName: E,

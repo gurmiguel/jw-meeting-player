@@ -28,3 +28,17 @@ export function formatDuration(duration: number) {
 export function getWOLUrl(date: Date) {
   return `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${formatDate(date, 'yyyy\/w')}`
 }
+
+export class Deferred<V = void> {
+  resolve!: (value: V | PromiseLike<V>) => void
+  reject!: (reason?: any) => void
+
+  private promise = new Promise<V>((resolve, reject) => {
+    this.resolve = resolve
+    this.reject = reject
+  })
+
+  unwrap() {
+    return this.promise
+  }
+}

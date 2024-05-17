@@ -12,8 +12,11 @@ function eventHandler<E extends EventNames>(namespace: string, eventName: E) {
       window.postMessage({ channel, payload })
     },
     ['on' + eventName[0].toUpperCase() + eventName.slice(1)]: (callback: IpcRendererCallback<Payload>) => {
-      ipcRenderer.on(channel, (_, payload) => callback(payload))
+      ipcRenderer.on(channel, ipcCallback)
       window.addEventListener('message', onWindowMessage)
+      function ipcCallback(_: unknown, payload: Payload) {
+        return callback(payload)
+      }
       function onWindowMessage({ data }: MessageEvent<{ channel: string, payload: Payload }>) {
         if (!data || data.channel !== channel) return
 
@@ -21,7 +24,7 @@ function eventHandler<E extends EventNames>(namespace: string, eventName: E) {
       }
   
       return () => {
-        ipcRenderer.removeListener(`${namespace}:${eventName}`, callback)
+        ipcRenderer.off(channel, ipcCallback)
         window.removeEventListener('message', onWindowMessage)
       }
     },
@@ -36,10 +39,13 @@ contextBridge.exposeInMainWorld('bridge', {
   ...eventHandler('player', 'time'),
   ...eventHandler('player', 'seek'),
   ...eventHandler('player', 'zoom'),
+  ...eventHandler('player', 'toggleZoomScreen'),
+  ...eventHandler('player', 'zoomScreenNotFound'),
 })
 
 contextBridge.exposeInMainWorld('common', <CommonBridge>{
   windowShow: () => ipcRenderer.send('window-show'),
+  requestPlayerWindow: () => ipcRenderer.send('request-player-window'),
   platform: process.platform,
   storage: {
     async get(key: string) {
@@ -70,13 +76,13 @@ contextBridge.exposeInMainWorld('api', <API>{
   },
 })
 
-ipcRenderer.once('port', async (event) => {
+ipcRenderer.on('port', async (event) => {
   await windowLoaded
   
   window.postMessage('set-port', '*', event.ports)
 })
 
-ipcRenderer.once('set-feedback-source', async (_event, { sourceId }: { sourceId: string }) => {
+ipcRenderer.on('set-feedback-source', async (_event, { sourceId }: { sourceId: string }) => {
   await windowLoaded
 
   window.postMessage({ type: 'set-feedback-source', sourceId })
@@ -167,7 +173,10 @@ function useLoading() {
 // ----------------------------------------------------------------------
 
 const { appendLoading, removeLoading } = useLoading()
-domReady().then(appendLoading)
+domReady().then(() => {
+  if (document.body.querySelector('meta[name="x-no-loader"]')?.getAttribute('content') !== 'true')
+    appendLoading()
+})
 
 window.onmessage = ev => {
   ev.data.payload === 'removeLoading' && removeLoading()

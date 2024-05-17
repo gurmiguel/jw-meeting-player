@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
+    "@josephuspaye/list-open-windows": "^0.1.2",
     "@reduxjs/toolkit": "^1.9.7",
     "bindings": "^1.5.0",
     "clsx": "^2.0.0",

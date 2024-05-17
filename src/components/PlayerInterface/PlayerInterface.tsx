@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { useBridgeEventHandler } from '../../hooks/useBridgeEventHandler'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { playerActions } from '../../store/player/slice'
@@ -44,6 +45,8 @@ export function PlayerInterface() {
   }
   
   useEffect(() => {
+    common.requestPlayerWindow()
+
     function onMessage(e: MessageEvent) {
       if (!e.data.type) return
 
@@ -65,6 +68,13 @@ export function PlayerInterface() {
 
   useBridgeEventHandler('time', ({ current, duration }) => {
     dispatch(playerActions.time({ currentTime: current, duration }))
+  }, [])
+
+  useBridgeEventHandler('zoomScreenNotFound', () => {
+    toast('A janela do Zoom não foi encontrada', {
+      duration: 3_000,
+      dismissible: true,
+    })
   }, [])
 
   return (

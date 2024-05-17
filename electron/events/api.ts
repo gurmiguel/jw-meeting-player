@@ -7,6 +7,7 @@ import { WeekType } from '../../shared/models/WeekType'
 import { addSong } from '../api/add-song'
 import { fetchWeekMedia } from '../api/fetch-week-media'
 import { getYearText } from '../api/get-year-text'
+import { getZoomScreen } from '../api/get-zoom-screen'
 import { removeMedia } from '../api/remove-media'
 import { uploadMedia } from '../api/upload-media'
 
@@ -34,6 +35,9 @@ export function attachApiEvents() {
   createApiHandler('get-year-text', (_e, { year }: APIEvents.GetYearTextPayload) => {
     return getYearText(year)
   })
+  createApiHandler('get-zoom-screen', () => {
+    return getZoomScreen()
+  })
 }
 
 function createApiHandler<T>(endpoint: string, handler: (e: IpcMainInvokeEvent, params: T) => Promise<unknown>) {
@@ -45,7 +49,7 @@ function createApiHandler<T>(endpoint: string, handler: (e: IpcMainInvokeEvent, 
       return await handler(e, params)
     } catch (err) {
       log.error(err)
-      return err
+      return { error: err }
     }
   })
 }
@@ -76,4 +80,6 @@ export namespace APIEvents {
   }
 
   export type GetYearTextResponse = PromiseType<ReturnType<typeof getYearText>>
+
+  export type GetZoomScreenIdResponse = PromiseType<ReturnType<typeof getZoomScreen>>
 }
