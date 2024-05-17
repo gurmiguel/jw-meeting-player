@@ -7,7 +7,8 @@ import { titleBar } from '../shared/constants'
 import { delay } from '../shared/utils'
 import { attachEvents } from './events'
 import disablePeek from './native_modules/disable_peek'
-import { windows } from './windows'
+import { trySetPlayerAlwaysOnTop } from './utils/player-display'
+import { alwaysOnTopState, windows } from './windows'
 
 // The built directory structure
 //
@@ -68,6 +69,7 @@ async function createWindows() {
     : displays.find(display => display.id !== screen.getPrimaryDisplay().id) ?? screen.getPrimaryDisplay()
   
   windows.main = new BrowserWindow({
+    alwaysOnTop: alwaysOnTopState.main,
     backgroundColor: '#18181b',
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
@@ -96,7 +98,7 @@ async function createWindows() {
     fullscreen: true,
     kiosk: true,
     movable: false,
-    alwaysOnTop: displays.length > 1,
+    alwaysOnTop: alwaysOnTopState.player,
     minimizable: false,
     paintWhenInitiallyHidden: true,
     backgroundColor: '#000',
@@ -114,34 +116,15 @@ async function createWindows() {
     disablePeek(windows.player.getNativeWindowHandle())
 
   await delay()
+  trySetPlayerAlwaysOnTop()
 
   if (displays.length > 1)
     windows.player.maximize()
   if (!isDebugMode)
     windows.main.maximize()
 
-  if (isDebugMode)
-    windows.player.once('ready-to-show', () => windows.player.minimize())
-
-  screen.on('display-removed', () => {
-    const displays = screen.getAllDisplays()
-
-    if (displays.length <= 1)
-      windows.player.setAlwaysOnTop(false)
-  })
-
-  screen.on('display-added', () => {
-    const newDisplays = screen.getAllDisplays()
-
-    if (displays.length <= 1 && newDisplays.length > 1) {
-      const mainDisplay = screen.getDisplayNearestPoint(windows.main.getNormalBounds())
-      const playerDisplay = getPlayerDisplay(mainDisplay)
-      const { x, y } = playerDisplay!.bounds
-
-      windows.player.setPosition(x, y, false)
-      windows.player.setAlwaysOnTop(true)
-    }
-  })
+  screen.on('display-removed', trySetPlayerAlwaysOnTop)
+  screen.on('display-added', trySetPlayerAlwaysOnTop)
 
   windows.main.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http')) {

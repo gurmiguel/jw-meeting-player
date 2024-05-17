@@ -1,9 +1,22 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import { PlayerState } from '../../shared/state'
+import { trySetPlayerAlwaysOnTop } from '../utils/player-display'
+import { alwaysOnTopState } from '../windows'
 
 export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
-  registerTwoWayEvent('start')
-  registerTwoWayEvent('stop')
+  let stopDebounce: ReturnType<typeof setTimeout>
+  registerTwoWayEvent('start', () => {
+    clearTimeout(stopDebounce)
+    alwaysOnTopState.player = true
+    trySetPlayerAlwaysOnTop()
+  })
+  registerTwoWayEvent('stop', () => {
+    clearTimeout(stopDebounce)
+    stopDebounce = setTimeout(() => {
+      alwaysOnTopState.player = false
+      trySetPlayerAlwaysOnTop()
+    }, 250)
+  })
   registerTwoWayEvent('playerControl')
   registerTwoWayEvent('setSpeed')
   registerTwoWayEvent('time')
