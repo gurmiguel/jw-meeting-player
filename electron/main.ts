@@ -8,7 +8,7 @@ import { delay } from '../shared/utils'
 import { attachEvents } from './events'
 import disablePeek from './native_modules/disable_peek'
 import { trySetPlayerAlwaysOnTop } from './utils/player-display'
-import { alwaysOnTopState, playerWindowLoad, windows } from './windows'
+import { alwaysOnTopState, windows } from './windows'
 
 // The built directory structure
 //
@@ -191,13 +191,9 @@ async function createWindows() {
       window?.webContents.devToolsWebContents?.focus()
     })
   }
-
-  windows.player.webContents.on('did-finish-load', () => playerWindowLoad.resolve())
 }
 
 async function cleanup() {
-  windows.main?.close()
-  windows.player?.close()
   // @ts-expect-error "Just removing window references for cleanup"
   windows.main = null
   // @ts-expect-error "Just removing window references for cleanup"

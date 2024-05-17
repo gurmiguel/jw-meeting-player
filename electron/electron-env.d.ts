@@ -22,3 +22,21 @@ declare namespace NodeJS {
     FILES_PATH: string
   }
 }
+
+declare module 'tasklist' {
+  interface Args {
+    filter?: string[]
+  }
+
+  interface WindowItem {
+    imageName: string
+    pid: number
+    sessionName: string
+    sessionNumbe: number
+    memUsage: number
+  }
+
+  export const tasklist: (args: Args) => Promise<WindowItem[]>
+}
+
+declare module 'win-control'

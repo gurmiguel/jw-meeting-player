@@ -71,8 +71,8 @@ export function PlayerInterface() {
   }, [])
 
   useBridgeEventHandler('zoomScreenNotFound', () => {
-    toast('A janela do Zoom não foi encontrada', {
-      duration: 3_000,
+    toast(<div>A janela do Zoom não foi encontrada.<br/><em>Foque a janela do Zoom e tente novamente.</em></div>, {
+      duration: 5_000,
       dismissible: true,
     })
   }, [])

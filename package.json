@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
-    "@josephuspaye/list-open-windows": "^0.1.2",
     "@reduxjs/toolkit": "^1.9.7",
     "bindings": "^1.5.0",
     "clsx": "^2.0.0",
@@ -44,7 +43,8 @@
     "react-transition-group": "^4.4.5",
     "redux": "^4.2.1",
     "sonner": "^1.4.3",
-    "sqlite3": "5.1.6"
+    "sqlite3": "5.1.6",
+    "tasklist": "^5.0.0"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",

@@ -4,18 +4,13 @@ import { trySetPlayerAlwaysOnTop } from '../utils/player-display'
 import { alwaysOnTopState } from '../windows'
 
 export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
-  let stopDebounce: ReturnType<typeof setTimeout>
   registerTwoWayEvent('start', () => {
-    clearTimeout(stopDebounce)
     alwaysOnTopState.player = true
     trySetPlayerAlwaysOnTop()
   })
   registerTwoWayEvent('stop', () => {
-    clearTimeout(stopDebounce)
-    stopDebounce = setTimeout(() => {
-      alwaysOnTopState.player = false
-      trySetPlayerAlwaysOnTop()
-    }, 250)
+    alwaysOnTopState.player = false
+    trySetPlayerAlwaysOnTop()
   })
   registerTwoWayEvent('playerControl')
   registerTwoWayEvent('setSpeed')
