@@ -81,6 +81,7 @@ async function createWindows() {
     minHeight: 600,
     x: mainDisplay?.bounds.x,
     y: mainDisplay?.bounds.y,
+    title: `JW Meeting Player - ${autoUpdater.currentVersion}`,
     titleBarStyle: 'default',
     titleBarOverlay: titleBar,
   })
@@ -195,6 +196,8 @@ async function createWindows() {
 }
 
 async function cleanup() {
+  windows.main?.close()
+  windows.player?.close()
   // @ts-expect-error "Just removing window references for cleanup"
   windows.main = null
   // @ts-expect-error "Just removing window references for cleanup"
