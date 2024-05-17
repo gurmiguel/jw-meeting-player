@@ -1,5 +1,4 @@
-// @ts-ignore
-export const { Window } = require('bindings')('win-control')
+export const WindowControl = require('bindings')('win-control').Window
 
 // Used when calling to setShowStatus as 2 argument. For more information see:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow

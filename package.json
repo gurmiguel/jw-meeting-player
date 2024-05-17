@@ -37,6 +37,7 @@
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "node-addon-api": "^7.1.0",
+    "patch-package": "^8.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.1.3",

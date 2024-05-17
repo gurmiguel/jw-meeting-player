@@ -1,0 +1,13 @@
+diff --git a/node_modules/csv-generate/lib/index.js b/node_modules/csv-generate/lib/index.js
+index c3e5fba..9c6a5d0 100644
+--- a/node_modules/csv-generate/lib/index.js
++++ b/node_modules/csv-generate/lib/index.js
+@@ -49,7 +49,7 @@ module.exports = function(){
+   return generator
+ }
+ 
+-Generator = function(options = {}){
++const Generator = function(options = {}){
+   // Convert Stream Readable options if underscored
+   if(options.high_water_mark){
+     options.highWaterMark = options.high_water_mark
