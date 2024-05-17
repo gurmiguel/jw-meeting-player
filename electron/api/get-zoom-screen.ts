@@ -13,7 +13,7 @@ export async function getZoomScreen() {
   if (!shareZoomWindow)
     throw new Error('Could not find Zoom window')
 
-  alwaysOnTopState.player = !alwaysOnTopState.player
+  alwaysOnTopState.player = true
   trySetPlayerAlwaysOnTop()
 
   return { windowId: `window:${shareZoomWindow.getHwnd()}:0` }
