@@ -4,7 +4,7 @@ import { trySetPlayerAlwaysOnTop } from '../utils/player-display'
 import { alwaysOnTopState } from '../windows'
 
 export async function getZoomScreen() {
-  const windows = await tasklist({ filter: ['Status eq running', 'Windowtitle eq Zoom'] })
+  const windows = await tasklist({ filter: ['Status eq running', 'Windowtitle eq Zoom*'] })
 
   const shareZoomWindow = windows
     .map(win => WindowControl.getByPid(win.pid))
