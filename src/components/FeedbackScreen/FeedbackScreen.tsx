@@ -136,7 +136,7 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
         </div>
 
         <div className="controls absolute flex bottom-2 right-2 z-10">
-          {!zoomMode && (
+          {!zoomMode && !media.type && (
             <button type="button" className="ml-auto p-2 icon-shadow transition appearance-none bg-transparent" onClick={handleMirrorZoomScreen}>
               <img src={zoomIcon} className="size-8" />
             </button>
