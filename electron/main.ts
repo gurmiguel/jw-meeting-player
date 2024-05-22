@@ -3,7 +3,6 @@ import log from 'electron-log/main'
 import { autoUpdater } from 'electron-updater'
 import os from 'node:os'
 import path from 'node:path'
-import { titleBar } from '../shared/constants'
 import { delay } from '../shared/utils'
 import { attachEvents } from './events'
 import disablePeek from './native_modules/disable_peek'
@@ -82,8 +81,6 @@ async function createWindows() {
     x: mainDisplay?.bounds.x,
     y: mainDisplay?.bounds.y,
     title: `JW Meeting Player - ${autoUpdater.currentVersion}`,
-    titleBarStyle: 'default',
-    titleBarOverlay: titleBar,
   })
 
   windows.main.setSize(1200, 900, false)

@@ -8,7 +8,11 @@ export async function getZoomScreen() {
 
   const shareZoomWindow = windows
     .map(win => WindowControl.getByPid(win.pid))
-    .find(win => !String(win.getTitle()).toLowerCase().includes('meeting') && win.getClassName() === 'ZPContentViewWndClass')
+    .find(win => {
+      const lTitle = String(win.getTitle()).toLowerCase()
+      return !(lTitle.includes('meeting') || lTitle.includes('reunião'))
+        && ['ConfMultiTabContentWndClass', 'ZPContentViewWndClass'].includes(win.getClassName())
+    })
 
   if (!shareZoomWindow)
     throw new Error('Could not find Zoom window')
