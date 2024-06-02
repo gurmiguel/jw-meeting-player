@@ -37,6 +37,10 @@ export class Downloader extends FileSystemService {
       const filename = path.basename(targetPath)
 
       try {
+        if (thumbnail === null) {
+          throw new Error('Only try to fetch existing JW Library video files')
+        }
+
         await fs.promises.access(path.join(getJWLibraryVideosDir(), filename))
         const readFile = fs.createReadStream(path.join(getJWLibraryVideosDir(), filename))
         readFile.pipe(file)
@@ -50,7 +54,7 @@ export class Downloader extends FileSystemService {
         })
 
         log.debug('Using existing file from JW Library', filename)
-      } catch (err) {
+      } catch {
         log.debug('Downloading from:', url)
         const jwlibraryCopyFile = url.match(/(jw\.org|akamaihd\.net)/i)
           ? fs.createWriteStream(path.join(getJWLibraryVideosDir(), filename))
