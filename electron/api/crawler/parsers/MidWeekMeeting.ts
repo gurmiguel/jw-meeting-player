@@ -28,7 +28,7 @@ export class MidWeekMeeting extends ArticleMediaParser {
 
       const articleTitle = $header.textContent?.trim() ?? ''
 
-      if (articleTitle.match(/cântico/i)) continue
+      if (articleTitle.match(/cântico \d+/i)) continue
 
       for (const $article of $articleElements) {
         const $mediaItems = $article.querySelectorAll<(HTMLImageElement & { tagName: 'IMG' }) | (HTMLAnchorElement & { tagName: 'A' })>('img, a')
@@ -47,7 +47,7 @@ export class MidWeekMeeting extends ArticleMediaParser {
             case 'A':
               const isVideoAnchor = $el.matches('a[data-video], a[href*="data-video="]')
               if (isVideoAnchor) {
-                const video = await this.processArticleVideo($el)
+                const video = await this.processArticleVideoAnchor($el)
                 if (video)
                   media.push({
                     group: articleTitle,
@@ -62,7 +62,7 @@ export class MidWeekMeeting extends ArticleMediaParser {
 
                 if (isSourceArticle) continue mediaItems
                 if ($el.hasAttribute('data-bid')) continue mediaItems
-                if ($el.textContent?.match(/cântico/i)) continue mediaItems
+                if ($el.textContent?.match(/cântico \d+/i)) continue mediaItems
 
                 const articleMedia = await this.utils.fetchArticleMedia(articleURL)
                 media.push(...articleMedia.map(media => ({

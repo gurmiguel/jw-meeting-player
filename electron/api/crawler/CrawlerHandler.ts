@@ -34,7 +34,7 @@ export class CrawlerHandler {
     const $result = (await Promise.all(this.parsers.map(async parser => {
       const parsedResult = await parser.process(doc)
         .catch(err => {
-          console.error('Error parsing result', err)
+          log.error('Error parsing result', err)
           throw err
         })
 
