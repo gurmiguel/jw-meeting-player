@@ -143,13 +143,14 @@ function MainApp() {
       const uploadingFiles = new Array<UploadingFile>()
       for (const file of files) {
         const { group, label } = await new Promise<Omit<UploadingFile, 'file'>>((resolve, reject) => {
+          const filename_l = file.name.toLowerCase()
           showDialog((
             <UploadMetadataDialog
               onSubmit={resolve}
               groups={Object.keys(mediaGroups)}
               defaultGroup={lastSelectedGroup.current}
               defaultLabel={file.name}
-              disableLabel={file.name.toLowerCase().endsWith('.jwpub')}
+              disableLabel={filename_l.endsWith('.jwpub') || filename_l.endsWith('.jwlplaylist')}
             />
           ), {
             onDismiss: reject,
@@ -177,7 +178,7 @@ function MainApp() {
   return (
     <>
       <div className="h-screen overflow-hidden overflow-y-scroll">
-        <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/', '.jwpub']} className="dark:bg-zinc-900 flex flex-col flex-1 w-full">
+        <DataTransferContainer onTransfer={handleDataTransfer} validFormats={['image/', 'audio/', 'video/', '.jwpub', '.jwlplaylist']} className="dark:bg-zinc-900 flex flex-col flex-1 w-full">
           <div className="flex flex-col p-10 min-h-screen">
             <div key={date.getTime()} className="flex flex-row items-center justify-start gap-3 -mx-2 mb-2">
               <button

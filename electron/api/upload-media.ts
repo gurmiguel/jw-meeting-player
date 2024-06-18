@@ -23,7 +23,8 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
   let uploadedItems: ProcessedResult[] = []
   try {
     uploadedItems = Array.from(await Promise.all(files.flatMap<Promise<ProcessedResult[]>>(async function mapFiles({ file, group, label }) {
-      if (file.path.toLowerCase().endsWith('.jwpub')) {
+      const filepath_l = file.path.toLowerCase()
+      if (filepath_l.endsWith('.jwpub') || filepath_l.endsWith('.jwlplaylist')) {
         const processed = new Array<ProcessedResult>()
         for await (const item of extractMediaFromJWPUB(file.path)) {
           processed.push(...await mapFiles.apply(this, [{

@@ -19,16 +19,29 @@ export async function* extractMediaFromJWPUB(jwpubFile: string): AsyncGenerator<
   const targetDir = path.join(getTempDir(), JWPUB_CONTEXT)
   await fs.promises.mkdir(targetDir, { recursive: true })
 
+  const isJWPubFile = jwpubFile.toLowerCase().endsWith('.jwpub')
+
   const unzippedJwpub = await JSZip.loadAsync(await fs.promises.readFile(jwpubFile))
 
-  const contentsFile = await unzippedJwpub.file('contents')?.async('nodebuffer')
+  let unzippedContents: JSZip | undefined
 
-  if (!contentsFile)
-    throw new Error('Could not open JWPUB file contents')
+  const localMediaFiles = await (async () => {
+    if (!isJWPubFile) {
+      return unzippedJwpub.filter(filename =>
+        /\.(png|jpe?g|gif|mp4|ogg|opus|mp3)$/i.test(filename) &&
+        !/default_thumbnail/i.test(filename),
+      )
+    }
+    const contentsFile = await unzippedJwpub.file('contents')?.async('nodebuffer')
 
-  const unzippedContents = await JSZip.loadAsync(contentsFile)
+    if (!contentsFile)
+      throw new Error('Could not open JWPUB file contents')
 
-  const localMediaFiles = unzippedContents.filter(filename => !filename.endsWith('.db'))
+    unzippedContents = await JSZip.loadAsync(contentsFile)
+
+    return unzippedContents.filter(filename => !filename.endsWith('.db'))
+  })()
+  
 
   for (const file of localMediaFiles) {
     const targetPath = path.join(targetDir, file.name)
@@ -39,7 +52,10 @@ export async function* extractMediaFromJWPUB(jwpubFile: string): AsyncGenerator<
     yield { path: targetPath, name: path.basename(targetPath) }
   }
 
-  const dbFiles = unzippedContents.filter(filename => filename.endsWith('.db'))
+  if (!isJWPubFile)
+    return
+
+  const dbFiles = unzippedContents?.filter(filename => filename.endsWith('.db')) ?? []
 
   for (const file of dbFiles) {
     const fileBuffer = await file.async('nodebuffer')
