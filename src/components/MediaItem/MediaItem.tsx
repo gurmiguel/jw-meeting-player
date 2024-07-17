@@ -1,7 +1,7 @@
 import { PhotoIcon, SpeakerWaveIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { ComponentType, MouseEvent, createElement, useCallback } from 'react'
-import { ProcessedResult } from '../../../electron/api/crawler/types'
+import type { ParsedMedia, ProcessedResult } from '../../../electron/api/crawler/types'
 import { WeekType } from '../../../shared/models/WeekType'
 import { MediaItem as MediaItemType } from '../../../shared/state'
 import { formatDuration } from '../../../shared/utils'
@@ -79,13 +79,14 @@ export function MediaItem({ item, type, currentWeekStart }: MediaItemProps) {
 
   const downloadProgress = mainMedia.downloadProgress ?? 100
   const downloadFinished = useDebounceValue(downloadProgress === 100, 250)
+  const coverMedia = !downloadFinished ? loadingGif : item.media.find(it => it.type === 'image')
 
   return (
     <div className={clsx('relative w-[180px]', !downloadFinished && 'opacity-70 pointer-events-none')} title={item.label}>
       <a href="#" onClick={mediaOpenHandler} className="relative flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
         {item.type === 'audio'
           ? <AudioPlaceholder file={mainMedia.path} />
-          : <img src={!downloadFinished ? loadingGif : item.media.find(it => it.type === 'image')?.path} alt="" className="w-full aspect-square object-cover" />}
+          : <img src={getMediaCoverPath(coverMedia)} alt="" className="w-full aspect-square object-cover" />}
         <div className="absolute top-2 right-2 icon-shadow" title={mediaTips[item.type]}>
           {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5 })}
         </div>
@@ -104,4 +105,12 @@ export function MediaItem({ item, type, currentWeekStart }: MediaItemProps) {
       <p className="cursor-default text-md w-full mt-1.5 line-clamp-2 leading-5">{item.label}</p>
     </div>
   )
+}
+
+function getMediaCoverPath(media: string | ParsedMedia | undefined) {
+  if (!media || typeof media === 'string') return media
+
+  if (!media.timestamp) return media.path
+
+  return `${media.path}?_=${media.timestamp}`
 }

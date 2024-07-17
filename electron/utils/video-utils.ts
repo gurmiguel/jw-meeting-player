@@ -3,10 +3,9 @@ import { downloadBinaries } from 'ffbinaries'
 import ffmpeg, { ffprobe } from 'fluent-ffmpeg'
 import fs from 'fs'
 import path from 'path'
+import FALLBACK_VIDEO_THUMBNAIL from '../../shared/assets/video-placeholder.png'
 import { getJWLibraryVideosDir, getLibraryDir } from './dirs'
 import { getNameAndVersion, isDev } from './electron-utils'
-
-const FALLBACK_VIDEO_THUMBNAIL = path.join(__dirname, '../../shared/assets/video-placeholder.png')
 
 const binariesPromise = new Promise<void>(async resolve => {
   const destination = isDev() ? __dirname : path.join(getLibraryDir(process.platform, getNameAndVersion().name), 'binaries')
@@ -37,11 +36,9 @@ export async function generateThumbnail(videoPath: string, outputFilepath: strin
 
   await binariesPromise
 
-  const inputStream = fs.createReadStream(videoPath)
-
   try {
     return await new Promise<void>((resolve, reject) => {
-      const command = ffmpeg(inputStream)
+      const command = ffmpeg(videoPath)
         .addOptions(
           '-map', '0:v',
           '-map', '-0:V',
@@ -53,15 +50,21 @@ export async function generateThumbnail(videoPath: string, outputFilepath: strin
         .output(outputFilepath)
       command.run()
     })
-  } catch {
+  } catch (err) {
+    log.error(err)
     log.debug(`Fallback to thumbnail generation: "${videoPath}"`)
+    const duration = await getMediaDuration(videoPath)
+
     return await new Promise<void>((resolve, reject) => {
       ffmpeg(videoPath)
         .once('end', () => resolve())
-        .once('error', err => reject(err))
+        .once('error', err => {
+          log.error(err)
+          reject(err)
+        })
         .autopad()
         .thumbnail({
-          timemarks: ['00:00:08.000'],
+          timemarks: [`00:00:${String(Math.floor(Math.min(8, duration))).padStart(2, '0')}.000`],
           size: '280x280',
           filename,
           folder: dir,
@@ -69,10 +72,9 @@ export async function generateThumbnail(videoPath: string, outputFilepath: strin
     })
   } finally {
     const output = await fs.promises.stat(outputFilepath)
-    if (!output.isFile()) {
-      await fs.promises.copyFile(FALLBACK_VIDEO_THUMBNAIL, outputFilepath)
-    }
-    inputStream.close()
+      .catch(() => ({ isFile: () => false }))
+    if (!output.isFile())
+      await fs.promises.writeFile(outputFilepath, FALLBACK_VIDEO_THUMBNAIL.replace(/^data:image\/.*;base64,/, ''), 'base64')
   }
 }
 

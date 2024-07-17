@@ -149,7 +149,7 @@ function MainApp() {
               onSubmit={resolve}
               groups={Object.keys(mediaGroups)}
               defaultGroup={lastSelectedGroup.current}
-              defaultLabel={file.name}
+              defaultLabel={file.name.replace(/\.[^.]+$/, '')}
               disableLabel={filename_l.endsWith('.jwpub') || filename_l.endsWith('.jwlplaylist')}
             />
           ), {

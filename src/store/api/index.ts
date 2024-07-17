@@ -13,7 +13,7 @@ const baseQuery: BaseQueryFn<
 
     if (signal.aborted) throw new Error('Request aborted.')
 
-    if (data.error) throw new Error(data.error)
+    if (data?.error) throw new Error(data.error)
 
     return { data }
   } catch (error: any) {

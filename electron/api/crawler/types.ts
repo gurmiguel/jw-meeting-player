@@ -4,6 +4,7 @@ export interface ParsedMedia {
   type: MediaTypes
   path: string
   downloadProgress: number
+  timestamp: number
   duration?: number
 }
 
