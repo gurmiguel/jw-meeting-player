@@ -6,7 +6,7 @@ import { ArticleMediaParser } from './parsers/ArticleMediaParser'
 import { SongsParser } from './parsers/SongsParser'
 
 export class CrawlerUtils {
-  constructor(protected downloader: Downloader) {}
+  constructor(protected downloader: Downloader, protected pageIds: Array<string>) {}
 
   parseAnchorDataVideo($anchor: HTMLAnchorElement) {
     const dataVideo = $anchor.getAttribute('data-video')
@@ -77,8 +77,8 @@ export class CrawlerUtils {
     return { ...downloadingMedia, title, duration }
   }
 
-  async crawlUrl(url: string, addParsers: (handler: CrawlerHandler) => void) {
-    const handler = new CrawlerHandler(url, this.downloader)
+  async crawlUrl(url: string, addParsers: (handler: CrawlerHandler) => void, ignoreFetchedPages = false) {
+    const handler = new CrawlerHandler(url, this.downloader, ignoreFetchedPages ? [] : this.pageIds)
 
     addParsers(handler)
 
@@ -94,7 +94,7 @@ export class CrawlerUtils {
   async fetchSongsMedia(url: string) {
     return this.crawlUrl(url, handler => {
       handler.addParser(new SongsParser())
-    })
+    }, true)
   }
 
   download: Downloader['enqueue'] = (...args) => this.downloader.enqueue(...args)

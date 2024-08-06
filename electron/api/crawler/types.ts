@@ -9,7 +9,9 @@ export interface ParsedMedia {
 }
 
 export interface ParsingResult {
+  uid: string
   group: string
+  alt: string
   label: string
   type: MediaTypes
   media: ParsedMedia[]

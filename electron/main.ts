@@ -166,6 +166,10 @@ async function createWindows() {
     await windows.player.loadFile(path.join(process.env.DIST, 'player.html'))
   }
 
+  globalShortcut.register('CmdOrCtrl+R', () => {
+    BrowserWindow.getFocusedWindow()?.reload()
+  })
+
   if (isDebugMode) {
     [windows.main, windows.player].forEach(win => {
       win.setThumbarButtons([

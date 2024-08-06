@@ -1,6 +1,7 @@
 import { addMinutes, format as formatDate } from 'date-fns'
 import log from 'electron-log/main'
 import { isEqual, isUndefined, omitBy, unionWith } from 'lodash'
+import { nanoid } from 'nanoid'
 import nodepath from 'node:path'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
@@ -47,8 +48,10 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
         media.push({ path: thumbnail, type: 'image', timestamp: Date.now(), downloadProgress: 100 })
 
       return [{
+        uid: nanoid(),
         group,
         label,
+        alt: label,
         type,
         media,
         manual: true,

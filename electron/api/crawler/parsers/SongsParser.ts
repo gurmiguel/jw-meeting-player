@@ -1,4 +1,5 @@
 import { padStart } from 'lodash'
+import { nanoid } from 'nanoid'
 import { ParsingResult } from '../types'
 import { CrawlerParser } from './CrawlerParser'
 
@@ -35,9 +36,12 @@ export class SongsParser extends CrawlerParser {
     const filteredSongsVideos = songsVideos.filter(it => !!it.path) as Array<Required<ArrayType<typeof songsVideos>>>
 
     return filteredSongsVideos.map<ParsingResult>((it) => {
+      const label = SongsParser.parseSongLabel(it.song, it.title)
       return {
+        uid: nanoid(),
         group: 'Cânticos',
-        label: SongsParser.parseSongLabel(it.song, it.title),
+        label,
+        alt: label,
         media: [
           { path: it.path, type: 'video', duration: it.duration, timestamp: Date.now(), downloadProgress: 0 },
           { path: it.thumbnail!, type: 'image', timestamp: Date.now(), downloadProgress: 0 },

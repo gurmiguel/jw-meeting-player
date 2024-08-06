@@ -33,10 +33,10 @@ export class MidWeekMeeting extends ArticleMediaParser {
       for (const $article of $articleElements) {
         const $mediaItems = $article.querySelectorAll<(HTMLImageElement & { tagName: 'IMG' }) | (HTMLAnchorElement & { tagName: 'A' })>('img, a')
         
-        mediaItems: for (const [ , $el] of $mediaItems.entries()) {
+        mediaItems: for (const [ index, $el] of $mediaItems.entries()) {
           switch ($el.tagName) {
             case 'IMG':
-              const image = await this.processArticleImage($el)
+              const image = await this.processArticleImage($el, index)
               if (image)
                 media.push({
                   group: articleTitle,

@@ -5,10 +5,12 @@ import { RemoveMediaRequest } from '../../shared/models/RemoveMedia'
 import { UploadMediaRequest } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { addSong } from '../api/add-song'
+import { ProcessedResult } from '../api/crawler/types'
 import { fetchWeekMedia } from '../api/fetch-week-media'
 import { getYearText } from '../api/get-year-text'
 import { getZoomScreen } from '../api/get-zoom-screen'
 import { removeMedia } from '../api/remove-media'
+import { updateMetadata } from '../api/update-metadata'
 import { uploadMedia } from '../api/upload-media'
 
 export function attachApiEvents() {
@@ -37,6 +39,11 @@ export function attachApiEvents() {
   })
   createApiHandler('get-zoom-screen', () => {
     return getZoomScreen()
+  })
+  createApiHandler('update-metadata', (_e, { isoDate, type, metadata }: APIEvents.UpdateMetadataPayload) => {
+    const date = new Date(isoDate)
+
+    return updateMetadata(date, type, metadata)
   })
 }
 
@@ -82,4 +89,11 @@ export namespace APIEvents {
   export type GetYearTextResponse = PromiseType<ReturnType<typeof getYearText>>
 
   export type GetZoomScreenIdResponse = PromiseType<ReturnType<typeof getZoomScreen>>
+  export interface UpdateMetadataPayload {
+    isoDate: string
+    type: WeekType
+    metadata: ProcessedResult[]
+  }
+
+  export type UpdateMetadataResponse = PromiseType<ReturnType<typeof updateMetadata>>
 }

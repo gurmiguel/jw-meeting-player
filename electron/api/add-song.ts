@@ -13,7 +13,7 @@ export async function addSong(date: Date, type: WeekType, group: string, song: n
   const downloader = new Downloader()
   downloader.setContext(SONGS_CONTEXT)
 
-  const utils = new CrawlerUtils(downloader)
+  const utils = new CrawlerUtils(downloader, [])
 
   let downloadedSong: {
     title: string;

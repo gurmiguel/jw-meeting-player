@@ -1,6 +1,6 @@
 import { addMinutes, format as formatDate, getWeek } from 'date-fns'
 import log from 'electron-log/main'
-import { isEqual, unionWith } from 'lodash'
+import { isEqual, sortBy, unionWith, uniqBy } from 'lodash'
 import { WeekType } from '../../shared/models/WeekType'
 import { getWOLUrl } from '../../shared/utils'
 import { windows } from '../windows'
@@ -27,7 +27,12 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
   const jwURL = getWOLUrl(date)
   
   const metadataLoader = new MetadataLoader(downloader)
-  const loadedMetadata = await metadataLoader.loadMetadata(force)
+  let loadedMetadata = await metadataLoader.loadMetadata(force)
+  // force old non-uid items to reload
+  if (loadedMetadata?.some(item => !item.uid)) {
+    force = true
+    loadedMetadata = await metadataLoader.loadMetadata(force)
+  }
   let parsingResult: ProcessedResult[] | null = loadedMetadata
   try {
     if (!parsingResult || force) {
@@ -55,13 +60,15 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
       media.downloadProgress = 100
     })
   })
-  const mergedResults = unionWith(parsingResult, loadedMetadata, (a, b) => {
+  const mergedResults = sortBy(uniqBy(unionWith(parsingResult, loadedMetadata, (a, b) => {
     return isEqual(a, b)
-  })
+  }), it => [it.group, it.type, it.label, it.media.map(m => m.path)].flat().join('||')), (it) => it.group.match(/c.ntico/i) ? '000' : it.group)
+  for (const item of mergedResults)
+    item
   if (mergedResults.length > 0)
     await metadataLoader.saveMetadata(mergedResults)
 
-  return mergedResults
+  return { items: mergedResults }
 }
 
 async function fetchMidWeekMeetingMedia(url: string, downloader: Downloader) {

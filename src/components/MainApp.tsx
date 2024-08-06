@@ -1,10 +1,13 @@
+import { DndContext, DragOverEvent, DragOverlay, DragStartEvent, KeyboardSensor, PointerSensor, useDroppable, useSensor, useSensors } from '@dnd-kit/core'
+import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers'
+import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { addDays, addWeeks, format as formatDate, getWeek, isWeekend, startOfWeek } from 'date-fns'
 import { type UpdateInfo } from 'electron-updater'
-import { groupBy } from 'lodash-es'
-import { Children, MouseEventHandler, useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { MouseEventHandler, PropsWithChildren, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
+import { ProcessedResult } from '../../electron/api/crawler/types'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { StorageKeys } from '../../shared/storage-keys'
@@ -12,12 +15,12 @@ import { getWOLUrl } from '../../shared/utils'
 import loadingGif from '../assets/loading.gif?asset'
 import { useApiEventHandler } from '../hooks/useApiEventHandler'
 import { useStorageValue } from '../hooks/useStorageValue'
-import weekApiEndpoints, { useAddSongMutation, useLazyFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, usePreloadMeetingMutation, useUploadMediaMutation } from '../store/api/week'
+import weekApiEndpoints, { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, usePreloadMeetingMutation, useUpdateMetadataMutation, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
 import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
 import { useDialog } from './Dialog/DialogProvider'
-import { MediaItem } from './MediaItem/MediaItem'
+import { MediaItem, SortableMediaItem } from './MediaItem/MediaItem'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
 import { SelectSongDialog } from './SelectSongDialog/SelectSongDialog'
 import { UploadMetadataDialog } from './UploadMetadataDialog/UploadMetadataDialog'
@@ -44,32 +47,32 @@ function MainApp() {
   })
 
   const [ refetchWeekData, { isFetching: isRefreshing } ] = useLazyRefetchWeekMediaQuery()
-  const [ fetchWeekData, { currentData: data, isFetching }] = useLazyFetchWeekMediaQuery()
+  const { currentData: data, isFetching, isSuccess: hasFetchedWeekMedia } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type })
   const [preloadMeeting] = usePreloadMeetingMutation()
 
-  useEffect(() => {
-    fetchWeekData({
-      isoDate: currentWeekStart.toISOString(),
-      type,
-    }, false)
-      .unwrap()
-      .then(async () => {
-        const autoLoadNextMeeting = await common.storage.get<boolean>(StorageKeys.autoLoadNextMeeting)
-        if (autoLoadNextMeeting){
-          let nextMeetingDate = currentWeekStart
-          if (type === WeekType.WEEKEND)
-            nextMeetingDate = addWeeks(nextMeetingDate, 1)
-          const nextMeetingType = Object.values(WeekType).find(it => typeof it === typeof type && it !== type) as WeekType
-        
-          console.log('Loading next meeting media', nextMeetingDate.toISOString(), WeekType[nextMeetingType])
+  const [sortingItems, setSortingItems] = useState<ProcessedResult[]>()
 
-          preloadMeeting({ isoDate: nextMeetingDate.toISOString(), type: nextMeetingType })
-        }
-      })
-  }, [currentWeekStart, fetchWeekData, preloadMeeting, type])
+  useEffect(() => {
+    if (!hasFetchedWeekMedia) return
+
+    (async () => {
+      const autoLoadNextMeeting = await common.storage.get<boolean>(StorageKeys.autoLoadNextMeeting)
+      if (autoLoadNextMeeting){
+        let nextMeetingDate = currentWeekStart
+        if (type === WeekType.WEEKEND)
+          nextMeetingDate = addWeeks(nextMeetingDate, 1)
+        const nextMeetingType = Object.values(WeekType).find(it => typeof it === typeof type && it !== type) as WeekType
+      
+        console.log('Loading next meeting media', nextMeetingDate.toISOString(), WeekType[nextMeetingType])
+
+        preloadMeeting({ isoDate: nextMeetingDate.toISOString(), type: nextMeetingType })
+      }
+    })()
+  }, [currentWeekStart, hasFetchedWeekMedia, preloadMeeting, type])
 
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
   const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
+  const [ updateMetadata ] = useUpdateMetadataMutation()
 
   const lastSelectedGroup = useRef('Outros')
 
@@ -86,22 +89,28 @@ function MainApp() {
     })
   }, [])
 
-  useApiEventHandler<{ type: WeekType, week: number, items: typeof data }>(`parsed-results/${weekNumber}`, (response) => {
-    if (response.type === type)
-      dispatch(weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate: currentWeekStart.toISOString(), type }, response.items ?? []))
+  useApiEventHandler<{ type: WeekType, week: number, items: Exclude<typeof data, undefined>['items'] }>(`parsed-results/${weekNumber}`, (response) => {
+    if (response.type === type && response.week === weekNumber)
+      dispatch(weekApiEndpoints.util.upsertQueryData('fetchWeekMedia', { isoDate: currentWeekStart.toISOString(), type }, { items: response.items ?? [] }))
   }, [dispatch, currentWeekStart, type])
 
   const isFetchingData = isFetching || isRefreshing
 
-  const hasFoundMedia = useMemo(() => data?.some(it => !it.manual) ?? true, [data])
+  const hasFoundMedia = useMemo(() => data?.items?.some(it => !it.manual) ?? true, [data])
 
   const mediaGroups = useMemo(() => {
+    const groups = Object.values(data?.items ?? []).map(it => it.group)
+
+    const items = sortingItems ?? data?.items ?? []
     return !data
       ? {}
-      : data.length || isFetchingData
-        ? groupBy(data ?? [], 'group')
+      : data.items.length || isFetchingData
+        ? groups.reduce((acc, group) => ({
+          ...acc,
+          [group]: items.filter(item => item.group === group),
+        }), {} as Record<string, ProcessedResult[]>)
         : { 'Cânticos': [] }
-  }, [data, isFetchingData])
+  }, [data, isFetchingData, sortingItems])
 
   const createWeekChangeHandler = (action: 'before' | 'after'): MouseEventHandler => async (e) => {
     e.preventDefault()
@@ -174,6 +183,75 @@ function MainApp() {
       dispatch(playerActions.stop())
     }
   }, [dispatch, type])
+
+  const [sortingId, setSortingId] = useState<string>()
+
+  const draggableSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  )
+
+  function handleDragStart(e: DragStartEvent) {
+    setSortingId(e.active.id.toString())
+    setSortingItems(data?.items)
+  }
+
+  async function handleDragEnd() {
+    setSortingId(undefined)
+    if (!sortingItems)
+      return
+
+    console.log(sortingItems, data?.items)
+
+    await updateMetadata({
+      isoDate: currentWeekStart.toISOString(),
+      type,
+      metadata: sortingItems,
+    })
+
+    setSortingItems(undefined)
+  }
+
+  async function handleDragOver(e: DragOverEvent) {
+    const { active, over } = e
+
+    const activeId = active.id.toString() ?? ''
+    const overId = over?.id.toString() ?? ''
+
+    if (!data || !sortingItems || !overId || !activeId)
+      return
+
+    const isOverGroup = overId.startsWith('group--')
+    const overGroup = isOverGroup
+      ? overId.replace('group--', '')
+      : sortingItems.find(it => it.uid === overId)?.group
+
+    const activeIndex = sortingItems.findIndex(it => it.uid === activeId)
+    const overIndex = isOverGroup
+      ? data.items.findIndex(it => it.group === overGroup)
+      : sortingItems.findIndex(it => it.uid === overId)
+
+    console.log('over', isOverGroup, overIndex)
+    if (!overGroup || activeIndex === overIndex)
+      return
+
+    setSortingItems((items) => {
+      if (!items || activeIndex < 0)
+        return
+
+      let $items = [...items]
+      $items = items.map(item => item.uid !== activeId ? item : {
+        ...item,
+        group: overGroup,
+      })
+      
+      return arrayMove($items, activeIndex, overIndex)
+    })
+  }
+
+  const sortingItem = data?.items.find(it => it.uid === sortingId)
 
   return (
     <>
@@ -252,51 +330,72 @@ function MainApp() {
 
             <div className="my-4" />
 
-            <div className="flex flex-wrap flex-col w-full">
-              {isFetchingData && !data?.length && <div>Carregando mídias...</div>}
+            <DndContext
+              sensors={draggableSensors}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              modifiers={[restrictToFirstScrollableAncestor]}
+            >
+              <div className="flex flex-wrap flex-col w-full">
+                {isFetchingData && !data?.items.length && <div>Carregando mídias...</div>}
 
-              {!isFetchingData && !hasFoundMedia && (
-                <h4 className="flex items-center gap-1 text-sm italic mb-4 underline underline-offset-4">
-                  <XMarkIcon className="h-4 text-red-700" />
+                {!isFetchingData && !hasFoundMedia && (
+                  <h4 className="flex items-center gap-1 text-sm italic mb-4 underline underline-offset-4">
+                    <XMarkIcon className="h-4 text-red-700" />
                   Nenhuma mídia encontrada
-                  <XMarkIcon className="h-4 text-red-700" />
-                </h4>
-              )}
+                    <XMarkIcon className="h-4 text-red-700" />
+                  </h4>
+                )}
 
-              {Object.entries(mediaGroups).map(([ group, items ]) => (
-                <details key={group} open>
-                  <summary className="p-2 pl-4 cursor-pointer hover:bg-zinc-300/5">{group}</summary>
-                  <div className="flex flex-wrap w-full items-start gap-5 mt-3 mb-3">
-                    {Children.toArray(items.map(item => (
-                      <MediaItem
-                        item={item}
-                        type={type}
-                        currentWeekStart={currentWeekStart}
-                      />
-                    )))}
-                    {group.toLowerCase() === 'cânticos' && (
-                      <button
-                        type="button"
-                        className={clsx(
-                          'appearance-none relative flex items-center justify-center',
-                          'w-[180px] aspect-square',
-                          'rounded-md border border-dashed border-zinc-900 dark:border-zinc-300 bg-transparent',
-                          !isAddingSong && 'cursor-pointer hover:bg-zinc-300/30 transition-colors',
-                          'disabled:opacity-80',
+                {Object.entries(mediaGroups).map(([ group, items ]) => (
+                  <details key={group} open>
+                    <summary className="p-2 pl-4 cursor-pointer hover:bg-zinc-300/5">{group}</summary>
+                    <SortableContext items={items.map(it => ({ ...it, id: it.uid }))}>
+                      <Droppable group={group}>
+                        {items.map(item => (
+                          <SortableMediaItem
+                            key={item.uid}
+                            item={item}
+                            type={type}
+                            currentWeekStart={currentWeekStart}
+                          />
+                        ))}
+                        {group.toLowerCase() === 'cânticos' && (
+                          <button
+                            type="button"
+                            className={clsx(
+                              'appearance-none relative flex items-center justify-center',
+                              'w-[180px] aspect-square',
+                              'rounded-md border border-dashed border-zinc-900 dark:border-zinc-300 bg-transparent',
+                              !isAddingSong && 'cursor-pointer hover:bg-zinc-300/30 transition-colors',
+                              'disabled:opacity-80',
+                            )}
+                            title="Adicionar Cântico"
+                            onClick={createAddSongHandler(group)}
+                            disabled={isAddingSong}
+                          >
+                            {isAddingSong
+                              ? <img src={loadingGif} className="w-full aspect-square object-cover" />
+                              : <PlusIcon className="w-20" />}
+                          </button>
                         )}
-                        title="Adicionar Cântico"
-                        onClick={createAddSongHandler(group)}
-                        disabled={isAddingSong}
-                      >
-                        {isAddingSong
-                          ? <img src={loadingGif} className="w-full aspect-square object-cover" />
-                          : <PlusIcon className="w-20" />}
-                      </button>
-                    )}
-                  </div>
-                </details>
-              ))}
-            </div>
+                      </Droppable>
+                    </SortableContext>
+                  </details>
+                ))}
+              </div>
+              <DragOverlay>
+                {sortingItem
+                  ? <MediaItem  
+                    item={sortingItem}
+                    type={type}
+                    currentWeekStart={currentWeekStart}
+                    dragging
+                  />
+                  : null}
+              </DragOverlay>
+            </DndContext>
           </div>
 
           <PlayerInterface />
@@ -309,6 +408,22 @@ function MainApp() {
         </DataTransferContainer>
       </div>
     </>
+  )
+}
+
+interface DroppableProps {
+  group: string
+}
+
+function Droppable({ group, children }: PropsWithChildren<DroppableProps>) {
+  const {
+    setNodeRef,
+  } = useDroppable({ id: `group--${group}` })
+
+  return (
+    <div ref={setNodeRef} className="flex flex-wrap w-full items-start gap-5 mt-3 mb-3" style={{ minHeight: 230 }}>
+      {children}
+    </div>
   )
 }
 

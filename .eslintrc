@@ -11,7 +11,8 @@
     "object-curly-spacing": "off",
     "@typescript-eslint/object-curly-spacing": ["warn", "always"],
     "@typescript-eslint/no-unused-vars": ["warn", {
-      "varsIgnorePattern": "^_"
+      "varsIgnorePattern": "^_",
+      "argsIgnorePattern": "^_"
     }]
   },
   "parser": "@typescript-eslint/parser",

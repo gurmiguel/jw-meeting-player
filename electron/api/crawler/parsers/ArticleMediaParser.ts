@@ -1,4 +1,5 @@
 import log from 'electron-log/main'
+import { nanoid } from 'nanoid'
 import { MediaTypes } from '../../../../shared/models/MediaTypes'
 import { ParsingResult } from '../types'
 import { CrawlerParser } from './CrawlerParser'
@@ -25,10 +26,10 @@ export class ArticleMediaParser extends CrawlerParser {
 
     const $mediaItems = Array.from($root.querySelectorAll<(HTMLImageElement & { tagName: 'IMG' }) | (HTMLAnchorElement & { tagName: 'A' }) | (HTMLVideoElement & { tagName: 'VIDEO' })>(selectors) ?? [])
 
-    const media = await Promise.all($mediaItems.map(async ($el): Promise<ParsingResult | null> => {
+    const media = await Promise.all($mediaItems.map(async ($el, index): Promise<ParsingResult | null> => {
       switch ($el.tagName) {
         case 'IMG':
-          const image = await this.processArticleImage($el)
+          const image = await this.processArticleImage($el, index)
           if (!image) return null
           return {
             group: articleTitle,
@@ -61,12 +62,13 @@ export class ArticleMediaParser extends CrawlerParser {
     return nonNullableMedia
   }
 
-  protected async processArticleImage($img: HTMLImageElement): Promise<Pick<ParsingResult, 'label' | 'media'> | null> {
+  protected async processArticleImage($img: HTMLImageElement, index: number): Promise<Omit<ParsingResult, 'group' | 'type'> | null> {
     if ($img.closest('.alternatePresentation')) return null
     if ($img.closest('a[data-video], a[href*="data-video="]')) return null
 
     const src = $img.getAttribute('src')
-    const alt = $img.getAttribute('alt') ?? ''
+    const alt = $img.getAttribute('alt') || `Imagem ${index + 1}`
+    const caption = $img.closest('figure')?.querySelector('figcaption')?.textContent?.trim() ?? alt
 
     if (!src) return null
 
@@ -79,12 +81,14 @@ export class ArticleMediaParser extends CrawlerParser {
     const { path } = await this.utils.download(fullSrc, format ?? 'jpeg')
 
     return {
+      uid: nanoid(),
       media: [ { path, type: 'image', timestamp: Date.now(), downloadProgress: 0 } ],
-      label: alt,
+      alt,
+      label: caption,
     }
   }
 
-  protected async processArticleVideoAnchor($anchor: HTMLAnchorElement): Promise<Pick<ParsingResult, 'label' | 'media'> | null> {
+  protected async processArticleVideoAnchor($anchor: HTMLAnchorElement): Promise<Omit<ParsingResult, 'group' | 'type'> | null> {
     const dataVideo = this.utils.parseAnchorDataVideo($anchor as HTMLAnchorElement)
 
     if (!dataVideo) return null
@@ -94,7 +98,9 @@ export class ArticleMediaParser extends CrawlerParser {
     if (!video) return null
 
     return {
+      uid: nanoid(),
       label: video.title,
+      alt: video.title,
       media: [
         { path: video.path, type: 'video', timestamp: Date.now(), duration: video.duration, downloadProgress: 0 },
         { path: video.thumbnail!, type: 'image', timestamp: Date.now(), downloadProgress: 0 },
@@ -102,7 +108,7 @@ export class ArticleMediaParser extends CrawlerParser {
     }
   }
 
-  protected async processArticleVideo($video: HTMLVideoElement, baseURL: string): Promise<Pick<ParsingResult, 'label' | 'media'> | null> {
+  protected async processArticleVideo($video: HTMLVideoElement, baseURL: string): Promise<Omit<ParsingResult, 'group' | 'type'> | null> {
     const downloadURL = $video.getAttribute('data-json-src')
 
     if (!downloadURL) {
@@ -124,7 +130,9 @@ export class ArticleMediaParser extends CrawlerParser {
     if (!video) return null
 
     return {
+      uid: nanoid(),
       label: video.title,
+      alt: video.title,
       media: [
         { path: video.path, type: 'video', duration: video.duration, timestamp: Date.now(), downloadProgress: 0 },
         { path: video.thumbnail!, type: 'image', timestamp: Date.now(), downloadProgress: 0 },

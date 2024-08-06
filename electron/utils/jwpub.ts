@@ -100,7 +100,7 @@ async function* fetchMediaFilesFromDb(dbfile: Buffer, ignoreFiles: string[]): As
   const downloader = new Downloader()
   downloader.setContext(JWPUB_CONTEXT)
 
-  const utils = new CrawlerUtils(downloader)
+  const utils = new CrawlerUtils(downloader, [])
 
   log('will fetch media', mediaItems)
   for (const item of mediaItems) {

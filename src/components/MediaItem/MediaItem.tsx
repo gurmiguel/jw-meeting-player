@@ -1,3 +1,5 @@
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { PhotoIcon, SpeakerWaveIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { ComponentType, MouseEvent, createElement, useCallback } from 'react'
@@ -21,6 +23,7 @@ interface MediaItemProps {
   item: ProcessedResult
   type: WeekType
   currentWeekStart: Date
+  dragging?: boolean
 }
 
 const mediaIcons: Record<MediaItemType['type'], ComponentType<any>> = {
@@ -35,7 +38,7 @@ const mediaTips: Record<MediaItemType['type'], string> = {
   video: 'Vídeo',
 }
 
-export function MediaItem({ item, type, currentWeekStart }: MediaItemProps) {
+export function MediaItem({ item, type, currentWeekStart, dragging = false }: MediaItemProps) {
   const promptConfirm = useConfirmDialog()
 
   const dispatch = useAppDispatch()
@@ -82,11 +85,11 @@ export function MediaItem({ item, type, currentWeekStart }: MediaItemProps) {
   const coverMedia = !downloadFinished ? loadingGif : item.media.find(it => it.type === 'image')
 
   return (
-    <div className={clsx('relative w-[180px]', !downloadFinished && 'opacity-70 pointer-events-none')} title={item.label}>
+    <div title={item.alt} className={clsx('relative w-[180px]', !downloadFinished && 'opacity-70 pointer-events-none', dragging && 'opacity-40')}>
       <a href="#" onClick={mediaOpenHandler} className="relative flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
         {item.type === 'audio'
           ? <AudioPlaceholder file={mainMedia.path} />
-          : <img src={getMediaCoverPath(coverMedia)} alt="" className="w-full aspect-square object-cover" />}
+          : <img src={getMediaCoverPath(coverMedia)} alt="" className="w-full aspect-square object-cover pointer-events-none" />}
         <div className="absolute top-2 right-2 icon-shadow" title={mediaTips[item.type]}>
           {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5 })}
         </div>
@@ -103,6 +106,38 @@ export function MediaItem({ item, type, currentWeekStart }: MediaItemProps) {
         </button>
       )}
       <p className="cursor-default text-md w-full mt-1.5 line-clamp-2 leading-5">{item.label}</p>
+    </div>
+  )
+}
+
+export function SortableMediaItem(props: Omit<MediaItemProps, 'dragging'>) {
+  const isPlaceholderItem = props.item.uid.endsWith('--placeholder')
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({
+    id: props.item.uid,
+    disabled: isPlaceholderItem,
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        ...(isPlaceholderItem ? {
+          opacity: 0,
+          width: 1,
+        } : {}),
+      }}
+    >
+      <MediaItem {...props} />
     </div>
   )
 }
