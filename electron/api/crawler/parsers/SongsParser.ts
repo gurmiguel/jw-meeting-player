@@ -1,5 +1,5 @@
 import { padStart } from 'lodash'
-import { nanoid } from 'nanoid'
+import { nanoid } from 'nanoid/non-secure'
 import { ParsingResult } from '../types'
 import { CrawlerParser } from './CrawlerParser'
 

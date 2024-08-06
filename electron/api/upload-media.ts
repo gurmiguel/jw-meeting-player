@@ -1,7 +1,7 @@
 import { addMinutes, format as formatDate } from 'date-fns'
 import log from 'electron-log/main'
 import { isEqual, isUndefined, omitBy, unionWith } from 'lodash'
-import { nanoid } from 'nanoid'
+import { nanoid } from 'nanoid/non-secure'
 import nodepath from 'node:path'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'

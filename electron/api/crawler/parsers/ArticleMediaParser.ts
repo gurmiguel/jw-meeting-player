@@ -1,5 +1,5 @@
 import log from 'electron-log/main'
-import { nanoid } from 'nanoid'
+import { nanoid } from 'nanoid/non-secure'
 import { MediaTypes } from '../../../../shared/models/MediaTypes'
 import { ParsingResult } from '../types'
 import { CrawlerParser } from './CrawlerParser'
