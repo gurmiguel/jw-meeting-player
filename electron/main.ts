@@ -1,6 +1,6 @@
-import { BrowserWindow, Menu, app, globalShortcut, nativeImage, nativeTheme, screen, shell } from 'electron'
+import { BrowserWindow, Menu, app, globalShortcut, ipcMain, nativeImage, nativeTheme, screen, shell } from 'electron'
 import log from 'electron-log/main'
-import { autoUpdater } from 'electron-updater'
+import { UpdateInfo, autoUpdater } from 'electron-updater'
 import os from 'node:os'
 import path from 'node:path'
 import { delay } from '../shared/utils'
@@ -36,22 +36,21 @@ autoUpdaterLogger.transports.file!.level = 'debug'
 autoUpdater.logger = autoUpdaterLogger
 autoUpdater.disableWebInstaller = true
 autoUpdater.autoInstallOnAppQuit = true
-autoUpdater.autoDownload = true
+autoUpdater.autoDownload = false
 autoUpdater.autoRunAppAfterInstall = true
 autoUpdater.checkForUpdates()
   .then(async (update) => {
     if (!update) return
 
-    const { downloadPromise, updateInfo } = update
-
-    await downloadPromise
+    const { updateInfo } = update
 
     if (autoUpdater.currentVersion.compare(updateInfo.version) > -1) return
 
-    hasUpdateAvailable = true
-    
     windows.main.webContents.send('update-available', updateInfo)
   })
+autoUpdater.on('download-progress', (info) => {
+  windows.main.webContents.send('update-download-progress', info)
+})
 let hasUpdateAvailable = false
 
 log.initialize({ preload: true })
@@ -139,6 +138,15 @@ async function createWindows() {
 
   windows.main.webContents.on('crashed', () => {
     windows.main.close()
+  })
+
+  ipcMain.handle('update-download', async (_e, updateInfo: UpdateInfo) => {
+    autoUpdater.downloadUpdate()
+
+    autoUpdater.once('update-downloaded', () => {
+      hasUpdateAvailable = true
+      windows.main.webContents.send('update-downloaded', updateInfo)
+    })
   })
 
   windows.main.once('close', () => {

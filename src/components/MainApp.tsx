@@ -4,7 +4,7 @@ import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-ki
 import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { addDays, addWeeks, format as formatDate, getWeek, isWeekend, startOfWeek } from 'date-fns'
-import { type UpdateInfo } from 'electron-updater'
+import { ProgressInfo, type UpdateInfo } from 'electron-updater'
 import { MouseEventHandler, PropsWithChildren, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { ProcessedResult } from '../../electron/api/crawler/types'
@@ -78,9 +78,35 @@ function MainApp() {
 
   useApiEventHandler<UpdateInfo>('update-available', updateInfo => {
     toast(`Uma atualização está disponível - Versão ${updateInfo.version}`, {
+      id: 'update-toast',
       duration: 60_000,
       action: {
-        label: 'Instalar',
+        label: 'Baixar',
+        onClick(e) {
+          e.preventDefault()
+          toast('Baixando atualização - 0%', {
+            id: 'update-toast',
+            duration: Number.POSITIVE_INFINITY,
+          })
+          api.fetch('update-download', updateInfo)
+        },
+      },
+    })
+  }, [])
+
+  useApiEventHandler('update-download-progress', (info: ProgressInfo) => {
+    toast(`Baixando atualização - ${Math.round(info.percent)}%`, {
+      id: 'update-toast',
+      duration: Number.POSITIVE_INFINITY,
+    })
+  }, [])
+
+  useApiEventHandler<UpdateInfo>('update-downloaded', updateInfo => {
+    toast(`Atualização baixada - Versão ${updateInfo.version}`, {
+      id: 'update-toast',
+      duration: Number.POSITIVE_INFINITY,
+      action: {
+        label: 'Fechar e Instalar',
         onClick(e) {
           e.preventDefault()
           window.close()
