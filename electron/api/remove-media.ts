@@ -1,6 +1,5 @@
 import { addMinutes, format as formatDate } from 'date-fns'
 import log from 'electron-log/main'
-import { isEqual } from 'lodash'
 import path from 'node:path'
 import { WeekType } from '../../shared/models/WeekType'
 import { Deleter } from './Deleter'
@@ -28,14 +27,5 @@ export async function removeMedia(item: ProcessedResult, date: Date, type: WeekT
     log.info(`Deleted ${count} media items`)
   }
   
-  const normalizedItem = {
-    ...item,
-    media: item.media.map(media => ({
-      ...media,
-      path: path.resolve(media.path),
-    })),
-  }
-  await metadataLoader.saveMetadata(loadedMetadata?.filter(it => {
-    return !isEqual(it, normalizedItem)
-  }) ?? [])
+  await metadataLoader.saveMetadata(loadedMetadata?.filter(it => it.uid !== item.uid) ?? [])
 }

@@ -85,13 +85,13 @@ export function MediaItem({ item, type, currentWeekStart, dragging = false }: Me
   const coverMedia = !downloadFinished ? loadingGif : item.media.find(it => it.type === 'image')
 
   return (
-    <div title={item.alt} className={clsx('relative w-[180px]', !downloadFinished && 'opacity-70 pointer-events-none', dragging && 'opacity-40')}>
+    <div title={item.alt} className={clsx('relative w-[180px]', !downloadFinished && 'opacity-70 pointer-events-none', dragging && 'opacity-30 grayscale')}>
       <a href="#" onClick={mediaOpenHandler} className="relative flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
         {item.type === 'audio'
           ? <AudioPlaceholder file={mainMedia.path} />
           : <img src={getMediaCoverPath(coverMedia)} alt="" className="w-full aspect-square object-cover pointer-events-none" />}
-        <div className="absolute top-2 right-2 icon-shadow" title={mediaTips[item.type]}>
-          {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5 })}
+        <div className="absolute top-2 right-2 icon-shadow">
+          {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5, alt: mediaTips[item.type] })}
         </div>
         <ProgressBar progress={downloadProgress} className="absolute-center top-auto bottom-2 w-11/12" />
         {downloadFinished && mainMedia.duration && (
@@ -105,7 +105,7 @@ export function MediaItem({ item, type, currentWeekStart, dragging = false }: Me
           <XMarkIcon className="h-6 text-red-700" strokeWidth="3" />
         </button>
       )}
-      <p className="cursor-default text-md w-full mt-1.5 line-clamp-2 leading-5">{item.label}</p>
+      <p title={item.label} className="cursor-default text-sm w-full mt-1.5 line-clamp-3 leading-5">{item.label}</p>
     </div>
   )
 }

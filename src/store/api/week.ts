@@ -123,9 +123,13 @@ const weekApiEndpoints = electronApi.injectEndpoints({
         },
         method: 'POST',
       }),
-      async onQueryStarted({ isoDate, type }, { queryFulfilled }) {
-        await queryFulfilled
-        weekApiEndpoints.util.invalidateTags([{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }])
+      invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
+      onQueryStarted({ isoDate, type, metadata }, { dispatch, queryFulfilled }) {
+        const patch = dispatch(weekApiEndpoints.util.updateQueryData('fetchWeekMedia', { isoDate, type },  () => {
+          return { items: metadata }
+        }))
+
+        queryFulfilled.catch(() => patch.undo())
       },
     }),
   }),

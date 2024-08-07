@@ -187,7 +187,9 @@ function MainApp() {
   const [sortingId, setSortingId] = useState<string>()
 
   const draggableSensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 20 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -203,8 +205,7 @@ function MainApp() {
     if (!sortingItems)
       return
 
-    console.log(sortingItems, data?.items)
-
+    console.log(sortingItems)
     await updateMetadata({
       isoDate: currentWeekStart.toISOString(),
       type,
@@ -233,7 +234,6 @@ function MainApp() {
       ? data.items.findIndex(it => it.group === overGroup)
       : sortingItems.findIndex(it => it.uid === overId)
 
-    console.log('over', isOverGroup, overIndex)
     if (!overGroup || activeIndex === overIndex)
       return
 
