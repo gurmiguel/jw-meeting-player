@@ -80,18 +80,18 @@ export async function generateThumbnail(videoPath: string, outputFilepath: strin
 
 export async function getMediaDuration(filepath: string) {
   return new Promise<number>((resolve, reject) => {
-    ffprobe(filepath, (err, { format }) => {
+    ffprobe(filepath, (err, data) => {
       if (err) return reject(err)
-      resolve(format.duration ?? 0)
+      resolve(data?.format?.duration ?? 0)
     })
   })
 }
 
 export async function getMediaTitle(filepath: string) {
   return new Promise<string>((resolve, reject) => {
-    ffprobe(filepath, (err, { format }) => {
+    ffprobe(filepath, (err, data) => {
       if (err) return reject(err)
-      resolve(String(format.tags?.title ?? ''))
+      resolve(String(data?.format?.tags?.title ?? ''))
     })
   })
 }

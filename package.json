@@ -3,7 +3,7 @@
   "displayName": "JW Meeting Player",
   "description": "Player for controlling media display/share on Jehova's Witnesses meetings",
   "private": true,
-  "version": "0.16.4",
+  "version": "0.16.5",
   "author": {
     "name": "Gustavo Miguel",
     "email": "gu.rmiguel@gmail.com"
