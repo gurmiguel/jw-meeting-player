@@ -87,6 +87,13 @@ function MainApp() {
           toast('Baixando atualização - 0%', {
             id: 'update-toast',
             duration: Number.POSITIVE_INFINITY,
+            action: {
+              label: 'Cancelar',
+              onClick(e) {
+                e.preventDefault()
+                api.fetch('cancel-update', updateInfo)
+              },
+            },
           })
           api.fetch('update-download', updateInfo)
         },

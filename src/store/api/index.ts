@@ -1,5 +1,6 @@
 import { BaseQueryFn, FetchArgs, FetchBaseQueryError, createApi } from '@reduxjs/toolkit/query/react'
 import log from 'electron-log/renderer'
+import { toast } from 'sonner'
 
 const baseQuery: BaseQueryFn<
   string | FetchArgs,
@@ -18,6 +19,10 @@ const baseQuery: BaseQueryFn<
     return { data }
   } catch (error: any) {
     log.error('API Error', error)
+    toast.error('Ocorreu um erro inesperado', {
+      duration: 3_000,
+      important: true,
+    })
     return { error }
   }
 }

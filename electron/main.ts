@@ -1,6 +1,6 @@
 import { BrowserWindow, Menu, app, globalShortcut, ipcMain, nativeImage, nativeTheme, screen, shell } from 'electron'
 import log from 'electron-log/main'
-import { UpdateInfo, autoUpdater } from 'electron-updater'
+import { CancellationToken, UpdateInfo, autoUpdater } from 'electron-updater'
 import os from 'node:os'
 import path from 'node:path'
 import { delay } from '../shared/utils'
@@ -140,13 +140,22 @@ async function createWindows() {
     windows.main.close()
   })
 
+  let updateCancelToken = new CancellationToken()
   ipcMain.handle('update-download', async (_e, updateInfo: UpdateInfo) => {
-    autoUpdater.downloadUpdate()
+    autoUpdater.downloadUpdate(updateCancelToken)
+      .catch((err) => log.error('Error trying to update', err))
 
     autoUpdater.once('update-downloaded', () => {
       hasUpdateAvailable = true
       windows.main.webContents.send('update-downloaded', updateInfo)
     })
+  })
+
+  ipcMain.handle('cancel-update', (_e, updateInfo: UpdateInfo) => {
+    updateCancelToken.cancel()
+    updateCancelToken = new CancellationToken()
+
+    windows.main.webContents.send('update-available', updateInfo)
   })
 
   windows.main.once('close', () => {

@@ -10,7 +10,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
   .render((
     <Provider store={store}>
       <DialogProvider>
-        <Toaster richColors closeButton duration={3000} position="top-right" theme="dark" />
+        <Toaster closeButton duration={3000} position="top-right" theme="dark" />
         <MainApp />
       </DialogProvider>
     </Provider>
