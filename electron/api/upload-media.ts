@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid/non-secure'
 import nodepath from 'node:path'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
+import { extractMediaFromJWLPlaylist } from '../utils/jwlplaylist'
 import { extractMediaFromJWPUB } from '../utils/jwpub'
 import MetadataLoader from './MetadataLoader'
 import { Uploader } from './Uploader'
@@ -25,19 +26,33 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
   try {
     uploadedItems = Array.from(await Promise.all(files.flatMap<Promise<ProcessedResult[]>>(async function mapFiles({ file, group, label }) {
       const filepath_l = file.path.toLowerCase()
-      if (filepath_l.endsWith('.jwpub') || filepath_l.endsWith('.jwlplaylist')) {
-        const processed = new Array<ProcessedResult>()
-        for await (const item of extractMediaFromJWPUB(file.path)) {
-          processed.push(...await mapFiles.apply(this, [{
-            file: {
-              name: nodepath.basename(item.path),
-              path: item.path,
-            },
-            group,
-            label: item.name,
-          }]))
-        }
-        return processed
+      const extension = filepath_l.split('.').pop()
+
+      const processed = new Array<ProcessedResult>()
+      switch (extension) {
+        case 'jwpub':
+          for await (const item of extractMediaFromJWPUB(file.path)) {
+            processed.push(...await mapFiles.apply(this, [{
+              file: {
+                name: nodepath.basename(item.path),
+                path: item.path,
+              },
+              group,
+              label: item.name,
+            }]))
+          }
+          return processed
+        case 'jwlplaylist':
+          for await (const item of extractMediaFromJWLPlaylist(file.path))
+            processed.push(...await mapFiles.apply(this, [{
+              file: {
+                name: nodepath.basename(item.path),
+                path: item.path,
+              },
+              group,
+              label: item.name,
+            }]))
+          return processed
       }
 
       const { path, thumbnail, type, duration } = await uploader.enqueue(file.path, file.name)

@@ -1,6 +1,7 @@
 import { Dispatch, bindActionCreators, createSlice } from '@reduxjs/toolkit'
 import clsx from 'clsx'
 import { DragEvent, PropsWithChildren, useMemo, useReducer } from 'react'
+import { getSortedTransferFiles } from '../../lib/filesystem'
 import { SliceActions } from '../../store/hooks'
 import { useConfirmDialog } from '../ConfirmDialog/hook'
 import classes from './DataTransferContainer.module.css'
@@ -43,9 +44,11 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
     e.preventDefault()
     releasedDragging()
   }
-  function handleDrop(e: DragEvent) {
+  async function handleDrop(e: DragEvent) {
     e.preventDefault()
-    const files = Array.from(e.dataTransfer.files)
+    const items = Array.from(e.dataTransfer.items)
+
+    const files = await getSortedTransferFiles(items)
 
     const validFiles = files.filter(file => {
       return (validFormats || [file.type])?.some(extOrFormat => 
