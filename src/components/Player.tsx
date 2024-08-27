@@ -160,7 +160,8 @@ function Player() {
                 <video
                   ref={mirrorScreen}
                   onLoadedMetadata={() => mirrorScreen.current?.play()}
-                  className="block w-full h-full object-contain"
+                  className="block w-full object-fill"
+                  style={{ height: 'calc(100% + 60px)' }} // account for title bar
                 />
               ) : (
                 <>

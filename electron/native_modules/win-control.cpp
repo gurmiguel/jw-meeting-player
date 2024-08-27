@@ -106,6 +106,7 @@ Napi::Object Window::Init(Napi::Env env, Napi::Object exports) {
       InstanceMethod("getProcessInfo", &Window::GetProcessInfo),
       InstanceMethod("getAncestor", &Window::GetAncestor),
       InstanceMethod("getParent", &Window::GetParent),
+      InstanceMethod("getChildren", &Window::GetChildren),
       InstanceMethod("close", &Window::Close)
     });
 
@@ -330,6 +331,26 @@ Napi::Value Window::GetAncestor(const Napi::CallbackInfo& info) {
   } else {
     return constructor.New({ Napi::Number::New(info.Env(), HandleToLong(ancestorHwnd)) });
   }
+}
+
+BOOL CALLBACK GetChildrenCallback(HWND hwnd, LPARAM lParam) {
+  std::vector<long>* holder = reinterpret_cast<std::vector<long>*>(lParam);
+
+  holder->emplace_back(HandleToLong(hwnd));
+
+  return TRUE;
+}
+
+Napi::Value Window::GetChildren(const Napi::CallbackInfo& info) {
+  std::vector<long> children;
+  EnumChildWindows(this->_identifier, GetChildrenCallback, reinterpret_cast<LPARAM>(&children));
+
+  Napi::Array result = Napi::Array::New(info.Env(), children.size());
+
+  for (int i=0; i<children.size(); i++)
+    result[i] = children.at(i);
+
+  return result;
 }
 
 Napi::Value Window::Close(const Napi::CallbackInfo& info) {

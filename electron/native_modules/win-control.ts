@@ -1,4 +1,34 @@
-export const WindowControl = require('bindings')('win-control').Window
+export interface WindowControl {
+  setForeground(): boolean
+  setPosition(insertAfter: number, X: number, Y: number, cx: number, cy: number, uFlags: number): void
+  setShowStatus(newStatus: number): boolean
+  moveRelative(dX: number, dY: number, dW: number, dH: number): boolean
+  getHwnd(): number
+  getDimensions(): Record<'left' | 'top' | 'right' | 'bottom', number>
+  isVisible(): boolean
+  exists(): boolean
+  getTitle(): string
+  getClassName(): string
+  getPid(): number
+  getProcessInfo(): { windowText: string } & Partial<{ pid: number, path: string }>
+  getAncestor(hwnd: number): WindowControl | undefined
+  getParent(): WindowControl | undefined
+  getChildren(): number[]
+  close(): boolean
+}
+
+export interface WindowStatic {
+  new (hwnd: number): WindowControl
+
+  // static methods
+  getForeground(): WindowControl | undefined
+  getByPid(pid: number): WindowControl | undefined
+  getByTitle(title: string): WindowControl | undefined
+  getByClassName(className: string): WindowControl | undefined
+  getWindow(hwnd: number): WindowControl
+}
+
+export const WindowControl = require('bindings')('win-control').Window as WindowStatic
 
 // Used when calling to setShowStatus as 2 argument. For more information see:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
