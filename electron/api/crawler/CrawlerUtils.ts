@@ -1,5 +1,6 @@
-import { error } from 'electron-log/main'
+import { error, warn } from 'electron-log/main'
 import latinize from 'latinize'
+import { MAX_VIDEO_DURATION } from '../../../shared/constants'
 import { type Downloader } from '../Downloader'
 import { CrawlerHandler } from './CrawlerHandler'
 import { ArticleMediaParser } from './parsers/ArticleMediaParser'
@@ -70,7 +71,12 @@ export class CrawlerUtils {
     const title = latinize(files[0]?.title as string ?? '')
       .replace(/[^a-z0-9_\-\s\+]/gi, '')
       .replace(/\s+/g, ' ')
-    const duration = files[0]?.duration ?? 0
+    const duration = Number(files[0]?.duration ?? 0)
+    
+    if (duration > MAX_VIDEO_DURATION) {
+      warn('Video duration too long, will not download!', { downloadURL, title, duration })
+      return null
+    }
 
     const downloadingMedia = await this.download(downloadURL, 'mp4')
     

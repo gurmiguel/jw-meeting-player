@@ -25,6 +25,7 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
   downloader.setContext(formatDate(date, 'yyyy-w') + `--${type + 1}`)
 
   const jwURL = getWOLUrl(date)
+  console.log(jwURL)
   
   const metadataLoader = new MetadataLoader(downloader)
   let loadedMetadata = await metadataLoader.loadMetadata(force)

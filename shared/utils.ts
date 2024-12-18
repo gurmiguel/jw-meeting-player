@@ -1,4 +1,4 @@
-import { format as formatDate, intervalToDuration } from 'date-fns'
+import { getWeek as fnsGetWeek, intervalToDuration, subDays } from 'date-fns'
 
 export function fileURL(url: string) {
   return 'file://' + url.replace(/\\/g, '/')
@@ -26,7 +26,15 @@ export function formatDuration(duration: number) {
 }
 
 export function getWOLUrl(date: Date) {
-  return `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${formatDate(date, 'yyyy\/w')}`
+  return `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${date.getFullYear()}/${getWeek(date)}`
+}
+
+export function getWeek(date: number | Date) {
+  date = new Date(date)
+
+  return date.getMonth() < 11
+    ? fnsGetWeek(date)
+    : fnsGetWeek(subDays(date, 7)) + 1
 }
 
 export class Deferred<V = void> {
