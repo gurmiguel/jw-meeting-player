@@ -11,7 +11,7 @@ import { ProcessedResult } from '../../electron/api/crawler/types'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { StorageKeys } from '../../shared/storage-keys'
-import { getWOLUrl } from '../../shared/utils'
+import { getWOLWeekUrl } from '../../shared/utils'
 import loadingGif from '../assets/loading.gif?asset'
 import { useApiEventHandler } from '../hooks/useApiEventHandler'
 import { useStorageValue } from '../hooks/useStorageValue'
@@ -313,7 +313,7 @@ function MainApp() {
 
                 Semana • {formatDate(currentWeekStart, 'dd/MM/yyyy')} - {formatDate(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}
 
-                <a href={getWOLUrl(date)} target="_blank" className="-mt-3" title="Abrir na Biblioteca Online">
+                <a href={getWOLWeekUrl(date)} target="_blank" className="-mt-3" title="Abrir na Biblioteca Online">
                   <ArrowTopRightOnSquareIcon className="h-4" />
                 </a>
               </h1>

@@ -4,6 +4,7 @@ import { CancellationToken, UpdateInfo, autoUpdater } from 'electron-updater'
 import os from 'node:os'
 import path from 'node:path'
 import { delay } from '../shared/utils'
+import { bibleRepository, bibleService } from './bible'
 import { attachEvents } from './events'
 import disablePeek from './native_modules/disable_peek'
 import { trySetPlayerAlwaysOnTop } from './utils/player-display'
@@ -59,6 +60,18 @@ Menu.setApplicationMenu(null)
 
 if (process.platform === 'win32')
   app.setAppUserModelId(app.getName())
+
+bibleRepository.initializeDatabase()
+  .then(async (filepath) => {
+    log.log('Bible database initialized successfully!', filepath)
+
+    if (await bibleRepository.hasData()) return
+
+    const index = await bibleService.fetchAllBooks()
+    await bibleRepository.updateIndex(index)
+
+    log.log('Bible index updated!')
+  })
 
 async function createWindows() {
   const displays = screen.getAllDisplays()
