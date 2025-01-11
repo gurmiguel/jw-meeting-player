@@ -15,6 +15,8 @@ export abstract class FileSystemService {
     this.currentContext = ctx
 
     log.info('Target directory:', `"${this.targetDir}"`)
+
+    return this
   }
 
   async ensureDirectoryIsCreated(dir: string) {

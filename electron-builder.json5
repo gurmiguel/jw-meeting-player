@@ -15,6 +15,7 @@
     "dist",
     "build"
   ],
+  "extraResources": ["./migrations"],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
     "target": [

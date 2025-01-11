@@ -2,7 +2,7 @@ import { addMinutes, format as formatDate, getWeek } from 'date-fns'
 import log from 'electron-log/main'
 import { isEqual, sortBy, unionWith, uniqBy } from 'lodash'
 import { WeekType } from '../../shared/models/WeekType'
-import { getWOLUrl } from '../../shared/utils'
+import { getWOLWeekUrl } from '../../shared/utils'
 import { windows } from '../windows'
 import { Downloader } from './Downloader'
 import MetadataLoader from './MetadataLoader'
@@ -24,8 +24,7 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
   const downloader = new Downloader()
   downloader.setContext(formatDate(date, 'yyyy-w') + `--${type + 1}`)
 
-  const jwURL = getWOLUrl(date)
-  console.log(jwURL)
+  const jwURL = getWOLWeekUrl(date)
   
   const metadataLoader = new MetadataLoader(downloader)
   let loadedMetadata = await metadataLoader.loadMetadata(force)

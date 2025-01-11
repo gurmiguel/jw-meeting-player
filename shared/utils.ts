@@ -25,7 +25,7 @@ export function formatDuration(duration: number) {
     .join(':')
 }
 
-export function getWOLUrl(date: Date) {
+export function getWOLWeekUrl(date: Date) {
   return `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${date.getFullYear()}/${getWeek(date)}`
 }
 
