@@ -15,6 +15,7 @@ export function PlayerInterface() {
     type,
     playRate,
     playState,
+    content,
   } = useAppSelector(state => state.player)
   const playing = file !== null
 
@@ -91,6 +92,7 @@ export function PlayerInterface() {
         currentTime={currentTime}
         duration={duration}
         onSeek={handleSeek}
+        disableSeek={content !== undefined}
       />
 
       <FeedbackScreen

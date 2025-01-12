@@ -21,6 +21,7 @@ export function BibleWidget() {
   const [selectedBook, setSelectedBook] = useState<BibleIndex>()
   const [selectedChapter, setSelectedChapter] = useState<BookChapter>()
   const [selectedVerses, setSelectedVerses] = useState<number[]>([])
+  const [audioOnly, setAudioOnly] = useState(false)
 
   const [loadedMedia, setLoadedMedia] = useState<ParsedText>()
 
@@ -133,7 +134,7 @@ export function BibleWidget() {
 
       dispatch(playerActions.start({
         file: media.audioURL,
-        type: 'text',
+        type: audioOnly ? 'audio' : 'text',
         content: `<h2>${selectedBook?.bookName} ${selectedChapter?.chapter}:${formatVerses(selectedVerses)}</h2>\n` + media.content,
       }))
     } finally {
@@ -158,12 +159,14 @@ export function BibleWidget() {
           }))
           dispatch(playerActions.verseChange({ verse: markers[currentMarker].verseNumber }))
           started = true
+          if (audioOnly)
+            dispatch(playerActions.play())
           return
         }
 
         const currentMarkerLimit = (millisecondsFromString(markers[currentMarker].startTime) + millisecondsFromString(markers[currentMarker].duration)) / 1000
 
-        if (time + 0.750 >= currentMarkerLimit) {
+        if (time + 0.500 >= currentMarkerLimit) {
           if (markers.length > currentMarker + 1) {
             const isSeparateVersePair = Math.abs(markers[currentMarker].verseNumber - markers[currentMarker + 1].verseNumber) > 1
             currentMarker += 1
@@ -174,6 +177,9 @@ export function BibleWidget() {
             }
             dispatch(playerActions.verseChange({ verse: markers[currentMarker].verseNumber }))
           } else {
+            if (audioOnly)
+              return dispatch(playerActions.stop())
+
             currentMarker = 0
             dispatch(playerActions.pause())
             dispatch(playerActions.time({
@@ -191,6 +197,7 @@ export function BibleWidget() {
     return () => {
       events.forEach(unsub => unsub())
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, loadedMedia])
 
   return (
@@ -200,7 +207,7 @@ export function BibleWidget() {
           type="button"
           className="p-3 rounded-full bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white transition-colors"
           onClick={() => setOpenBible(state => !state)}
-          title="Abrir text da Bíblia"
+          title="Abrir texto da Bíblia"
         >
           <BookOpenIcon className="h-8" />
         </button>
@@ -288,6 +295,18 @@ export function BibleWidget() {
                             onClick={handleSubmitVerses}
                             disabled={selectedVerses.length === 0}
                           >Confirmar</button>
+
+                          <div className="absolute right-0 bottom-4">
+                            <label className="flex flex-row-reverse items-center gap-3">
+                              <span className="text-sm italic">Somente áudio</span>
+                              <input
+                                type="checkbox"
+                                checked={audioOnly}
+                                onChange={() => setAudioOnly(value => !value)}
+                                style={{ appearance: 'checkbox' }}
+                              />
+                            </label>
+                          </div>
                         </div>
                       </>
                     )}
