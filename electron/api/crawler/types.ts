@@ -8,15 +8,30 @@ export interface ParsedMedia {
   duration?: number
 }
 
-export interface ParsingResult {
+export interface ParsedText {
+  type: 'text'
+  booknum: number
+  chapter: number
+  verses: number[]
+  content: string
+  audioURL: string
+  duration: number
+  markers: Array<{ verseNumber: number, startTime: string, duration: string }>
+}
+
+export type ParsingResult = {
   uid: string
   group: string
   alt: string
   label: string
-  type: MediaTypes
+} & ({
+  type: Exclude<MediaTypes, 'text'>
   media: ParsedMedia[]
-}
+} | {
+  type: 'text'
+  media: ParsedText[]
+})
 
-export interface ProcessedResult extends ParsingResult {
+export type ProcessedResult = ParsingResult & {
   manual: boolean
 }

@@ -1,6 +1,7 @@
 import { error, warn } from 'electron-log/main'
 import latinize from 'latinize'
 import { MAX_VIDEO_DURATION } from '../../../shared/constants'
+import { JWApiUrlBuilder } from '../../utils/jw-api'
 import { type Downloader } from '../Downloader'
 import { CrawlerHandler } from './CrawlerHandler'
 import { ArticleMediaParser } from './parsers/ArticleMediaParser'
@@ -46,18 +47,18 @@ export class CrawlerUtils {
       return null
     }
 
-    const pubmediaEndpoint = new URL('https://b.jw-cdn.org/apis/pub-media/GETPUBMEDIALINKS')
-    pubmediaEndpoint.searchParams.set('output', 'json')
-    pubmediaEndpoint.searchParams.set('fileformat', 'mp4')
-    pubmediaEndpoint.searchParams.set('alllangs', '0')
-    pubmediaEndpoint.searchParams.set('langwritten', 'T')
+    const apiurlBuilder = new JWApiUrlBuilder('T')
+      .setFileFormat('mp4')
+      .setTrack(track)
+
     if (pub)
-      pubmediaEndpoint.searchParams.set('pub', pub)
+      apiurlBuilder.setPub(pub)
     if (docid)
-      pubmediaEndpoint.searchParams.set('docid', docid)
-    pubmediaEndpoint.searchParams.set('track', track)
+      apiurlBuilder.setDocId(docid)
     if (issue)
-      pubmediaEndpoint.searchParams.set('issue', issue)
+      apiurlBuilder.setIssue(issue)
+
+    const pubmediaEndpoint = apiurlBuilder.build()
 
     const data = await fetch(pubmediaEndpoint.href)
       .then(res => res.json())

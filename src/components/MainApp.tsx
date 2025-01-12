@@ -18,6 +18,7 @@ import { useStorageValue } from '../hooks/useStorageValue'
 import weekApiEndpoints, { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, usePreloadMeetingMutation, useUpdateMetadataMutation, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
+import { BibleWidget } from './Bible/BibleWidget'
 import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
 import { useDialog } from './Dialog/DialogProvider'
 import { MediaItem, SortableMediaItem } from './MediaItem/MediaItem'
@@ -294,7 +295,7 @@ function MainApp() {
             <div key={date.getTime()} className="flex flex-row items-center justify-start gap-3 -mx-2 mb-2">
               <button
                 type="button"
-                className="appearance-none bg-transparent p-2 border-0 hover:opacity-80"
+                className="bg-transparent p-2 border-0 hover:opacity-80"
                 onClick={createWeekChangeHandler('before')}
                 title="Abrir a semana anterior"
               >
@@ -303,7 +304,7 @@ function MainApp() {
               <h1 className="mb-0 cursor-default flex items-center gap-3">
                 <button
                   type="button"
-                  className="appearance-none bg-transparent p-2 border-0 hover:opacity-80 disabled:opacity-40"
+                  className="bg-transparent p-2 border-0 hover:opacity-80 disabled:opacity-40"
                   onClick={() => setDate(new Date())}
                   title="Abrir semana para hoje"
                   disabled={isToday}
@@ -319,7 +320,7 @@ function MainApp() {
               </h1>
               <button
                 type="button"
-                className="appearance-none bg-transparent p-2 border-0 hover:opacity-80"
+                className="bg-transparent p-2 border-0 hover:opacity-80"
                 onClick={createWeekChangeHandler('after')}
                 title="Abrir a próxima semana"
               >
@@ -398,7 +399,7 @@ function MainApp() {
                           <button
                             type="button"
                             className={clsx(
-                              'appearance-none relative flex items-center justify-center',
+                              'relative flex items-center justify-center',
                               'w-[180px] aspect-square',
                               'rounded-md border border-dashed border-zinc-900 dark:border-zinc-300 bg-transparent',
                               !isAddingSong && 'cursor-pointer hover:bg-zinc-300/30 transition-colors',
@@ -431,6 +432,7 @@ function MainApp() {
             </DndContext>
           </div>
 
+          <BibleWidget />
           <PlayerInterface />
 
           {isUploading && (

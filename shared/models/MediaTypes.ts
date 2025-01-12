@@ -1,1 +1,1 @@
-export type MediaTypes = 'video' | 'audio' | 'image'
+export type MediaTypes = 'video' | 'audio' | 'image' | 'text'

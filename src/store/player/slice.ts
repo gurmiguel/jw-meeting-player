@@ -1,5 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
+import { MediaTypes } from '../../../shared/models/MediaTypes'
 import { PlayerState } from '../../../shared/state'
 
 export const initialState: PlayerState = {
@@ -17,10 +18,11 @@ export const playerSlice = createSlice({
   name: 'player',
   initialState,
   reducers: {
-    start(state, action: PayloadAction<NonNullableObject<Pick<PlayerState, 'file' | 'type'>>>) {
+    start(state, action: PayloadAction<NonNullableObject<Pick<PlayerState, 'file' | 'content' | 'type'>>>) {
       state.file = action.payload.file
+      state.content = action.payload.content
       state.type = action.payload.type
-      state.playState = action.payload.type !== 'image' ? 'play' : 'pause'
+      state.playState = (<MediaTypes[]>['audio', 'video']).includes(action.payload.type) ? 'play' : 'pause'
       state.currentTime = initialState.currentTime
       state.duration = initialState.duration
     },
@@ -46,6 +48,9 @@ export const playerSlice = createSlice({
       state.position = action.payload.position
     },
     toggleZoomScreen() {
+      //
+    },
+    verseChange(_, _action: PayloadAction<{ verse: number }>) {
       //
     },
   },

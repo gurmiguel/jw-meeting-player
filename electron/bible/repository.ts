@@ -2,8 +2,8 @@ import { app } from 'electron'
 import path from 'node:path'
 import sqlite from 'sqlite'
 import sqlite3 from 'sqlite3'
+import { BibleIndex, BookChapter, Verse } from '../../shared/models/Bible'
 import { FileSystemService } from '../api/FileSystemService'
-import { BibleIndex, BookChapter, Verse } from './models'
 import { FetchBibleIndex } from './service'
 
 export class BibleRepository {
@@ -70,6 +70,30 @@ export class BibleRepository {
     await db.run(
       `INSERT INTO Verses (bookId, chapter, verse, startTime, duration) VALUES (${verses.map(v => [v.bookId, v.chapter, v.verse, `"${v.startTime}"`, `"${v.duration}"`].join(',')).join('),(')})`,
     )
+  }
+
+  async getBooks() {
+    const db = await this.getDb()
+
+    const books = await db.all<BibleIndex[]>('SELECT id, bookName, chapters FROM BibleIndex ORDER BY id ASC')
+
+    return books
+  }
+
+  async getChapters(booknum: number) {
+    const db = await this.getDb()
+
+    const chapters = await db.all<BookChapter[]>('SELECT bookId, chapter, verses FROM BookChapters WHERE bookId = ? ORDER BY chapter ASC', booknum)
+
+    return chapters
+  }
+
+  async getVerses(booknum: number, chapter: number) {
+    const db = await this.getDb()
+
+    const verses = await db.all<Verse[]>('SELECT bookId, chapter, verse, startTime, duration FROM Verses WHERE bookId = ? AND chapter = ? ORDER BY chapter ASC', booknum, chapter)
+
+    return verses
   }
 
   protected async getDb() {

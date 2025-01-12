@@ -121,7 +121,7 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
 
         <div className="controls absolute flex top-4 left-4 right-4 z-10">
           {media.type === 'image' && (
-            <button type="button" className="p-2 icon-shadow transition appearance-none bg-transparent" onClick={handleZoomToggle}>
+            <button type="button" className="p-2 icon-shadow transition bg-transparent" onClick={handleZoomToggle}>
               {!zoomMode
                 ? <MagnifyingGlassPlusIcon className="h-6" />
                 : <XMarkIcon className="h-6" />}
@@ -129,7 +129,7 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
           )}
 
           {media.type !== null && !zoomMode && (
-            <button type="button" className="ml-auto p-2 icon-shadow transition appearance-none bg-transparent" onClick={handleClose}>
+            <button type="button" className="ml-auto p-2 icon-shadow transition bg-transparent" onClick={handleClose}>
               <XMarkIcon className="h-6" />
             </button>
           )}
@@ -137,7 +137,7 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
 
         <div className="controls absolute flex bottom-2 right-2 z-10">
           {!zoomMode && !media.type && (
-            <button type="button" className="ml-auto p-2 icon-shadow transition appearance-none bg-transparent" onClick={handleMirrorZoomScreen}>
+            <button type="button" className="ml-auto p-2 icon-shadow transition bg-transparent" onClick={handleMirrorZoomScreen}>
               <img src={zoomIcon} className="size-8" />
             </button>
           )}

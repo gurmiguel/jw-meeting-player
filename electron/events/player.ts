@@ -22,6 +22,7 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
     trySetPlayerAlwaysOnTop()
   })
   registerTwoWayEvent('zoomScreenNotFound')
+  registerTwoWayEvent('verseChange')
 
   function registerTwoWayEvent<E extends EventNames, Payload = Parameters<PlayerBridge[E]>[0]>(
     eventName: E,
@@ -65,5 +66,9 @@ export namespace PlayerEvents {
     zoomLevel: number
     top: number
     left: number
+  }
+
+  export interface VerseChange {
+    verse: number
   }
 }
