@@ -1,7 +1,7 @@
 import log from 'electron-log/main'
 import { nanoid } from 'nanoid/non-secure'
 import { MediaTypes } from '../../../../shared/models/MediaTypes'
-import { ParsingResult } from '../types'
+import { ParsedMedia, ParsingResult } from '../types'
 import { CrawlerParser } from './CrawlerParser'
 
 export class ArticleMediaParser extends CrawlerParser {
@@ -62,7 +62,7 @@ export class ArticleMediaParser extends CrawlerParser {
     return nonNullableMedia
   }
 
-  protected async processArticleImage($img: HTMLImageElement, index: number): Promise<Omit<ParsingResult, 'group' | 'type'> | null> {
+  protected async processArticleImage($img: HTMLImageElement, index: number) {
     if ($img.closest('.alternatePresentation')) return null
     if ($img.closest('a[data-video], a[href*="data-video="]')) return null
 
@@ -82,13 +82,13 @@ export class ArticleMediaParser extends CrawlerParser {
 
     return {
       uid: nanoid(),
-      media: [ { path, type: 'image', timestamp: Date.now(), downloadProgress: 0 } ],
+      media: [ { path, type: 'image', timestamp: Date.now(), downloadProgress: 0 } ] as ParsedMedia[],
       alt,
       label: caption,
     }
   }
 
-  protected async processArticleVideoAnchor($anchor: HTMLAnchorElement): Promise<Omit<ParsingResult, 'group' | 'type'> | null> {
+  protected async processArticleVideoAnchor($anchor: HTMLAnchorElement) {
     const dataVideo = this.utils.parseAnchorDataVideo($anchor as HTMLAnchorElement)
 
     if (!dataVideo) return null
@@ -104,11 +104,11 @@ export class ArticleMediaParser extends CrawlerParser {
       media: [
         { path: video.path, type: 'video', timestamp: Date.now(), duration: video.duration, downloadProgress: 0 },
         { path: video.thumbnail!, type: 'image', timestamp: Date.now(), downloadProgress: 0 },
-      ],
+      ] as ParsedMedia[],
     }
   }
 
-  protected async processArticleVideo($video: HTMLVideoElement, baseURL: string): Promise<Omit<ParsingResult, 'group' | 'type'> | null> {
+  protected async processArticleVideo($video: HTMLVideoElement, baseURL: string) {
     const downloadURL = $video.getAttribute('data-json-src')
 
     if (!downloadURL) {
@@ -136,7 +136,7 @@ export class ArticleMediaParser extends CrawlerParser {
       media: [
         { path: video.path, type: 'video', duration: video.duration, timestamp: Date.now(), downloadProgress: 0 },
         { path: video.thumbnail!, type: 'image', timestamp: Date.now(), downloadProgress: 0 },
-      ],
+      ] as ParsedMedia[],
     }
   }
 }

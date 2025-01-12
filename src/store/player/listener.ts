@@ -60,3 +60,10 @@ playerListener.startListening({
     bridge.toggleZoomScreen()
   },
 })
+
+playerListener.startListening({
+  actionCreator: playerActions.verseChange,
+  effect({ payload }) {
+    bridge.verseChange({ verse: payload.verse })
+  },
+})

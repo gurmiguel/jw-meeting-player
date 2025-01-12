@@ -4,7 +4,7 @@ import path from 'node:path'
 import { WeekType } from '../../shared/models/WeekType'
 import { Deleter } from './Deleter'
 import MetadataLoader from './MetadataLoader'
-import { ProcessedResult } from './crawler/types'
+import { ParsedMedia, ProcessedResult } from './crawler/types'
 
 export async function removeMedia(item: ProcessedResult, date: Date, type: WeekType) {
   date = addMinutes(date, date.getTimezoneOffset())
@@ -18,7 +18,7 @@ export async function removeMedia(item: ProcessedResult, date: Date, type: WeekT
   const loadedMetadata = await metadataLoader.loadMetadata()
   
   try {
-    await Promise.all(item.media.map(async media => {
+    await Promise.all((item.media as ParsedMedia[]).map(async media => {
       await deleter.enqueue(path.basename(media.path))
     }))
   } finally {

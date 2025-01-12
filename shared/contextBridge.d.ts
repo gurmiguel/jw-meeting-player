@@ -31,6 +31,8 @@ declare global {
     onToggleZoomScreen(callback: IpcRendererCallback<void>): IpcRendererCallbackUnsubscriber
     zoomScreenNotFound(): void
     onZoomScreenNotFound(callback: IpcRendererCallback<void>): IpcRendererCallbackUnsubscriber
+    verseChange(payload: PlayerEvents.VerseChange): void
+    onVerseChange(callback: IpcRendererCallback<PlayerEvents.VerseChange>): IpcRendererCallbackUnsubscriber
   }
 
   type EventHandlers = Exclude<{

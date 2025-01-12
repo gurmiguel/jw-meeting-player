@@ -11,7 +11,7 @@ export function PlayerInterface() {
   const {
     currentTime,
     duration,
-    file,
+    file: file,
     type,
     playRate,
     playState,

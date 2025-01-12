@@ -4,7 +4,7 @@ import { isEqual, uniqWith } from 'lodash'
 import { type Downloader } from '../Downloader'
 import { CrawlerUtils } from './CrawlerUtils'
 import { CrawlerParser } from './parsers/CrawlerParser'
-import { ProcessedResult } from './types'
+import { ParsingResult } from './types'
 
 export class CrawlerHandler {
   private utils: CrawlerUtils
@@ -26,7 +26,7 @@ export class CrawlerHandler {
     return this
   }
 
-  async process(): Promise<ProcessedResult[]> {
+  async process(): Promise<ParsingResult[]> {
     log.info('Fetching from:', this.url)
 
     const { window: { document: doc } }: JSDOM = await require('jsdom').JSDOM.fromURL(this.url)

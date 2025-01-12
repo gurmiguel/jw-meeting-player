@@ -1,4 +1,5 @@
 import { electronApi } from '.'
+import { ParsedMedia, ProcessedResult } from '../../../electron/api/crawler/types'
 import { type APIEvents } from '../../../electron/events/api'
 import { AddSongRequest } from '../../../shared/models/AddSong'
 import { FetchWeekDataRequest } from '../../../shared/models/FetchWeekData'
@@ -19,11 +20,11 @@ const weekApiEndpoints = electronApi.injectEndpoints({
         return {
           items: items.map(x => ({
             ...x,
-            media: x.media.map(media => ({
+            media: (x.media as ParsedMedia[]).map(media => ({
               ...media,
               path: fileURL(media.path),
             })),
-          })),
+          })) as ProcessedResult[],
         }
       },
     }),
@@ -33,13 +34,15 @@ const weekApiEndpoints = electronApi.injectEndpoints({
         body: { isoDate, type, force: true },
       }),
       transformResponse({ items }: APIEvents.FetchWeekMediaResponse) {
-        return { items: items.map(x => ({
-          ...x,
-          media: x.media.map(media => ({
-            ...media,
-            path: fileURL(media.path),
-          })),
-        })) }
+        return {
+          items: items.map(x => ({
+            ...x,
+            media: (x.media as ParsedMedia[]).map(media => ({
+              ...media,
+              path: fileURL(media.path),
+            })),
+          })) as ProcessedResult[],
+        }
       },
       async onQueryStarted({ isoDate, type }, { dispatch, queryFulfilled }) {
         try {
@@ -78,7 +81,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
           type,
           item: {
             ...item,
-            media: item.media.map(it => ({ ...it, path: fileLocalPath(it.path) })),
+            media: (item.media as ParsedMedia[]).map(it => ({ ...it, path: fileLocalPath(it.path) })),
           },
         },
         method: 'DELETE',
@@ -98,7 +101,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
         dispatch(
           weekApiEndpoints.util.updateQueryData('fetchWeekMedia', { isoDate, type }, data => {
             data.items.forEach(item => {
-              item.media.forEach(media => {
+              (item.media as ParsedMedia[]).forEach(media => {
                 if (getFilename(media.path) === mediaPath) {
                   media.downloadProgress = progress
                 }
@@ -118,7 +121,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
           type,
           metadata: metadata.map(item => ({
             ...item,
-            media: item.media.map(it => ({ ...it, path: fileLocalPath(it.path) })),
+            media: (item.media as ParsedMedia[]).map(it => ({ ...it, path: fileLocalPath(it.path) })),
           })),
         },
         method: 'POST',

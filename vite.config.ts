@@ -3,12 +3,16 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron'
 import { notBundle } from 'vite-plugin-electron/plugin'
+import svgr from 'vite-plugin-svgr'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   return {
     plugins: [
       react(),
+      svgr({
+        svgrOptions: { exportType: 'default' },
+      }),
       electron([
         {
           // Main-Process entry file of the Electron App.
@@ -19,7 +23,7 @@ export default defineConfig(({ command }) => {
             },
             build: {
               rollupOptions: {
-                external: ['sqlite3'],
+                external: ['sqlite3', 'sqlite'],
               },
             },
             plugins: [

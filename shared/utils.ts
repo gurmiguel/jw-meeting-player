@@ -25,6 +25,18 @@ export function formatDuration(duration: number) {
     .join(':')
 }
 
+export function millisecondsFromString(time: string) {
+  const [ hours, minutes, secs_milli ] = time.split(':')
+  const [ secs, milli = '0' ] = secs_milli.split('.')
+
+  return [
+    parseInt(hours) * 60 * 60 * 1000,
+    parseInt(minutes) * 60 * 1000,
+    parseInt(secs) * 1000,
+    parseInt(milli),
+  ].reduce((acc, value) => acc + value, 0)
+}
+
 export function getWOLWeekUrl(date: Date) {
   return `https://wol.jw.org/pt/wol/meetings/r5/lp-t/${date.getFullYear()}/${getWeek(date)}`
 }

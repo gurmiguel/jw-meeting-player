@@ -26,6 +26,9 @@
       @apply dark:text-zinc-50 dark:bg-zinc-800;
     }
   }
+  button {
+    appearance: none;
+  }
 }
 
 :root {

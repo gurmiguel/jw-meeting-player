@@ -10,7 +10,7 @@ import { CrawlerHandler } from './crawler/CrawlerHandler'
 import { MidWeekMeeting } from './crawler/parsers/MidWeekMeeting'
 import { SongsParser } from './crawler/parsers/SongsParser'
 import { WeekendParser } from './crawler/parsers/WeekendParser'
-import { ProcessedResult } from './crawler/types'
+import { ParsedMedia, ProcessedResult } from './crawler/types'
 
 // pnpm run -s script "./electron/api/fetch-week-media.ts" "fetchWeekMedia" "new Date('$(date)')" "0"
 
@@ -38,10 +38,10 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
     if (!parsingResult || force) {
       switch (type) {
         case WeekType.MIDWEEK:
-          parsingResult = await fetchMidWeekMeetingMedia(jwURL, downloader)
+          parsingResult = (await fetchMidWeekMeetingMedia(jwURL, downloader)).map(r => ({ ...r, manual: false }))
           break
         case WeekType.WEEKEND:
-          parsingResult = await fetchWeekendMeetingMedia(jwURL, downloader)
+          parsingResult = (await fetchWeekendMeetingMedia(jwURL, downloader)).map(r => ({ ...r, manual: false }))
           break
       }
     }
@@ -56,13 +56,13 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
     log.info(`Downloaded ${count} media items`)
   }
   parsingResult.forEach(item => {
-    item.media.forEach(media => {
+    (item.media as ParsedMedia[]).forEach(media => {
       media.downloadProgress = 100
     })
   })
   const mergedResults = sortBy(uniqBy(unionWith(parsingResult, loadedMetadata, (a, b) => {
     return isEqual(a, b)
-  }), it => [it.group, it.type, it.label, it.media.map(m => m.path)].flat().join('||')), (it) => it.group.match(/c.ntico/i) ? '000' : it.group)
+  }), it => [it.group, it.type, it.label, (it.media as ParsedMedia[]).map(m => m.path)].flat().join('||')), (it) => it.group.match(/c.ntico/i) ? '000' : it.group)
   for (const item of mergedResults)
     item
   if (mergedResults.length > 0)

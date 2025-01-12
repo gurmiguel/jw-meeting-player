@@ -1,0 +1,9 @@
+#bible-reader {
+  &.playing {
+    @apply text-zinc-400 transition-colors;
+    
+    .verse-active {
+      @apply text-black;
+    }
+  }
+}

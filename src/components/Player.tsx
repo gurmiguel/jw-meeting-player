@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { SyntheticEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
 import { APIEvents } from '../../electron/events/api'
@@ -7,13 +8,15 @@ import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
 import { useThrottleCallback } from '../hooks/useThrottleCallback'
 import { initialState as initialPlayer } from '../store/player/slice'
 import classes from './Player.module.css'
+import './bible-reader.css'
 
-type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file'> & {
+type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file' | 'content'> & {
   timestamp: number
 }
 
 function Player() {
   const player = useRef<HTMLVideoElement & HTMLAudioElement>(null)
+  const textScroller = useRef<HTMLDivElement>(null)
   const mirrorScreen = useRef<HTMLVideoElement>(null)
 
   const [media, setMedia] = useState<MediaItem>()
@@ -34,9 +37,9 @@ function Player() {
     })
   }, []), 500 * currentSpeed)
 
-  useBridgeEventHandler('start', ({ type, file, playRate }) => {
+  useBridgeEventHandler('start', ({ type, file: file, content, playRate }) => {
     setCurrentSpeed(playRate)
-    setMedia({ type, file, timestamp: Date.now() })
+    setMedia({ type, file, content, timestamp: Date.now() })
 
     common.windowShow()
   }, [])
@@ -87,6 +90,17 @@ function Player() {
     setZoomNPos({ zoomLevel, position: { top, left } })
   }, [])
 
+  useBridgeEventHandler('verseChange', ({ verse }) => {
+    const currentVerse = textScroller.current?.querySelector(`#v${verse}`)
+    currentVerse?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    })
+    textScroller.current?.querySelectorAll('.verse-active')
+      .forEach(element => element.classList.remove('verse-active'))
+    currentVerse?.classList.add('verse-active')
+  }, [])
+
   useLayoutEffect(() => {
     if (!player.current) return
 
@@ -104,9 +118,27 @@ function Player() {
     if (!video.paused)
       throttleUpdateTime(video.currentTime, video.duration)
   }
+  function handleLoadedMetadata(e: SyntheticEvent<HTMLVideoElement>) {
+    const video = e.currentTarget
+
+    bridge.time({
+      current: video.currentTime,
+      duration: video.duration,
+    })
+  }
 
   function handlePause() {
     throttleUpdateTime.flush()
+    textScroller.current?.querySelector('#bible-reader')?.classList.remove('playing')
+  }
+
+  function handlePlay() {
+    console.log('play', textScroller.current?.querySelector('#bible-reader'))
+    textScroller.current?.querySelector('#bible-reader')?.classList.add('playing')
+
+    if (!player.current) return
+
+    player.current.playbackRate = currentSpeed
   }
 
   function handleMediaEnded() {
@@ -139,7 +171,7 @@ function Player() {
   }
 
   return (
-    <div className="fixed w-full h-full cursor-none">
+    <div className={clsx('fixed w-full h-full', media?.type !== 'text' && 'cursor-none')}>
       <div className="relative bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
         <SwitchTransition>
           <CSSTransition
@@ -155,7 +187,12 @@ function Player() {
             timeout={500}
             unmountOnExit
           >
-            <div className="absolute-fill" style={{ backgroundColor: 'inherit' }}>
+            <div
+              className={clsx(
+                media?.type === 'text' ? 'bg-white text-black' : 'bg-inherit',
+                'absolute-fill',
+              )}
+            >
               {zoomSharingScreen ? (
                 <video
                   ref={mirrorScreen}
@@ -183,6 +220,7 @@ function Player() {
                       controls={false}
                       onTimeUpdate={handleTimeUpdate}
                       onPause={handlePause}
+                      onPlay={handlePlay}
                       onEnded={handleMediaEnded}
                       autoPlay
                     />
@@ -195,6 +233,7 @@ function Player() {
                       className="block w-full h-full object-contain"
                       controls={false}
                       onTimeUpdate={handleTimeUpdate}
+                      onPlay={handlePlay}
                       onPause={handlePause}
                       onEnded={handleMediaEnded}
                       autoPlay
@@ -214,6 +253,26 @@ function Player() {
                         className="block w-full h-full aspect-auto max-w-none object-contain animate-[fade-in_1s_ease]"
                         alt=""
                       />
+                    </div>
+                  )}
+                  {media?.content && media.type === 'text' && (
+                    <div ref={textScroller} className={classes.bibleTextWrapper}>
+                      {media.file && (
+                        <audio
+                          key={media.timestamp}
+                          ref={player}
+                          src={media.file}
+                          className="block w-full h-full object-contain"
+                          controls={false}
+                          onTimeUpdate={handleTimeUpdate}
+                          onPlay={handlePlay}
+                          onPause={handlePause}
+                          onEnded={handleMediaEnded}
+                          onLoadedMetadata={handleLoadedMetadata}
+                          preload="metadata"
+                        />
+                      )}
+                      <div id="bible-reader" className={classes.bibleText} dangerouslySetInnerHTML={{ __html: media.content }} />
                     </div>
                   )}
                 </>

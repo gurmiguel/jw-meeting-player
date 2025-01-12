@@ -30,12 +30,14 @@ const mediaIcons: Record<MediaItemType['type'], ComponentType<any>> = {
   image: PhotoIcon,
   audio: SpeakerWaveIcon,
   video: VideoCameraIcon,
+  text: () => <></>,
 }
 
 const mediaTips: Record<MediaItemType['type'], string> = {
   image: 'Imagem',
   audio: 'Áudio',
   video: 'Vídeo',
+  text: 'Texto',
 }
 
 export function MediaItem({ item, type, currentWeekStart, dragging = false }: MediaItemProps) {
@@ -48,7 +50,7 @@ export function MediaItem({ item, type, currentWeekStart, dragging = false }: Me
   const [ removeMedia ] = useRemoveMediaMutation()
   const [ updateMediaProgress ] = useUpdateMediaProgressMutation()
 
-  const mainMedia = item.media[0]
+  const mainMedia = item.media[0] as ParsedMedia
 
   const updateMainMediaProgress = useThrottleCallback(useCallback((progress: number) => {
     updateMediaProgress({
@@ -82,7 +84,7 @@ export function MediaItem({ item, type, currentWeekStart, dragging = false }: Me
 
   const downloadProgress = mainMedia.downloadProgress ?? 100
   const downloadFinished = useDebounceValue(downloadProgress === 100, 250)
-  const coverMedia = !downloadFinished ? loadingGif : item.media.find(it => it.type === 'image')
+  const coverMedia = !downloadFinished ? loadingGif : item.media.find((it): it is ParsedMedia => it.type === 'image')
 
   return (
     <div title={item.alt} className={clsx('relative w-[180px]', !downloadFinished && 'opacity-70 pointer-events-none', dragging && 'opacity-30 grayscale')}>
@@ -101,7 +103,7 @@ export function MediaItem({ item, type, currentWeekStart, dragging = false }: Me
         )}
       </a>
       {item.manual && (
-        <button className="appearance-none absolute top-2 left-2 bg-transparent icon-shadow" title="Excluir" type="button" onClick={mediaRemoveHandler}>
+        <button className="absolute top-2 left-2 bg-transparent icon-shadow" title="Excluir" type="button" onClick={mediaRemoveHandler}>
           <XMarkIcon className="h-6 text-red-700" strokeWidth="3" />
         </button>
       )}

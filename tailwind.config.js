@@ -49,5 +49,8 @@ module.exports = {
   corePlugins: {
     preflight: false,
   },
+  safelist: [
+    { pattern: /bg-purple-\d+(\/\d+)?/, variants: ['hover', 'active'] },
+  ],
 }
 

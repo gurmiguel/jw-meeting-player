@@ -37,7 +37,7 @@ export function MediaControls({ playing, type, playStatus, onPause, onPlay, onSt
           currentTime={currentTime}
           duration={duration}
           onChange={onSeek}
-          disabled={!playingMedia}
+          disabled={!playingMedia || type === 'text'}
         />
       </div>
 
@@ -57,7 +57,7 @@ export function MediaControls({ playing, type, playStatus, onPause, onPlay, onSt
             ? <XMarkIcon className="w-6 h-6" />
             : <StopIcon className="w-6 h-6" />}
         </button>
-        <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)}>
+        <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)} disabled={(['image'] as Array<typeof type>).includes(type)}>
           <span className="font-semibold">{currentSpeed.toFixed(1)}x</span>
         </button>
         {speedOptsOpen && (

@@ -24,7 +24,7 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
 
   let uploadedItems: ProcessedResult[] = []
   try {
-    uploadedItems = Array.from(await Promise.all(files.flatMap<Promise<ProcessedResult[]>>(async function mapFiles({ file, group, label }) {
+    uploadedItems = Array.from(await Promise.all(files.flatMap<Promise<ProcessedResult[]>>(async function mapFiles({ file, group, label }): Promise<ProcessedResult[]> {
       const filepath_l = file.path.toLowerCase()
       const extension = filepath_l.split('.').pop()
 
@@ -57,7 +57,7 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
 
       const { path, thumbnail, type, duration } = await uploader.enqueue(file.path, file.name)
 
-      const media: ProcessedResult['media'] = []
+      const media: ParsedMedia[] = []
       media.push(omitBy({ path, type, duration, timestamp: Date.now(), downloadProgress: 100 }, isUndefined) as unknown as ParsedMedia)
       if (thumbnail)
         media.push({ path: thumbnail, type: 'image', timestamp: Date.now(), downloadProgress: 100 })
@@ -70,7 +70,7 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
         type,
         media,
         manual: true,
-      }]
+      } as ProcessedResult]
     }))).flat()
   } finally {
     log.info('Starting to upload')
