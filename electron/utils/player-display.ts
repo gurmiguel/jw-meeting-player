@@ -11,7 +11,7 @@ export function trySetPlayerAlwaysOnTop() {
       const { x, y } = playerDisplay!.bounds
 
       windows.player.setPosition(x, y, false)
-      windows.player.show()
+      windows.player.showInactive()
       windows.player.moveTop()
       windows.player.setAlwaysOnTop(true, 'screen-saver')
       return

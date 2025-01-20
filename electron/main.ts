@@ -1,5 +1,6 @@
-import { BrowserWindow, Menu, app, globalShortcut, ipcMain, nativeImage, nativeTheme, screen, shell } from 'electron'
+import { BrowserWindow, Menu, app, ipcMain, nativeImage, nativeTheme, screen, shell } from 'electron'
 import log from 'electron-log/main'
+import LocalShortcuts from 'electron-shortcuts'
 import { CancellationToken, UpdateInfo, autoUpdater } from 'electron-updater'
 import os from 'node:os'
 import path from 'node:path'
@@ -55,6 +56,19 @@ autoUpdater.on('download-progress', (info) => {
 let hasUpdateAvailable = false
 
 log.initialize({ preload: true })
+
+LocalShortcuts.registerOnAll('CmdOrCtrl+R', () => {
+  BrowserWindow.getFocusedWindow()?.reload()
+})
+LocalShortcuts.registerOnAll('CmdOrCtrl+Shift+I', () => {
+  BrowserWindow.getFocusedWindow()?.webContents.openDevTools()
+  BrowserWindow.getFocusedWindow()?.webContents.devToolsWebContents?.focus()    
+})
+LocalShortcuts.registerOnAll('CmdOrCtrl+Shift+C', () => {
+  const window = BrowserWindow.getFocusedWindow()
+  window?.webContents.openDevTools()
+  window?.webContents.devToolsWebContents?.focus()  
+})
 
 Menu.setApplicationMenu(null)
 
@@ -196,10 +210,6 @@ async function createWindows() {
     await windows.player.loadFile(path.join(process.env.DIST, 'player.html'))
   }
 
-  globalShortcut.register('CmdOrCtrl+R', () => {
-    BrowserWindow.getFocusedWindow()?.reload()
-  })
-
   if (isDebugMode) {
     [windows.main, windows.player].forEach(win => {
       win.setThumbarButtons([
@@ -209,17 +219,6 @@ async function createWindows() {
           click: () => win!.webContents.openDevTools(),
         },
       ])
-    })
-
-    globalShortcut.register('CmdOrCtrl+Shift+I', () => {
-      BrowserWindow.getFocusedWindow()?.webContents.openDevTools()
-      BrowserWindow.getFocusedWindow()?.webContents.devToolsWebContents?.focus()
-    })
-  
-    globalShortcut.register('CmdOrCtrl+Shift+C', () => {
-      const window = BrowserWindow.getFocusedWindow()
-      window?.webContents.openDevTools()
-      window?.webContents.devToolsWebContents?.focus()
     })
   }
 }

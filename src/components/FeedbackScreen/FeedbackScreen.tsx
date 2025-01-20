@@ -1,4 +1,4 @@
-import { ArrowsPointingOutIcon, MagnifyingGlassPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
 import zoomIcon from '../../assets/zoom-icon.png'
@@ -84,26 +84,8 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
     dispatch(playerActions.toggleZoomScreen())
   }
 
-  function handleMaximize() {
-    const container = dragHandlers.ref.current
-    if (!container) return
-
-    let targetHeight: number, targetWidth: number
-    if (window.innerHeight < window.innerWidth) {
-      targetWidth = window.innerWidth * 0.8
-      targetHeight = targetWidth * (9/16)
-    } else {
-      targetHeight = window.innerHeight * 0.8
-      targetWidth = targetHeight * (16/9)
-    }
-    container.style.setProperty('width',  `${targetWidth}px`)
-    container.style.setProperty('height', `${targetHeight}px`)
-    container.style.setProperty('top',  `${(window.innerHeight - targetHeight) / 2}px`)
-    container.style.setProperty('left',  `${(window.innerWidth - targetWidth) / 2}px`)
-  }
-
   return (
-    <Resizer gutter={8} disabled={zoomMode === true}>
+    <Resizer gutter={8} disabled={zoomMode === true} enableMaximizeOnDblClick={dragHandlers.isDefaultPosition}>
       <div
         {...dragHandlers}
         className={clsx([
@@ -148,10 +130,7 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
 
           {(['image', 'video', 'text'] as (typeof media.type)[]).includes(media.type) && !zoomMode && (
             <>
-              <button type="button" className="ml-auto p-2 icon-shadow transition bg-transparent" onClick={handleMaximize}>
-                <ArrowsPointingOutIcon className="h-6" />
-              </button>
-              <button type="button" className="ml-2 p-2 icon-shadow transition bg-transparent" onClick={handleClose}>
+              <button type="button" className="ml-auto p-2 icon-shadow transition bg-transparent" onClick={handleClose}>
                 <XMarkIcon className="h-6" />
               </button>
             </>

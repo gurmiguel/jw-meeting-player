@@ -20,6 +20,8 @@ const binariesPromise = new Promise<void>(async resolve => {
       const ffprobePath = results.find(x => x.filename.includes('ffprobe'))
       if (ffmpegPath) ffmpeg.setFfmpegPath(path.join(ffmpegPath.path, ffmpegPath.filename))
       if (ffprobePath) ffmpeg.setFfprobePath(path.join(ffprobePath.path, ffprobePath.filename))
+    } else {
+      log.error('Error trying to download/set ffmpeg binaries', err)
     }
     resolve()
   })

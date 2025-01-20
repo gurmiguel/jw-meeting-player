@@ -1,5 +1,6 @@
 import { Dispatch, bindActionCreators, createSlice } from '@reduxjs/toolkit'
 import clsx from 'clsx'
+import logger from 'electron-log/renderer'
 import { DragEvent, PropsWithChildren, useMemo, useReducer } from 'react'
 import { getSortedTransferFiles } from '../../lib/filesystem'
 import { SliceActions } from '../../store/hooks'
@@ -48,7 +49,14 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
     e.preventDefault()
     const items = Array.from(e.dataTransfer.items)
 
-    const files = await getSortedTransferFiles(items)
+    let files: File[] 
+    try {
+      files = await getSortedTransferFiles(items)
+    } catch (ex) {
+      logger.error(ex)
+
+      files = items.map(it => it.getAsFile()).filter((it): it is File => !!it)
+    }
 
     const validFiles = files.filter(file => {
       return (validFormats || [file.type])?.some(extOrFormat => 

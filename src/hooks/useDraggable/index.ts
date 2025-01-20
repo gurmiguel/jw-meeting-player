@@ -15,24 +15,39 @@ export function useDraggable<E extends HTMLElement>({ container, gutter = 0, dis
   const [dragged, setDragged] = useState(false)
   const [dragging, setDragging] = useState(false)
 
+  const getLeftPos = useCallback((x: number) => {
+    const { width = 0 } = ref.current?.getBoundingClientRect() ?? {}
+    const boundaries = getContainerBoundaries(container?.current ?? undefined, gutter)
+
+    const minLeft = boundaries.left
+    const maxLeft = boundaries.right - width
+
+    return Math.floor(Math.min(maxLeft, Math.max(minLeft, x)))    
+  }, [container, gutter])
+  
+  const getTopPos = useCallback((y: number) => {
+    const { height = 0 } = ref.current?.getBoundingClientRect() ?? {}
+    const boundaries = getContainerBoundaries(container?.current ?? undefined, gutter)
+
+    const minTop = boundaries.top
+    const maxTop = boundaries.bottom - height
+
+    return Math.floor(Math.min(maxTop, Math.max(minTop, y)))
+  }, [container, gutter])
+
+  const getIsDefault = useCallback(() => {
+    return ref.current?.style.left === getLeftPos(window.innerWidth) + 'px' && ref.current?.style.top === getTopPos(window.innerHeight) + 'px'
+  }, [getLeftPos, getTopPos])
+
   const setNewPosition = useCallback((newX: number, newY: number) => {
     // just for typings validation, not actually a thing
     if (!ref.current) return { top: newY, left: newX }
     
-    const { width, height } = ref.current.getBoundingClientRect()
-    
-    const boundaries = getContainerBoundaries(container?.current ?? undefined, gutter)
-
-    const minTop = boundaries.top
-    const minLeft = boundaries.left
-    const maxTop = boundaries.bottom - height
-    const maxLeft = boundaries.right - width
-    
-    const newTop = Math.floor(Math.min(maxTop, Math.max(minTop, newY)))
-    const newLeft = Math.floor(Math.min(maxLeft, Math.max(minLeft, newX)))
-
     setDragged(true)
     
+    const newLeft = getLeftPos(newX)
+    const newTop = getTopPos(newY)
+
     ref.current.style.left = `${newLeft}px`
     ref.current.style.top = `${newTop}px`
 
@@ -40,16 +55,18 @@ export function useDraggable<E extends HTMLElement>({ container, gutter = 0, dis
       top: newTop,
       left: newLeft,
     }
-  }, [container, gutter])
+  }, [getLeftPos, getTopPos])
   
   const resetPosition = useCallback(async () => {
     if (!ref.current) return
     
+    if (getIsDefault()) return
+
     await delay()
 
     setNewPosition(window.innerWidth, window.innerHeight)
     setDragged(false)
-  }, [setNewPosition])
+  }, [getIsDefault, setNewPosition])
   
   function onMouseDown(e: React.MouseEvent<HTMLElement>) {
     if (!ref.current || disabled) return
@@ -140,5 +157,6 @@ export function useDraggable<E extends HTMLElement>({ container, gutter = 0, dis
     ref,
     onMouseDown,
     onDoubleClick,
+    isDefaultPosition: getIsDefault(),
   }, dragging, dragged] as const
 }

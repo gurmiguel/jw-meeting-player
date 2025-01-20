@@ -8,6 +8,7 @@ import styles from './Resizer.module.css'
 interface ResizerProps {
   gutter?: number
   disabled?: boolean
+  enableMaximizeOnDblClick?: boolean
   children: ReactElement<PropsWithChildren<{ onDoubleClick?: React.MouseEventHandler, ref?: React.Ref<HTMLElement> }>>
 }
 
@@ -18,7 +19,7 @@ enum Positions {
   br,
 }
 
-export function Resizer({ children, gutter = 0, disabled = false }: ResizerProps) {
+export function Resizer({ children, gutter = 0, disabled = false, enableMaximizeOnDblClick = true }: ResizerProps) {
   const child = Children.only<typeof children & { ref?: React.Ref<HTMLElement> }>(children)
 
   const ref = useRef<HTMLElement>(null)
@@ -108,14 +109,41 @@ export function Resizer({ children, gutter = 0, disabled = false }: ResizerProps
     return { onMouseDown }
   }
 
+  function minimize(container: HTMLElement) {
+    const { width, height } = initialSize.current
+
+    container.style.width = `${width}px`
+    container.style.height = `${height}px`
+  }
+
+  function maximize(container: HTMLElement) {
+    if (!container) return
+
+    let targetHeight: number, targetWidth: number
+    if (window.innerHeight < window.innerWidth) {
+      targetWidth = window.innerWidth * 0.8
+      targetHeight = targetWidth * (9/16)
+    } else {
+      targetHeight = window.innerHeight * 0.8
+      targetWidth = targetHeight * (16/9)
+    }
+    container.style.setProperty('width',  `${targetWidth}px`)
+    container.style.setProperty('height', `${targetHeight}px`)
+    container.style.setProperty('top',  `${(window.innerHeight - targetHeight) / 2}px`)
+    container.style.setProperty('left',  `${(window.innerWidth - targetWidth) / 2}px`)
+  }
+
   function onDoubleClick(e: React.MouseEvent) {
     if (ref.current && !disabled) {
       e.preventDefault()
+      const container = ref.current
 
-      const { width, height } = initialSize.current
-
-      ref.current.style.width = `${width}px`
-      ref.current.style.height = `${height}px`
+      if (enableMaximizeOnDblClick
+        && (container.offsetWidth === initialSize.current.width && container.offsetHeight === initialSize.current.height)) {
+        delay(100).then(() => maximize(container))
+      } else {
+        minimize(container)
+      }
     }
 
     child.props.onDoubleClick?.(e)

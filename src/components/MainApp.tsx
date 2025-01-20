@@ -4,6 +4,7 @@ import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-ki
 import { ArrowPathIcon, ArrowTopRightOnSquareIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { addDays, addWeeks, format as formatDate, getWeek, isWeekend, startOfWeek } from 'date-fns'
+import logger from 'electron-log/renderer'
 import { ProgressInfo, type UpdateInfo } from 'electron-updater'
 import { MouseEventHandler, PropsWithChildren, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
@@ -64,7 +65,7 @@ function MainApp() {
           nextMeetingDate = addWeeks(nextMeetingDate, 1)
         const nextMeetingType = Object.values(WeekType).find(it => typeof it === typeof type && it !== type) as WeekType
       
-        console.log('Loading next meeting media', nextMeetingDate.toISOString(), WeekType[nextMeetingType])
+        logger.log('Loading next meeting media', nextMeetingDate.toISOString(), WeekType[nextMeetingType])
 
         preloadMeeting({ isoDate: nextMeetingDate.toISOString(), type: nextMeetingType })
       }
@@ -193,7 +194,7 @@ function MainApp() {
               groups={Object.keys(mediaGroups)}
               defaultGroup={lastSelectedGroup.current}
               defaultLabel={file.name.replace(/\.[^.]+$/, '')}
-              disableLabel={filename_l.endsWith('.jwpub') || filename_l.endsWith('.jwlplaylist')}
+              disableLabel={['.jwpub', '.jwlplaylist'].some(ext => filename_l.endsWith(ext))}
             />
           ), {
             onDismiss: reject,
@@ -239,7 +240,6 @@ function MainApp() {
     if (!sortingItems)
       return
 
-    console.log(sortingItems)
     await updateMetadata({
       isoDate: currentWeekStart.toISOString(),
       type,
