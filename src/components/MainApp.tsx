@@ -9,6 +9,7 @@ import { ProgressInfo, type UpdateInfo } from 'electron-updater'
 import { MouseEventHandler, PropsWithChildren, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { ProcessedResult } from '../../electron/api/crawler/types'
+import { type APIEvents } from '../../electron/events/api'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { StorageKeys } from '../../shared/storage-keys'
@@ -77,6 +78,13 @@ function MainApp() {
   const [ updateMetadata ] = useUpdateMetadataMutation()
 
   const lastSelectedGroup = useRef('Outros')
+
+  const [songsAmount, setSongsAmount] = useState<number>()
+
+  useEffect(() => {
+    api.fetch<APIEvents.LoadSongsResponse>('songs/load')
+      .then(setSongsAmount)
+  }, [])
 
   useApiEventHandler<UpdateInfo>('update-available', updateInfo => {
     toast(`Uma atualização está disponível - Versão ${updateInfo.version}`, {
@@ -170,6 +178,7 @@ function MainApp() {
       const song = await new Promise<number>((resolve, reject) => {
         showDialog((
           <SelectSongDialog
+            songsAmount={songsAmount ?? 200}
             onSubmit={resolve}
           />
         ), {

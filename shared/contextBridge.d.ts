@@ -64,7 +64,7 @@ declare global {
   const common: CommonBridge
 
   interface API {
-    fetch<T = any>(endpoint: string, payload: any): Promise<T>
+    fetch<T = any>(endpoint: string, payload?: any): Promise<T>
     listen<T = any>(topic: string, handler: (data: T) => void): IpcRendererCallbackUnsubscriber
   }
 

@@ -1,16 +1,16 @@
 import { padStart, range } from 'lodash'
 import { FormEvent, useCallback, useRef } from 'react'
-import { MAX_SONG_NUMBER } from '../../../shared/constants'
 import { useDebounceCallback } from '../../hooks/useDebounceCallback'
 import { DialogContent, DialogTitle } from '../Dialog'
 import { useDialogContent } from '../Dialog/Dialog'
 import classes from './SelectSongDialog.module.css'
 
 interface Props {
+  songsAmount: number
   onSubmit(song: number): void
 }
 
-export function SelectSongDialog({ onSubmit }: Props) {
+export function SelectSongDialog({ songsAmount, onSubmit }: Props) {
   const { onDismiss } = useDialogContent()
 
   const submit = useRef<HTMLButtonElement>(null)
@@ -37,7 +37,7 @@ export function SelectSongDialog({ onSubmit }: Props) {
           <label>
             <span>Cãntico</span>
             <select name="song" required autoFocus onChange={handleSelectChange}>
-              {range(1, MAX_SONG_NUMBER).map(song => (
+              {range(1, songsAmount + 1).map(song => (
                 <option key={song} value={song}>{padStart(song + '', 2, '0')}</option>
               ))}
             </select>

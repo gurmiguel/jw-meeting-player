@@ -12,6 +12,7 @@ import { ProcessedResult } from '../api/crawler/types'
 import { fetchWeekMedia } from '../api/fetch-week-media'
 import { getYearText } from '../api/get-year-text'
 import { getZoomScreen } from '../api/get-zoom-screen'
+import { loadSongs } from '../api/load-songs'
 import { removeMedia } from '../api/remove-media'
 import { updateMetadata } from '../api/update-metadata'
 import { uploadMedia } from '../api/upload-media'
@@ -53,6 +54,9 @@ export function attachApiEvents() {
   })
   createApiHandler('bible/verses', (_e, { booknum, chapter, verses }: APIEvents.FetchBibleVersesPayload) => {
     return fetchBibleVerses(booknum, chapter, verses)
+  })
+  createApiHandler('songs/load', () => {
+    return loadSongs()
   })
 }
 
@@ -126,4 +130,6 @@ export namespace APIEvents {
   }
   
   export type FetchBibleVersesResponse = PromiseType<ReturnType<typeof fetchBibleVerses>>
+
+  export type LoadSongsResponse = PromiseType<ReturnType<typeof loadSongs>>
 }

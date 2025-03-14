@@ -49,7 +49,7 @@ export class JWApiUrlBuilder {
     
     const pub = this.url.searchParams.get('pub')
     
-    if (pub && pub !== 'nwt') {
+    if (pub && !['nwt', 'sjjm'].includes(pub)) {
       if (!this.url.searchParams.has('track'))
         throw new Error('JW API Url requires the `track` parameter for publications, which was not informed')
     }
