@@ -100,7 +100,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       queryFn({ isoDate, type, mediaPath, progress }, { dispatch }) {
         dispatch(
           weekApiEndpoints.util.updateQueryData('fetchWeekMedia', { isoDate, type }, data => {
-            data.items.forEach(item => {
+            data?.items.forEach(item => {
               (item.media as ParsedMedia[]).forEach(media => {
                 if (getFilename(media.path) === mediaPath) {
                   media.downloadProgress = progress
@@ -126,8 +126,8 @@ const weekApiEndpoints = electronApi.injectEndpoints({
         },
         method: 'POST',
       }),
-      invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
       onQueryStarted({ isoDate, type, metadata }, { dispatch, queryFulfilled }) {
+        console.log('updating metadata', metadata)
         const patch = dispatch(weekApiEndpoints.util.updateQueryData('fetchWeekMedia', { isoDate, type },  () => {
           return { items: metadata }
         }))

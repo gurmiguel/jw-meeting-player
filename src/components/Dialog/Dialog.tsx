@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import FocusTrap from 'focus-trap-react'
-import { ReactNode, createContext, forwardRef, useContext } from 'react'
+import { ReactNode, createContext, forwardRef, useCallback, useContext, useEffect } from 'react'
 import './Dialog.base.css'
 import classes from './Dialog.module.css'
 import { DialogContext, useDialog } from './DialogProvider'
@@ -19,10 +19,26 @@ const dialogContentContext = createContext({} as DialogContentContext)
 export const Dialog = forwardRef<HTMLDivElement, DialogProps>(({ children, onDismiss: handleDismiss, ...props }, ref) => {
   const ctx = useDialog()
 
-  function onDismiss() {
+  const { hide } = ctx
+
+  const onDismiss = useCallback(() => {
     handleDismiss()
-    ctx.hide(props.id)
-  }
+    hide(props.id)
+  }, [hide, handleDismiss, props.id])
+
+  useEffect(() => {
+    const abort = new AbortController()
+
+    document.body.addEventListener('keyup', e => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        e.stopPropagation()
+        onDismiss()
+      }
+    }, { signal: abort.signal })
+
+    return () => abort.abort()
+  }, [onDismiss])
 
   return (
     <dialogContentContext.Provider value={{ onDismiss, ...props }}>

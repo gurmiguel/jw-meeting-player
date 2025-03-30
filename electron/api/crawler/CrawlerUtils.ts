@@ -1,5 +1,4 @@
 import { error, warn } from 'electron-log/main'
-import latinize from 'latinize'
 import { MAX_VIDEO_DURATION } from '../../../shared/constants'
 import { JWApiUrlBuilder } from '../../utils/jw-api'
 import { type Downloader } from '../Downloader'
@@ -69,9 +68,7 @@ export class CrawlerUtils {
     const downloadURL = files[0]?.file?.url
     if (!downloadURL) return null
 
-    const title = latinize(files[0]?.title as string ?? '')
-      .replace(/[^a-z0-9_\-\s\+]/gi, '')
-      .replace(/\s+/g, ' ')
+    const title = files[0]?.title as string ?? ''
     const duration = Number(files[0]?.duration ?? 0)
     
     if (duration > MAX_VIDEO_DURATION) {

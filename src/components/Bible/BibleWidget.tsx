@@ -1,14 +1,15 @@
 import { ArrowUturnLeftIcon, BookOpenIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { ParsedText } from '../../../electron/api/crawler/types'
 import { APIEvents } from '../../../electron/events/api'
 import { BibleIndex, BookChapter } from '../../../shared/models/Bible'
 import { delay, millisecondsFromString } from '../../../shared/utils'
 import LoadingIcon from '../../assets/loading.svg?react'
-import { useAppDispatch } from '../../store/hooks'
+import { useAppDispatch, useAppStore } from '../../store/hooks'
 import { playerActions } from '../../store/player/slice'
 
 export function BibleWidget() {
+  const store = useAppStore()
   const dispatch = useAppDispatch()
 
   const [openBible, setOpenBible] = useState(false)
@@ -72,7 +73,7 @@ export function BibleWidget() {
     setOpenBible(false)
   }
 
-  function stepBack() {
+  const stepBack = useCallback(() => {
     if (selectedChapter) {
       setSelectedChapter(undefined)
       if (chapters?.length === 1)
@@ -82,7 +83,7 @@ export function BibleWidget() {
     } else {
       setOpenBible(false)
     }
-  }
+  }, [chapters?.length, selectedBook, selectedChapter])
 
   function toggleVerse(verse: number, merge = false) {
     setSelectedVerses(current => {
@@ -119,14 +120,24 @@ export function BibleWidget() {
     })
   }
 
+  const autoStart = useRef(false)
+
   async function handleSubmitVerses() {
     setIsLoading(true)
     try {
+      const { player } = store.getState()
+      const isPlaying = player.playState === 'play' && player.type === 'text'
+
       const response = await api.fetch<APIEvents.FetchBibleVersesResponse>('bible/verses', {
         booknum: selectedBook?.id,
         chapter: selectedChapter?.chapter,
         verses: selectedVerses,
       })
+
+      if (isPlaying) {
+        dispatch(playerActions.stop())
+        await delay()
+      }
 
       const media = response.media[0]
 
@@ -137,6 +148,9 @@ export function BibleWidget() {
         type: audioOnly ? 'audio' : 'text',
         content: `<h2>${selectedBook?.bookName} ${selectedChapter?.chapter}:${formatVerses(selectedVerses)}</h2>\n` + media.content,
       }))
+
+      if (isPlaying)
+        autoStart.current = true
     } finally {
       setIsLoading(false)
       setOpenBible(false)
@@ -159,8 +173,9 @@ export function BibleWidget() {
           }))
           dispatch(playerActions.verseChange({ verse: markers[currentMarker].verseNumber }))
           started = true
-          if (audioOnly)
+          if (audioOnly || autoStart.current)
             dispatch(playerActions.play())
+          autoStart.current = false
           return
         }
 
@@ -185,7 +200,7 @@ export function BibleWidget() {
             dispatch(playerActions.time({
               currentTime: millisecondsFromString(markers[currentMarker].startTime) / 1000,
             }))
-            dispatch(playerActions.verseChange({ verse: markers[currentMarker].verseNumber }))
+            dispatch(playerActions.verseChange({ verse: markers[currentMarker].verseNumber, scroll: false }))
           }
         }
       }),
@@ -199,6 +214,22 @@ export function BibleWidget() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, loadedMedia])
+
+  useEffect(() => {
+    if (!openBible) return
+
+    const abort = new AbortController()
+
+    document.body.addEventListener('keyup', e => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        e.stopPropagation()
+        stepBack()
+      }
+    }, { signal: abort.signal })
+
+    return () => abort.abort()
+  }, [openBible, stepBack])
 
   return (
     <>
@@ -214,7 +245,7 @@ export function BibleWidget() {
       </div>
 
       {openBible && (
-        <div className="fixed w-full h-full bg-black/70 flex items-center justify-center z-30" onClick={handleOverlayClick} role="presentation">
+        <div className="fixed w-full h-full bg-black/70 flex items-center justify-center z-20" onClick={handleOverlayClick} role="presentation">
           <div className="max-h-[800px] max-w-[760px] w-10/12 h-5/6 bg-zinc-900 p-6 pr-0 relative" onAuxClick={() => stepBack()}>
             {isLoading && (
               <div className="absolute-fill bg-black/50">

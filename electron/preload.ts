@@ -1,4 +1,5 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
+import { getFilesOrder } from './utils/filesystem'
 
 const windowLoaded = new Promise(res => window.onload = res)
 
@@ -56,6 +57,8 @@ contextBridge.exposeInMainWorld('common', <CommonBridge>{
       ipcRenderer.invoke('storage:set', key, value)
     },
   },
+  getPathForFile: webUtils.getPathForFile.bind(webUtils),
+  getFilesSorted: getFilesOrder,
 })
 
 contextBridge.exposeInMainWorld('api', <API>{

@@ -1,3 +1,4 @@
+import transliterate from '@sindresorhus/transliterate'
 import log from 'electron-log/main'
 import fs from 'node:fs'
 import http from 'node:https'
@@ -13,6 +14,10 @@ export class Downloader extends FileSystemService {
 
   async enqueue(url: string, type: string) {
     let filename = url.split(url.startsWith('http') ? '/' : path.sep).pop()!
+
+    filename = transliterate(filename)
+      .replace(/[^a-z0-9_\-\s\+.]/gi, '')
+      .replace(/\s+/g, '-')
 
     if (!filename.endsWith(`.${type}`))
       filename += `.${type}`

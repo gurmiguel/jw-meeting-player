@@ -1,4 +1,6 @@
+import { webUtils } from 'electron'
 import { type PlayerEvents } from '../electron/events/player'
+import { getFilesOrder } from '../electron/utils/filesystem'
 
 declare global {
   interface IpcRendererCallback<T> {
@@ -59,6 +61,8 @@ declare global {
       get<T = unknown>(key: string): Promise<T>
       set<T = unknown>(key: string, value: T): Promise<void>
     }
+    getPathForFile: typeof webUtils.getPathForFile
+    getFilesSorted: typeof getFilesOrder
   }
 
   const common: CommonBridge

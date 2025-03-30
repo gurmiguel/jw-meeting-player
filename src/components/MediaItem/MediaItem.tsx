@@ -18,12 +18,14 @@ import { playerActions } from '../../store/player/slice'
 import { AudioPlaceholder } from '../AudioPlaceholder/AudioPlaceholder'
 import { useConfirmDialog } from '../ConfirmDialog/hook'
 import { ProgressBar } from '../ProgressBar/ProgressBar'
+import { ZoomingImage } from '../ZoomingImage/ZoomingImage'
 
 interface MediaItemProps {
   item: ProcessedResult
   type: WeekType
   currentWeekStart: Date
   dragging?: boolean
+  placeholder?: boolean
 }
 
 const mediaIcons: Record<MediaItemType['type'], ComponentType<any>> = {
@@ -88,10 +90,12 @@ export function MediaItem({ item, type, currentWeekStart, dragging = false }: Me
 
   return (
     <div title={item.alt} className={clsx('relative w-[180px]', !downloadFinished && 'opacity-70 pointer-events-none', dragging && 'opacity-30 grayscale')}>
-      <a href="#" onClick={mediaOpenHandler} className="relative flex w-full transition hover:shadow-md hover:shadow-neutral-300/40">
-        {item.type === 'audio'
-          ? <AudioPlaceholder file={mainMedia.path} />
-          : <img src={getMediaCoverPath(coverMedia)} alt="" className="w-full aspect-square object-cover pointer-events-none" />}
+      <a href="#" onClick={mediaOpenHandler} className="relative flex w-full bg-black transition duration-300 [&:not(:has(.image-resized))]:hover:shadow-md [&:not(:has(.image-resized))]:hover:shadow-slate-700/50 group" data-arrow-nav="xy">
+        <div className="relative overflow-hidden h-[180px] aspect-square">
+          {item.type === 'audio'
+            ? <AudioPlaceholder file={mainMedia.path} />
+            : <ZoomingImage src={getMediaCoverPath(coverMedia)} alt="" className="pointer-events-none" fromParent />}
+        </div>
         <div className="absolute top-2 right-2 icon-shadow">
           {createElement(mediaIcons[item.type], { className: 'h-6 text-zinc-100', strokeWidth: 1.5, alt: mediaTips[item.type] })}
         </div>
@@ -113,9 +117,8 @@ export function MediaItem({ item, type, currentWeekStart, dragging = false }: Me
 }
 
 export function SortableMediaItem(props: Omit<MediaItemProps, 'dragging'>) {
-  const isPlaceholderItem = props.item.uid.endsWith('--placeholder')
+  const isPlaceholderItem = props.item.uid.endsWith('--placeholder') || props.placeholder
   const {
-    attributes,
     listeners,
     setNodeRef,
     transform,
@@ -123,19 +126,19 @@ export function SortableMediaItem(props: Omit<MediaItemProps, 'dragging'>) {
   } = useSortable({
     id: props.item.uid,
     disabled: isPlaceholderItem,
+    data: { type: 'item', group: props.item.group },
   })
 
   return (
     <div
       ref={setNodeRef}
-      {...attributes}
       {...listeners}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
         ...(isPlaceholderItem ? {
           opacity: 0,
-          width: 1,
+          width: !props.placeholder ? 1 : undefined,
         } : {}),
       }}
     >

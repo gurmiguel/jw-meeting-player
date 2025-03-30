@@ -90,12 +90,14 @@ function Player() {
     setZoomNPos({ zoomLevel, position: { top, left } })
   }, [])
 
-  useBridgeEventHandler('verseChange', ({ verse }) => {
+  useBridgeEventHandler('verseChange', ({ verse, scroll = true }) => {
     const currentVerse = textScroller.current?.querySelector(`#v${verse}`)
-    currentVerse?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    })
+    if (scroll)
+      currentVerse?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+    console.log('scrollTo', currentVerse)
     textScroller.current?.querySelectorAll('.verse-active')
       .forEach(element => element.classList.remove('verse-active'))
     currentVerse?.classList.add('verse-active')

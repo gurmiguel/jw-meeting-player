@@ -129,6 +129,7 @@ async function createWindows() {
     darkTheme: true,
     backgroundMaterial: 'none',
     webPreferences: {
+      nodeIntegrationInWorker: true,
       webSecurity: false,
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -161,10 +162,6 @@ async function createWindows() {
   // Test active push message to Renderer-process.
   windows.main.webContents.on('did-finish-load', () => {
     windows.main?.webContents.send('main-process-message', (new Date).toLocaleString())
-  })
-
-  windows.main.webContents.on('crashed', () => {
-    windows.main.close()
   })
 
   let updateCancelToken = new CancellationToken()

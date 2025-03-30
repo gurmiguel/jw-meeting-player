@@ -1,25 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-export async function getSortedTransferFiles(items: DataTransferItem[]) {
-  const itemsEntries = items.map(it => [it.webkitGetAsEntry()!, it.getAsFile()!] as const)
-  const directory = await new Promise<FileSystemDirectoryEntry | undefined>(res => items[0].webkitGetAsEntry()?.getParent((e) => res(e as FileSystemDirectoryEntry)))
-
-  const r = directory?.createReader()
-
-  const result = new Array<File>()
-  
-  await new Promise<void>(resolve => {
-    r?.readEntries(entries => {
-      for (const e of entries) {
-        const [,item] = itemsEntries.find(([it]) => it.fullPath === e.fullPath) ?? []
-        if (item)
-          result.push(item)
-      }
-      resolve()
-    })
+export async function getSortedTransferFiles(files: File[]) {
+  files.forEach(file => {
+    file.path = common.getPathForFile(file)
   })
 
-  if (result.length !== items.length)
-    return itemsEntries.map(([,item]) => item)
-  else
-    return result
+  const filesOrder = await common.getFilesSorted(files.map(it => it.path))
+
+  return files.toSorted((a,b) => {
+    const aIndex = filesOrder.indexOf(a.path)
+    const bIndex = filesOrder.indexOf(b.path)
+    return aIndex - bIndex
+  })
 }

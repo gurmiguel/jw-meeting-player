@@ -64,6 +64,6 @@ playerListener.startListening({
 playerListener.startListening({
   actionCreator: playerActions.verseChange,
   effect({ payload }) {
-    bridge.verseChange({ verse: payload.verse })
+    bridge.verseChange({ verse: payload.verse, scroll: payload.scroll })
   },
 })

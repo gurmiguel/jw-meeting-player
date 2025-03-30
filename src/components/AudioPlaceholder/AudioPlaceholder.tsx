@@ -10,7 +10,7 @@ export function AudioPlaceholder({ file }: Props) {
   }, [file])
 
   return (
-    <div className="w-[260px] h-[180px] object-cover bg-zinc-950 flex items-center justify-center text-center">
+    <div className="w-full h-full bg-zinc-950 flex items-center justify-center text-center">
       <span className="text-zinc-50 font-thin underline underline-offset-4">{filename}</span>
     </div>
   )

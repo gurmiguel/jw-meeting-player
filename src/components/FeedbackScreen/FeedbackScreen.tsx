@@ -1,4 +1,5 @@
 import { MagnifyingGlassPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { addListener } from '@reduxjs/toolkit'
 import clsx from 'clsx'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
 import zoomIcon from '../../assets/zoom-icon.png'
@@ -83,6 +84,15 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
 
     dispatch(playerActions.toggleZoomScreen())
   }
+
+  useEffect(() => {
+    return dispatch(addListener({
+      actionCreator: playerActions.stop,
+      effect() {
+        setZoomMode(false)
+      },
+    }))
+  }, [dispatch])
 
   return (
     <Resizer gutter={8} disabled={zoomMode === true} enableMaximizeOnDblClick={dragHandlers.isDefaultPosition}>

@@ -1,6 +1,7 @@
 import { PauseIcon, PlayIcon, StopIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useCallback, useState } from 'react'
+import { SPEED_OPTIONS } from '../../../shared/constants'
 import { PlayerState } from '../../../shared/state'
 import { useClickOutside } from '../../hooks/useClickOutside'
 import { ProgressSlider } from '../ProgressSlider/ProgressSlider'
@@ -20,8 +21,6 @@ interface Props {
   onSeek(position: number): void
   disableSeek?: boolean
 }
-
-const SPEED_OPTIONS = [0.5, 0.7, 1.0, 1.1, 1.2, 1.5, 2]
 
 export function MediaControls({ playing, type, playStatus, onPause, onPlay, onStop, speed: currentSpeed, onSetSpeed, currentTime, duration, onSeek, disableSeek = false }: Props) {
   const playingMedia = playing && type !== 'image'

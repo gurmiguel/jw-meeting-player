@@ -10,6 +10,8 @@ declare global {
   type NonNullableObject<T extends {}> = {
     [K in keyof T]: NonNullable<T[K]>
   }
+
+  type Overwrite<S, T> = Omit<S, keyof T> & T
 }
 
 export { }

@@ -70,5 +70,6 @@ export namespace PlayerEvents {
 
   export interface VerseChange {
     verse: number
+    scroll?: boolean
   }
 }

@@ -1,10 +1,10 @@
-import { fileTypeStream } from 'file-type/core'
+import { fileTypeFromStream } from 'file-type/node'
 import fs from 'node:fs'
 import { MediaTypes } from '../../shared/models/MediaTypes'
 
 export async function decideFileMediaType(filepath: string): Promise<MediaTypes> {
-  const stream = await fileTypeStream(fs.createReadStream(filepath))
-  const res = stream.fileType
+  const stream = fs.createReadStream(filepath)
+  const res = await fileTypeFromStream(stream)
 
   try {
     if (res?.mime.startsWith('image')) return 'image'

@@ -50,7 +50,7 @@ export const playerSlice = createSlice({
     toggleZoomScreen() {
       //
     },
-    verseChange(_, _action: PayloadAction<{ verse: number }>) {
+    verseChange(_, _action: PayloadAction<{ verse: number, scroll?: boolean }>) {
       //
     },
   },

@@ -47,7 +47,7 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
   }
   async function handleDrop(e: DragEvent) {
     e.preventDefault()
-    const items = Array.from(e.dataTransfer.items)
+    const items = Array.from(e.dataTransfer.files)
 
     let files: File[] 
     try {
@@ -55,7 +55,7 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
     } catch (ex) {
       logger.error(ex)
 
-      files = items.map(it => it.getAsFile()).filter((it): it is File => !!it)
+      files = items
     }
 
     const validFiles = files.filter(file => {
