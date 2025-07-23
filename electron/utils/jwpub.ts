@@ -8,14 +8,14 @@ import Downloader from '../api/Downloader'
 import { CrawlerUtils } from '../api/crawler/CrawlerUtils'
 import { getTempDir } from './dirs'
 
-type MediaFile = {
+export type JWPubMediaFile = {
   path: string
   name: string
 }
 
 const JWPUB_CONTEXT = 'jwpub-temp'
 
-export async function* extractMediaFromJWPUB(jwpubFile: string): AsyncGenerator<MediaFile> {
+export async function* extractMediaFromJWPUB(jwpubFile: string, downloader: Downloader): AsyncGenerator<JWPubMediaFile> {
   const targetDir = path.join(getTempDir(), JWPUB_CONTEXT)
   await fs.promises.mkdir(targetDir, { recursive: true })
 
@@ -57,16 +57,18 @@ export async function* extractMediaFromJWPUB(jwpubFile: string): AsyncGenerator<
 
   const dbFiles = unzippedContents?.filter(filename => filename.endsWith('.db')) ?? []
 
+  const utils = new CrawlerUtils(downloader, [])
+
   for (const file of dbFiles) {
     const fileBuffer = await file.async('nodebuffer')
     if (!fileBuffer) return
   
-    for await (const mediaFile of fetchMediaFilesFromDb(fileBuffer, localMediaFiles.map(file => path.basename(file.name))))
+    for await (const mediaFile of fetchMediaFilesFromDb(fileBuffer, utils, localMediaFiles.map(file => path.basename(file.name))))
       yield mediaFile
   }
 }
 
-async function* fetchMediaFilesFromDb(dbfile: Buffer, ignoreFiles: string[]): AsyncGenerator<MediaFile> {
+async function* fetchMediaFilesFromDb(dbfile: Buffer, utils: CrawlerUtils, ignoreFiles: string[]): AsyncGenerator<JWPubMediaFile> {
   const tempfile = path.join(getTempDir(), JWPUB_CONTEXT, crypto.randomBytes(16).toString('hex') + '.db')
   await fs.promises.writeFile(tempfile, dbfile)
 
@@ -97,11 +99,6 @@ async function* fetchMediaFilesFromDb(dbfile: Buffer, ignoreFiles: string[]): As
     })
   })
 
-  const downloader = new Downloader()
-  downloader.setContext(JWPUB_CONTEXT)
-
-  const utils = new CrawlerUtils(downloader, [])
-
   log('will fetch media', mediaItems)
   for (const item of mediaItems) {
     const media = await utils.fetchPublicationVideo(utils.generateDataVideoURL(item.KeySymbol, item.Track ?? 1))
@@ -110,6 +107,4 @@ async function* fetchMediaFilesFromDb(dbfile: Buffer, ignoreFiles: string[]): As
   
     yield { path: media.path, name: media.title }
   }
-
-  await downloader.flush()
 }

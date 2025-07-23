@@ -7,9 +7,12 @@ import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { extractMediaFromJWLPlaylist } from '../utils/jwlplaylist'
 import { extractMediaFromJWPUB } from '../utils/jwpub'
+import { ParsedMedia, ProcessedResult } from './crawler/types'
+import Downloader from './Downloader'
 import MetadataLoader from './MetadataLoader'
 import { Uploader } from './Uploader'
-import { ParsedMedia, ProcessedResult } from './crawler/types'
+
+const TEMP_CONTEXT = 'upload-temp'
 
 export async function uploadMedia(date: Date, type: WeekType, files: UploadingFile[]) {
   date = addMinutes(date, date.getTimezoneOffset())
@@ -18,6 +21,8 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
 
   const uploader = new Uploader()
   uploader.setContext(formatDate(date, 'yyyy-w') + `--${type + 1}`)
+  const downloader = new Downloader()
+  downloader.setContext(TEMP_CONTEXT)
 
   const metadataLoader = new MetadataLoader(uploader)
   const loadedMetadata = await metadataLoader.loadMetadata()
@@ -31,16 +36,24 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
       const processed = new Array<ProcessedResult>()
       switch (extension) {
         case 'jwpub':
-          for await (const item of extractMediaFromJWPUB(file.path)) {
-            processed.push(...await mapFiles.apply(this, [{
+          const files = new Array<UploadingFile>()
+          for await (const item of extractMediaFromJWPUB(file.path, downloader)) {
+            files.push({
               file: {
                 name: nodepath.basename(item.path),
                 path: item.path,
               },
               group,
               label: item.name,
-            }]))
+            })
           }
+
+          log.info('download flush')
+          await downloader.flush()
+
+          for (const file of files)
+            processed.push(...await mapFiles.apply(this, [file]))
+
           return processed
         case 'jwlplaylist':
           for await (const item of extractMediaFromJWLPlaylist(file.path))

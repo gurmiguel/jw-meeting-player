@@ -1,4 +1,4 @@
-import transliterate from '@sindresorhus/transliterate'
+import $transliterate from '@sindresorhus/transliterate'
 import log from 'electron-log/main'
 import fs from 'node:fs'
 import http from 'node:https'
@@ -8,6 +8,8 @@ import { decideFileMediaType } from '../utils/file-type'
 import { generateThumbnail, isVideoFile } from '../utils/video-utils'
 import { windows } from '../windows'
 import { FileSystemService } from './FileSystemService'
+
+const transliterate = ($transliterate as any).default as typeof $transliterate
 
 export class Downloader extends FileSystemService {
   protected downloadQueue: Array<{ targetPath: string, url: string, thumbnail: string | null }> = []
