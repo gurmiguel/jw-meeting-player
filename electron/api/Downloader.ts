@@ -9,7 +9,9 @@ import { generateThumbnail, isVideoFile } from '../utils/video-utils'
 import { windows } from '../windows'
 import { FileSystemService } from './FileSystemService'
 
-const transliterate = ($transliterate as any).default as typeof $transliterate
+const transliterate = ($transliterate as any).__esModule
+  ? ($transliterate as any).default as typeof $transliterate
+  : $transliterate
 
 export class Downloader extends FileSystemService {
   protected downloadQueue: Array<{ targetPath: string, url: string, thumbnail: string | null }> = []
