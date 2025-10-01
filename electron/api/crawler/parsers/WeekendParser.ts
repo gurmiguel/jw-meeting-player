@@ -9,7 +9,7 @@ export class WeekendParser extends CrawlerParser {
 
     if (!$root) return null
 
-    const $watchtowerLink = $root.querySelector<HTMLAnchorElement>('a.it')
+    const $watchtowerLink = $root.querySelector<HTMLAnchorElement>('a.pub-w')
     const watchtowerArticleUrl = $watchtowerLink?.href
     const watchtowerTitle = $watchtowerLink?.parentElement?.textContent?.trim()
 
