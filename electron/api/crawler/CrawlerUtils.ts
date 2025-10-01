@@ -1,4 +1,5 @@
 import { error, warn } from 'electron-log/main'
+import { type JSDOM } from 'jsdom'
 import { MAX_VIDEO_DURATION } from '../../../shared/constants'
 import { JWApiUrlBuilder } from '../../utils/jw-api'
 import { type Downloader } from '../Downloader'
@@ -102,4 +103,26 @@ export class CrawlerUtils {
   }
 
   download: Downloader['enqueue'] = (...args) => this.downloader.enqueue(...args)
+
+  static async parseDocument(url: string): Promise<Document> {
+    const { window: { document } }: JSDOM = await require('jsdom').JSDOM.fromURL(url)
+
+    return document
+  }
+
+  static async parseHref($anchor: HTMLAnchorElement | null): Promise<string | null> {
+    if (!$anchor) return null
+
+    const href = $anchor.getAttribute('href') || null
+
+    if (!href || href.startsWith('http'))
+      return href
+
+    const baseHref = new URL($anchor.ownerDocument.baseURI).origin
+
+    return [
+      baseHref.replace(/\/$/, ''),
+      href.replace(/^\//, ''),
+    ].join('/')
+  }
 }

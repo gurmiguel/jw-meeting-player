@@ -7,6 +7,7 @@ import { windows } from '../windows'
 import { Downloader } from './Downloader'
 import MetadataLoader from './MetadataLoader'
 import { CrawlerHandler } from './crawler/CrawlerHandler'
+import { CrawlerUtils } from './crawler/CrawlerUtils'
 import { MidWeekMeeting } from './crawler/parsers/MidWeekMeeting'
 import { SongsParser } from './crawler/parsers/SongsParser'
 import { WeekendParser } from './crawler/parsers/WeekendParser'
@@ -75,7 +76,16 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
 }
 
 async function fetchMidWeekMeetingMedia(url: string, downloader: Downloader) {
-  const handler = new CrawlerHandler(url, downloader)
+  const doc = await CrawlerUtils.parseDocument(url)
+
+  const $todayAnchor = doc.querySelector<HTMLAnchorElement>('a.today.pub-mwb')
+
+  const mwbUrl = await CrawlerUtils.parseHref($todayAnchor)
+  
+  if (!mwbUrl)
+    throw new Error('Today mwb article element not found in the document.')
+
+  const handler = new CrawlerHandler(mwbUrl, downloader)
   
   handler.addParser(new SongsParser())
   handler.addParser(new MidWeekMeeting())

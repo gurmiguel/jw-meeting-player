@@ -1,5 +1,4 @@
 import log from 'electron-log/main'
-import { type JSDOM } from 'jsdom'
 import { isEqual, uniqWith } from 'lodash'
 import { type Downloader } from '../Downloader'
 import { CrawlerUtils } from './CrawlerUtils'
@@ -29,7 +28,7 @@ export class CrawlerHandler {
   async process(): Promise<ParsingResult[]> {
     log.info('Fetching from:', this.url)
 
-    const { window: { document: doc } }: JSDOM = await require('jsdom').JSDOM.fromURL(this.url)
+    const doc = await CrawlerUtils.parseDocument(this.url)
     
     const pageId = await this.getPageId(doc)
     if (!await this.isElligible(pageId))
