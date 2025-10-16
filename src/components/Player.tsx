@@ -1,14 +1,14 @@
 import clsx from 'clsx'
 import { SyntheticEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { CSSTransition, SwitchTransition } from 'react-transition-group'
-import { APIEvents } from '../../electron/events/api'
+import { type APIEvents } from '../../electron/events/api'
 import { PlayerEvents } from '../../electron/events/player'
 import { DEFAULT_SPEED } from '../../shared/constants'
 import { useBridgeEventHandler } from '../hooks/useBridgeEventHandler'
 import { useThrottleCallback } from '../hooks/useThrottleCallback'
 import { initialState as initialPlayer } from '../store/player/slice'
-import classes from './Player.module.css'
 import './bible-reader.css'
+import classes from './Player.module.css'
 
 type MediaItem = Pick<PlayerEvents.Start, 'type' | 'file' | 'content'> & {
   timestamp: number
@@ -72,6 +72,10 @@ function Player() {
 
   useBridgeEventHandler('toggleZoomScreen', async () => {
     if (zoomSharingScreen) {
+      const stream = mirrorScreen.current?.srcObject as MediaStream | undefined
+
+      stream?.getTracks().forEach(track => track.stop())
+      
       setZoomSharingScreen(undefined)
       return
     }
@@ -97,7 +101,6 @@ function Player() {
         behavior: 'smooth',
         block: 'center',
       })
-    console.log('scrollTo', currentVerse)
     textScroller.current?.querySelectorAll('.verse-active')
       .forEach(element => element.classList.remove('verse-active'))
     currentVerse?.classList.add('verse-active')
@@ -135,7 +138,6 @@ function Player() {
   }
 
   function handlePlay() {
-    console.log('play', textScroller.current?.querySelector('#bible-reader'))
     textScroller.current?.querySelector('#bible-reader')?.classList.add('playing')
 
     if (!player.current) return
@@ -199,8 +201,7 @@ function Player() {
                 <video
                   ref={mirrorScreen}
                   onLoadedMetadata={() => mirrorScreen.current?.play()}
-                  className="block w-full object-fill"
-                  style={{ height: 'calc(100% + 60px)' }} // account for title bar
+                  className="block absolute w-full h-full object-fill"
                 />
               ) : (
                 <>
