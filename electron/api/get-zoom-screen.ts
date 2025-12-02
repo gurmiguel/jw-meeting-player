@@ -14,7 +14,8 @@ export async function getZoomScreen() {
 
   const shareZoomWindow = {
     getWindowId: () => zoomWindow?.id,
-    isVisible: () => !!zoomWindow && zoomWindows.some(wnd => wnd.name === 'Zoom Meeting'),
+    isVisible: () => !!zoomWindow && zoomWindows
+      .some(wnd => ['zoom meeting', 'zoom reunião', 'zoom reuniões', 'reunião zoom'].includes(wnd.name.toLowerCase())),
   }
 
   if (!shareZoomWindow?.isVisible())
