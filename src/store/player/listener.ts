@@ -64,6 +64,22 @@ playerListener.startListening({
 playerListener.startListening({
   actionCreator: playerActions.verseChange,
   effect({ payload }) {
+    bridge.stop({ propagate: false })
     bridge.verseChange({ verse: payload.verse, scroll: payload.scroll })
+  },
+})
+
+playerListener.startListening({
+  actionCreator: playerActions.displayCleaningGroup,
+  effect({ payload }) {
+    bridge.displayCleaningGroup({ group: payload.group, withGeneral: payload.withGeneral })
+  },
+})
+
+playerListener.startListening({
+  actionCreator: playerActions.hideCleaningGroup,
+  effect() {
+    bridge.stop({ propagate: false })
+    bridge.hideCleaningGroup()
   },
 })

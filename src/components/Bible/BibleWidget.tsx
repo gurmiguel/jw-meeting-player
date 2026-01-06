@@ -233,16 +233,16 @@ export function BibleWidget() {
 
   return (
     <>
-      <div className="fixed z-10 bottom-4 left-4 flex">
-        <button
-          type="button"
-          className="p-3 rounded-full bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white transition-colors"
-          onClick={() => setOpenBible(state => !state)}
-          title="Abrir texto da Bíblia"
-        >
+      <button
+        type="button"
+        onClick={() => setOpenBible(state => !state)}
+        className="floating-icon-button-wrapper"
+      >
+        <div className="floating-icon-button">
           <BookOpenIcon className="h-8" />
-        </button>
-      </div>
+        </div>
+        <div className="floating-icon-button floating-icon-button-label">Abrir texto da Bíblia</div>
+      </button>
 
       {openBible && (
         <div className="fixed w-full h-full bg-black/70 flex items-center justify-center z-20" onClick={handleOverlayClick} role="presentation">

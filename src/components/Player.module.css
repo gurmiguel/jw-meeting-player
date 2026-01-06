@@ -50,3 +50,25 @@
     @apply ml-16;
   }
 }
+
+.cleaningGroup {
+  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center flex flex-col;
+  font-size: 4vw;
+  line-height: 1.25;
+  font-weight: 700;
+
+  hr {
+    width: 50%;
+    margin: 1em auto;
+  }
+
+  ul {
+    margin: 0 auto;
+  }
+
+  small {
+    display: block;
+    font-size: 0.65em;
+    font-weight: 300;
+  }
+}

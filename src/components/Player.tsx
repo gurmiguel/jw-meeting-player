@@ -22,6 +22,7 @@ function Player() {
   const [media, setMedia] = useState<MediaItem>()
   const [yearText, setYearText] = useState<string>()
   const [zoomSharingScreen, setZoomSharingScreen] = useState<string>()
+  const [cleaningGroup, setCleaningGroup] = useState<{ group: number, withGeneral: boolean }>()
 
   const [currentSpeed, setCurrentSpeed] = useState(initialPlayer.playRate)
 
@@ -38,6 +39,7 @@ function Player() {
   }, []), 500 * currentSpeed)
 
   useBridgeEventHandler('start', ({ type, file: file, content, playRate }) => {
+    setCleaningGroup(undefined)
     setCurrentSpeed(playRate)
     setMedia({ type, file, content, timestamp: Date.now() })
 
@@ -53,12 +55,14 @@ function Player() {
     }
   }, [])
 
-  useBridgeEventHandler('stop', () => {
+  function forceStop() {
     throttleUpdateTime.cancel()
     player.current?.pause()
     setMedia(undefined)
     setCurrentSpeed(DEFAULT_SPEED)
-  }, [])
+  }
+
+  useBridgeEventHandler('stop', forceStop, [])
 
   useBridgeEventHandler('setSpeed', ({ speed }) => {
     setCurrentSpeed(speed)
@@ -80,6 +84,8 @@ function Player() {
       return
     }
 
+    setCleaningGroup(undefined)
+
     try {
       const response = await api.fetch<APIEvents.GetZoomScreenIdResponse>('get-zoom-screen', null)
 
@@ -95,6 +101,7 @@ function Player() {
   }, [])
 
   useBridgeEventHandler('verseChange', ({ verse, scroll = true }) => {
+    setCleaningGroup(undefined)
     const currentVerse = textScroller.current?.querySelector(`#v${verse}`)
     if (scroll)
       currentVerse?.scrollIntoView({
@@ -104,6 +111,15 @@ function Player() {
     textScroller.current?.querySelectorAll('.verse-active')
       .forEach(element => element.classList.remove('verse-active'))
     currentVerse?.classList.add('verse-active')
+  }, [])
+
+  useBridgeEventHandler('displayCleaningGroup', ({ group, withGeneral }) => {
+    forceStop()
+    setCleaningGroup({ group, withGeneral })
+  }, [])
+
+  useBridgeEventHandler('hideCleaningGroup', () => {
+    setCleaningGroup(undefined)
   }, [])
 
   useLayoutEffect(() => {
@@ -179,7 +195,7 @@ function Player() {
       <div className="relative bg-black flex-1 w-full h-full pointer-events-none select-none overflow-hidden">
         <SwitchTransition>
           <CSSTransition
-            key={zoomSharingScreen || ((media?.type !== 'audio' ? media?.timestamp : null) ?? 'year-text')}
+            key={zoomSharingScreen || ((media?.type !== 'audio' ? media?.timestamp : null) ?? cleaningGroup?.group ?? 'year-text')}
             classNames={{
               enter: 'animate-[fade-in_500ms_ease_both]',
               exit: 'animate-[fade-out_500ms_ease_both]',
@@ -205,13 +221,30 @@ function Player() {
                 />
               ) : (
                 <>
-                  {[null, 'audio'].includes(media?.type ?? null) && !!yearText && (
+                  {[null, 'audio'].includes(media?.type ?? null) && !!yearText && !cleaningGroup && (
                     <>
                       <div className={classes.yearText} dangerouslySetInnerHTML={{ __html: yearText }} />
                       <div className={classes.yearTextLogo}>
                         <div className={classes.yearTextLogoInner}></div>
                       </div>
                     </>
+                  )}
+
+                  {cleaningGroup && (
+                    <div className={classes.cleaningGroup}>
+                      <div>Limpeza Grupo</div>
+                      <div className="font-normal text-[8vw] font-['Century']">{cleaningGroup.group}</div>
+                      <hr />
+                      <ul>
+                        <li>Ao final da reunião</li>
+                        {cleaningGroup.withGeneral && (
+                          <>
+                            <li><br/></li>
+                            <li>• Limpeza geral •<small>no fim de semana</small></li>
+                          </>
+                        )}
+                      </ul>
+                    </div>
                   )}
 
                   {media?.file && media.type === 'video' && (

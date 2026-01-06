@@ -23,9 +23,9 @@ import { useStorageValue } from '../hooks/useStorageValue'
 import weekApiEndpoints, { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, usePreloadMeetingMutation, useUpdateMetadataMutation, useUploadMediaMutation } from '../store/api/week'
 import { useAppDispatch } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
-import { BibleWidget } from './Bible/BibleWidget'
 import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
 import { useDialog } from './Dialog/DialogProvider'
+import { FloatingMenu } from './FloatingMenu/FloatingMenu'
 import { ItemGroup, SortableItemGroup } from './ItemGroup/ItemGroup'
 import { MediaItem, SortableMediaItem } from './MediaItem/MediaItem'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
@@ -528,7 +528,7 @@ function MainApp() {
             </DndContext>
           </div>
 
-          <BibleWidget />
+          <FloatingMenu />
           <PlayerInterface />
 
           {isUploading && (

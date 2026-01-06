@@ -64,3 +64,16 @@ body.sorting {
     cursor: grabbing !important;
   }
 }
+
+.floating-icon-button {
+  @apply flex items-center justify-center size-[56px] rounded-full bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white transition-colors;
+}
+
+.floating-icon-button-wrapper {
+  @apply appearance-none bg-transparent flex flex-row items-center;
+}
+
+.floating-icon-button-label {
+  @apply size-auto bg-slate-500 hover:bg-slate-700 py-1.5 pl-7 pr-4 -ml-5 -z-10 font-semibold whitespace-nowrap;
+  text-shadow: 1px 1px 3px #000;
+}

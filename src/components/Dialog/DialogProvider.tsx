@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Dispatch, PayloadAction, bindActionCreators, createSlice } from '@reduxjs/toolkit'
+import FocusTrap from 'focus-trap-react'
 import { uniqueId } from 'lodash'
 import { PropsWithChildren, createContext, useCallback, useContext, useMemo, useReducer } from 'react'
 import { useClickOutside } from '../../hooks/useClickOutside'
@@ -55,11 +56,13 @@ export function DialogProvider({ children }: PropsWithChildren) {
       {children}
 
       {dialogs.length > 0 && (
-        <div className={classes.overlay}>
-          {dialogs.slice(0, 1).map(dialog => (
-            <Dialog key={dialog.id} ref={clickOutsideRef} {...dialog} />
-          ))}
-        </div>
+        <FocusTrap>
+          <div className={classes.overlay}>
+            {dialogs.slice(0, 1).map(dialog => (
+              <Dialog key={dialog.id} ref={clickOutsideRef} {...dialog} />
+            ))}
+          </div>
+        </FocusTrap>
       )}
     </dialogContext.Provider>
   )

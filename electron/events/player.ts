@@ -23,6 +23,8 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   })
   registerTwoWayEvent('zoomScreenNotFound')
   registerTwoWayEvent('verseChange')
+  registerTwoWayEvent('displayCleaningGroup')
+  registerTwoWayEvent('hideCleaningGroup')
 
   function registerTwoWayEvent<E extends EventNames, Payload = Parameters<PlayerBridge[E]>[0]>(
     eventName: E,
@@ -71,5 +73,10 @@ export namespace PlayerEvents {
   export interface VerseChange {
     verse: number
     scroll?: boolean
+  }
+
+  export interface DisplayCleaningGroup {
+    group: number
+    withGeneral: boolean
   }
 }

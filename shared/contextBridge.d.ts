@@ -35,6 +35,10 @@ declare global {
     onZoomScreenNotFound(callback: IpcRendererCallback<void>): IpcRendererCallbackUnsubscriber
     verseChange(payload: PlayerEvents.VerseChange): void
     onVerseChange(callback: IpcRendererCallback<PlayerEvents.VerseChange>): IpcRendererCallbackUnsubscriber
+    displayCleaningGroup(payload: PlayerEvents.DisplayCleaningGroup): void
+    onDisplayCleaningGroup(callback: IpcRendererCallback<PlayerEvents.DisplayCleaningGroup>): IpcRendererCallbackUnsubscriber
+    hideCleaningGroup(): void
+    onHideCleaningGroup(callback: IpcRendererCallback<void>): IpcRendererCallbackUnsubscriber
   }
 
   type EventHandlers = Exclude<{

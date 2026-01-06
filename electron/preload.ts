@@ -43,6 +43,8 @@ contextBridge.exposeInMainWorld('bridge', {
   ...eventHandler('player', 'toggleZoomScreen'),
   ...eventHandler('player', 'zoomScreenNotFound'),
   ...eventHandler('player', 'verseChange'),
+  ...eventHandler('player', 'displayCleaningGroup'),
+  ...eventHandler('player', 'hideCleaningGroup'),
 })
 
 contextBridge.exposeInMainWorld('common', <CommonBridge>{

@@ -12,6 +12,7 @@ export const initialState: PlayerState = {
   duration: 0,
   zoomLevel: 1,
   position: { top: 0, left: 0 },
+  displayCleaningGroup: false,
 }
 
 export const playerSlice = createSlice({
@@ -52,6 +53,19 @@ export const playerSlice = createSlice({
     },
     verseChange(_, _action: PayloadAction<{ verse: number, scroll?: boolean }>) {
       //
+    },
+    displayCleaningGroup(_, _action: PayloadAction<{ group: number, withGeneral: boolean }>) {
+      console.log('display')
+      return {
+        ...initialState,
+        displayCleaningGroup: true,
+      }
+    },
+    hideCleaningGroup() {
+      return {
+        ...initialState,
+        displayCleaningGroup: false,
+      }
     },
   },
 })
