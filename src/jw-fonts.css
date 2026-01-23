@@ -1,10 +1,10 @@
 @font-face {
   font-family: Wt-ClearText-Bold;
-  src: url("https://b.jw-cdn.org/fonts/wt-clear-text/1.019/Wt-ClearText-Bold.woff2");
+  src: url("./assets/fonts/Wt-ClearText-Bold.woff2");
   font-weight: 700;
 }
 
 @font-face {
   font-family: JW-Icons;
-  src: url("https://wol.jw.org/assets/fonts/jw-icons-external-1970474.woff");
+  src: url("./assets/fonts/jw-icons-external.woff2");
 }

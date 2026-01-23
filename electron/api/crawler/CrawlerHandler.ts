@@ -30,7 +30,7 @@ export class CrawlerHandler {
 
     const doc = await CrawlerUtils.parseDocument(this.url)
     
-    const pageId = await this.getPageId(doc)
+    const pageId = await this.getPageId(doc, this.url)
     if (!await this.isElligible(pageId))
       return []
 
@@ -72,15 +72,20 @@ export class CrawlerHandler {
     return true
   }
 
-  async getPageId(doc: Document) {
-    if (!doc.location.origin.match(/wol.jw.org/i)) return doc.location.href
+  async getPageId(doc: Document, url: string) {
+    if (!url.match(/wol.jw.org/i)) return url
+    
+    const pageInputNames = ['contentRsconf','contentLib','contentLibLangSym','contentLibLangScript','site', 'englishSym']
+    const pubInputNames = ['chapNo','docId']
 
-    const pageInputNames = ['contentRsconf','contentLib','contentLibLangSym','contentLibLangScript','site']
-    const pubInputNames = ['englishSym','chapNo','docId']
+    const getInputs = (selectors: string[]) => doc.querySelectorAll<HTMLInputElement>(
+      selectors.map(name => `input[id="${name}"]`).join(','),
+    )
 
-    const inputs = Array.from(doc.querySelectorAll<HTMLInputElement>(
-      [...pageInputNames,...pubInputNames].map(name => `input[id="${name}"]`).join(','),
-    ))
+    // in case can't find unique identifier
+    if (getInputs(pubInputNames).length === 0) return url
+
+    const inputs = Array.from(getInputs([...pageInputNames,...pubInputNames]))
 
     const inputPairs = inputs.map(it => [it.id, it.value].join(':'))
 
