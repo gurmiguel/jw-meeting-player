@@ -21,7 +21,6 @@ const baseQuery: BaseQueryFn<
     log.error('API Error', error)
     toast.error('Ocorreu um erro inesperado', {
       duration: 3_000,
-      important: true,
     })
     return { error }
   }
