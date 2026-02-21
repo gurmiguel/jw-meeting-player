@@ -126,61 +126,89 @@ export function useKeyboardNavigation() {
     return () => abort.abort()
   }, [arrowHandlers])
 
-  const genericHandlers = useMemo(() => ({
-    Escape(e) {
-      e.preventDefault()
-      const firstFocusableNavigatable = getFocusableElements('[data-arrow-nav*="x"],[data-arrow-nav*="y"]').at(0)
-      if (firstFocusableNavigatable) {
-        const allFocusables = getFocusableElements()
-        const previousFocusable = allFocusables.at(allFocusables.indexOf(firstFocusableNavigatable) - 1)
-        previousFocusable?.focus()
-        previousFocusable?.blur()
-      }
-      dispatch(playerActions.stop())
-    },
-    k(e) {
+  const genericHandlers = useMemo(() => {
+    const seekAdd = (secondsAdd: number) => {
       const { player } = store.getState()
+      if (!['audio', 'video'].includes(player.type as any)) return false
+    
+      dispatch(playerActions.time({ currentTime: Math.max(0, player.currentTime + secondsAdd ) }))
+      return true
+    }
 
-      const hasMedia = (['audio', 'video', 'text'] as (MediaTypes | null)[]).includes(player.type)
-      if (!hasMedia) return
+    return {
+      Escape(e) {
+        e.preventDefault()
+        const firstFocusableNavigatable = getFocusableElements('[data-arrow-nav*="x"],[data-arrow-nav*="y"]').at(0)
+        if (firstFocusableNavigatable) {
+          const allFocusables = getFocusableElements()
+          const previousFocusable = allFocusables.at(allFocusables.indexOf(firstFocusableNavigatable) - 1)
+          previousFocusable?.focus()
+          previousFocusable?.blur()
+        }
+        dispatch(playerActions.stop())
+      },
+      k(e) {
+        const { player } = store.getState()
 
-      e.preventDefault()
+        const hasMedia = (['audio', 'video', 'text'] as (MediaTypes | null)[]).includes(player.type)
+        if (!hasMedia) return
 
-      const isPlaying = player.playState === 'play'
+        e.preventDefault()
 
-      if (isPlaying)
-        dispatch(playerActions.pause())
-      else
-        dispatch(playerActions.play())
-    },
-    [','](e) {
-      e.preventDefault()
-      const { player } = store.getState()
+        const isPlaying = player.playState === 'play'
 
-      const currentPlayRate = player.playRate
-      const prevPlayRate = SPEED_OPTIONS[Math.max(0, SPEED_OPTIONS.indexOf(currentPlayRate) - 1)]
-      if (prevPlayRate !== currentPlayRate)
-        dispatch(playerActions.playRate(prevPlayRate))
-    },
-    ['.'](e) {
-      e.preventDefault()
-      const { player } = store.getState()
+        if (isPlaying)
+          dispatch(playerActions.pause())
+        else
+          dispatch(playerActions.play())
+      },
+      [','](e) {
+        if (e.ctrlKey) return seekAdd(-1)
 
-      const currentPlayRate = player.playRate
-      const prevPlayRate = SPEED_OPTIONS[Math.min(SPEED_OPTIONS.length - 1, SPEED_OPTIONS.indexOf(currentPlayRate) + 1)]
-      if (prevPlayRate !== currentPlayRate)
-        dispatch(playerActions.playRate(prevPlayRate))
-    },
-  } satisfies Record<string, (e: KeyboardEvent) => void>), [store, dispatch])
+        e.preventDefault()
+        const { player } = store.getState()
+
+        const currentPlayRate = player.playRate
+        const prevPlayRate = SPEED_OPTIONS[Math.max(0, SPEED_OPTIONS.indexOf(currentPlayRate) - 1)]
+        if (prevPlayRate !== currentPlayRate)
+          dispatch(playerActions.playRate(prevPlayRate))
+      },
+      ['.'](e) {
+        if (e.ctrlKey) return seekAdd(1)
+
+        e.preventDefault()
+        const { player } = store.getState()
+
+        const currentPlayRate = player.playRate
+        const prevPlayRate = SPEED_OPTIONS[Math.min(SPEED_OPTIONS.length - 1, SPEED_OPTIONS.indexOf(currentPlayRate) + 1)]
+        if (prevPlayRate !== currentPlayRate)
+          dispatch(playerActions.playRate(prevPlayRate))
+      },
+      ['j'](e) {
+        let stepCount = 5
+        if (e.ctrlKey) stepCount = 10
+        if (e.altKey) stepCount = 30
+
+        seekAdd(-stepCount)
+      },
+      ['l'](e) {
+        let stepCount = 5
+        if (e.ctrlKey) stepCount = 10
+        if (e.altKey) stepCount = 30
+      
+        seekAdd(stepCount)
+      },
+    } satisfies Record<string, (e: KeyboardEvent) => void>
+  }, [store, dispatch])
 
   type AvailableGenericHandlers = keyof typeof genericHandlers
 
   useEffect(() => {
     const abort = new AbortController()
 
-    document.addEventListener('keyup', e => {
+    document.addEventListener('keydown', e => {
       if (e.defaultPrevented) return
-      if ((e.target as HTMLElement).matches('input, textarea, select')) return
+      if ((e.target as HTMLElement).matches('input, textarea, select, [contenteditable=true]')) return
       genericHandlers[e.key as AvailableGenericHandlers]?.(e)
     }, { signal: abort.signal })
 

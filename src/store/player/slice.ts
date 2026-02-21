@@ -55,7 +55,6 @@ export const playerSlice = createSlice({
       //
     },
     displayCleaningGroup(_, _action: PayloadAction<{ group: number, withGeneral: boolean }>) {
-      console.log('display')
       return {
         ...initialState,
         displayCleaningGroup: true,

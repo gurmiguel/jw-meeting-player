@@ -60,6 +60,7 @@ function Player() {
     player.current?.pause()
     setMedia(undefined)
     setCurrentSpeed(DEFAULT_SPEED)
+    setCleaningGroup(undefined)
   }
 
   useBridgeEventHandler('stop', forceStop, [])

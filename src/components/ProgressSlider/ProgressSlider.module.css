@@ -24,5 +24,7 @@
 }
 
 .time {
-  @apply flex-shrink mx-2 pointer-events-none
+  @apply flex-shrink mx-2 pointer-events-none text-right overflow-hidden;
+  overflow-wrap: normal;
+  word-wrap: normal;
 }

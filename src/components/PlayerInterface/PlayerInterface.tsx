@@ -16,6 +16,7 @@ export function PlayerInterface() {
     playRate,
     playState,
     content,
+    displayCleaningGroup,
   } = useAppSelector(state => state.player)
   const playing = file !== null
 
@@ -81,8 +82,8 @@ export function PlayerInterface() {
   return (
     <>
       <MediaControls
-        playing={playing}
-        type={type}
+        playing={playing || displayCleaningGroup}
+        type={displayCleaningGroup ? 'image' : type}
         playStatus={playState}
         onStop={handleStop}
         onPlay={handlePlay}

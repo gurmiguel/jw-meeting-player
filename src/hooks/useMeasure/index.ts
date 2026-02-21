@@ -13,6 +13,20 @@ export function useMeasure(elementRef: RefObject<HTMLElement> | null) {
     const { width, height } = elementRef.current.getBoundingClientRect()
 
     setDimensions({ width, height })
+    
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry.target !== elementRef.current) return
+
+      const { width, height } = entry.contentRect
+
+      setDimensions({ width, height })
+    })
+
+    observer.observe(elementRef.current, { box: 'content-box' })
+
+    return () => {
+      observer.disconnect()
+    }
   }, [elementRef])
 
   return {
