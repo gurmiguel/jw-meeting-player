@@ -1,5 +1,6 @@
 import $transliterate from '@sindresorhus/transliterate'
 import log from 'electron-log/main'
+import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import http from 'node:https'
 import path from 'node:path'
@@ -17,7 +18,11 @@ export class Downloader extends FileSystemService {
   protected downloadQueue: Array<{ targetPath: string, url: string, thumbnail: string | null }> = []
 
   async enqueue(url: string, type: string) {
-    let filename = url.split(url.startsWith('http') ? '/' : path.sep).pop()!
+    let filename = ''
+    if (url.startsWith('data:'))
+      filename = randomUUID()
+    else
+      filename = url.split(url.startsWith('http') ? '/' : path.sep).pop()!
 
     filename = transliterate(filename)
       .replace(/[^a-z0-9_\-\s\+.]/gi, '')
@@ -41,53 +46,57 @@ export class Downloader extends FileSystemService {
 
   async flush() {
     const downloads = await Promise.all(this.downloadQueue.map(async ({ targetPath, thumbnail, url }) => {
-      const file = fs.createWriteStream(targetPath)
-
       const filename = path.basename(targetPath)
-
-      try {
-        if (thumbnail === null) {
-          throw new Error('Only try to fetch existing JW Library video files')
-        }
-
-        await fs.promises.access(path.join(getJWLibraryVideosDir(), filename))
-        const readFile = fs.createReadStream(path.join(getJWLibraryVideosDir(), filename))
-        readFile.pipe(file)
-
-        await new Promise<void>((resolve, reject) => {
-          file.on('error', reject)
-          file.on('finish', async () => {
-            file.close()
-            resolve()
-          })
-        })
-
-        log.debug('Using existing file from JW Library', filename)
-      } catch {
-        log.debug('Downloading from:', url)
-        const jwlibraryCopyFile = url.match(/(jw\.org|akamaihd\.net)/i)
-          ? fs.createWriteStream(path.join(getJWLibraryVideosDir(), filename))
-          : null
-
-        await new Promise<void>(resolve => http.get(url, response => {
-          const contentSize = parseInt(response.headers['content-length'] ?? '0')
-          if (jwlibraryCopyFile)
-            response.pipe(jwlibraryCopyFile)
-          response.pipe(file)
+    
+      if (url.startsWith('data:')) {
+        await fs.promises.writeFile(targetPath, url.replace(/^data:[\w]+\/[\w-+.]+;base64,/, ''), 'base64')
+      } else {
+        const file = fs.createWriteStream(targetPath)
   
-          if (contentSize) {
-            let downloadedSize = 0
-            response.on('data', (chunk: Buffer) => {
-              downloadedSize += chunk.byteLength
-              // during progress, only update until 98%, so thumbnail is sure to be loaded on 100%
-              updateProgress(filename, Math.min(98, downloadedSize * 100 / contentSize))
-            })
+        try {
+          if (thumbnail === null) {
+            throw new Error('Only try to fetch existing JW Library video files')
           }
-          file.on('finish', async () => {
-            file.close()
-            resolve()
+  
+          await fs.promises.access(path.join(getJWLibraryVideosDir(), filename))
+          const readFile = fs.createReadStream(path.join(getJWLibraryVideosDir(), filename))
+          readFile.pipe(file)
+  
+          await new Promise<void>((resolve, reject) => {
+            file.on('error', reject)
+            file.on('finish', async () => {
+              file.close()
+              resolve()
+            })
           })
-        }))
+  
+          log.debug('Using existing file from JW Library', filename)
+        } catch {
+          log.debug('Downloading from:', url.slice(0, 150))
+          const jwlibraryCopyFile = url.match(/(jw\.org|akamaihd\.net)/i)
+            ? fs.createWriteStream(path.join(getJWLibraryVideosDir(), filename))
+            : null
+  
+          await new Promise<void>(resolve => http.get(url, response => {
+            const contentSize = parseInt(response.headers['content-length'] ?? '0')
+            if (jwlibraryCopyFile)
+              response.pipe(jwlibraryCopyFile)
+            response.pipe(file)
+  
+            if (contentSize) {
+              let downloadedSize = 0
+              response.on('data', (chunk: Buffer) => {
+                downloadedSize += chunk.byteLength
+                // during progress, only update until 98%, so thumbnail is sure to be loaded on 100%
+                updateProgress(filename, Math.min(98, downloadedSize * 100 / contentSize))
+              })
+            }
+            file.on('finish', async () => {
+              file.close()
+              resolve()
+            })
+          }))
+        }
       }
 
       const type = await decideFileMediaType(targetPath)

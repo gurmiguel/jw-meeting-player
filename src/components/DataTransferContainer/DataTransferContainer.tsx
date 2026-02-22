@@ -2,7 +2,7 @@ import { Dispatch, bindActionCreators, createSlice } from '@reduxjs/toolkit'
 import clsx from 'clsx'
 import logger from 'electron-log/renderer'
 import { DragEvent, PropsWithChildren, useMemo, useReducer } from 'react'
-import { getSortedTransferFiles } from '../../lib/filesystem'
+import { getSortedTransferFiles, getWebdataBase64Files } from '../../lib/filesystem'
 import { SliceActions } from '../../store/hooks'
 import { useConfirmDialog } from '../ConfirmDialog/hook'
 import classes from './DataTransferContainer.module.css'
@@ -49,9 +49,10 @@ export function DataTransferContainer({ onTransfer, validFormats, children, ...p
     e.preventDefault()
     const items = Array.from(e.dataTransfer.files)
 
-    let files: File[] 
+    let files: File[] = items
     try {
-      files = await getSortedTransferFiles(items)
+      files = await getSortedTransferFiles(files)
+      files = await getWebdataBase64Files(files)
     } catch (ex) {
       logger.error(ex)
 

@@ -68,6 +68,14 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
           return processed
       }
 
+      if (file.path.startsWith('data:')) {
+        const mimeTypes = await import('mime-types')
+        const [,mime] = file.path.match(/^data:(\w+\/[\w-+.]+)/) ?? []
+        const download = await downloader.enqueue(file.path, mimeTypes.extension(mime) || 'png')
+        file.path = download.path
+        await downloader.flush()
+      }
+
       const { path, thumbnail, type, duration } = await uploader.enqueue(file.path, file.name)
 
       const media: ParsedMedia[] = []

@@ -1,6 +1,5 @@
 import { addMinutes, format as formatDate } from 'date-fns'
 import log from 'electron-log/main'
-import path from 'node:path'
 import { WeekType } from '../../shared/models/WeekType'
 import { Deleter } from './Deleter'
 import MetadataLoader from './MetadataLoader'
@@ -19,7 +18,7 @@ export async function removeMedia(item: ProcessedResult, date: Date, type: WeekT
   
   try {
     await Promise.all((item.media as ParsedMedia[]).map(async media => {
-      await deleter.enqueue(path.basename(media.path))
+      await deleter.enqueue(media.path)
     }))
   } finally {
     log.info('Starting to delete')
