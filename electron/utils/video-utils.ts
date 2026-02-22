@@ -1,4 +1,4 @@
-import log from 'electron-log'
+import log from 'electron-log/main'
 import { downloadBinaries } from 'ffbinaries'
 import ffmpeg, { ffprobe } from 'fluent-ffmpeg'
 import fs from 'fs'

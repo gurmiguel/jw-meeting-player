@@ -7,6 +7,7 @@ import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { extractMediaFromJWLPlaylist } from '../utils/jwlplaylist'
 import { extractMediaFromJWPUB } from '../utils/jwpub'
+import { parseExtensionFromMime } from '../utils/mime'
 import { ParsedMedia, ProcessedResult } from './crawler/types'
 import Downloader from './Downloader'
 import MetadataLoader from './MetadataLoader'
@@ -69,9 +70,8 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
       }
 
       if (file.path.startsWith('data:')) {
-        const mimeTypes = await import('mime-types')
         const [,mime] = file.path.match(/^data:(\w+\/[\w-+.]+)/) ?? []
-        const download = await downloader.enqueue(file.path, mimeTypes.extension(mime) || 'png')
+        const download = await downloader.enqueue(file.path, parseExtensionFromMime(mime) || 'png')
         file.path = download.path
         await downloader.flush()
       }

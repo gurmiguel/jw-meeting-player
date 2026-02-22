@@ -1,4 +1,4 @@
-import log from 'electron-log'
+import log from 'electron-log/main'
 import settings from 'electron-settings'
 import { JWApiUrlBuilder } from '../utils/jw-api'
 import { JWApiResponse, MediaResponse } from '../utils/jw-types'
