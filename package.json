@@ -3,7 +3,7 @@
   "displayName": "JW Meeting Player",
   "description": "Player for controlling media display/share on Jehova's Witnesses meetings",
   "private": true,
-  "version": "0.23.0",
+  "version": "0.23.1",
   "author": {
     "name": "Gustavo Miguel",
     "email": "gu.rmiguel@gmail.com"
@@ -34,6 +34,7 @@
     "electron-shortcuts": "^0.4.0",
     "electron-store": "^8.1.0",
     "electron-updater": "^6.6.2",
+    "encoding": "^0.1.13",
     "ffbinaries": "^1.1.5",
     "file-type": "^20.4.1",
     "fluent-ffmpeg": "^2.1.3",
