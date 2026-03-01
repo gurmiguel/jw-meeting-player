@@ -15,12 +15,12 @@ import { Uploader } from './Uploader'
 
 const TEMP_CONTEXT = 'upload-temp'
 
-export async function uploadMedia(date: Date, type: WeekType, files: UploadingFile[]) {
+export async function uploadMedia(date: Date, type: WeekType, files: UploadingFile[], copyFiles = false) {
   date = addMinutes(date, date.getTimezoneOffset())
 
   log.info('Uploading files for date:', formatDate(date, 'yyyy-MM-dd'))
 
-  const uploader = new Uploader()
+  const uploader = new Uploader(copyFiles ? 'copy' : 'link')
   uploader.setContext(formatDate(date, 'yyyy-w') + `--${type + 1}`)
   const downloader = new Downloader()
   downloader.setContext(TEMP_CONTEXT)

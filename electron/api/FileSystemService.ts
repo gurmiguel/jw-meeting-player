@@ -8,7 +8,10 @@ export abstract class FileSystemService {
   protected dirsCreated = new Set<string>()
 
   get targetDir() {
-    return path.join(FILES_PATH, this.currentContext)
+    if (path.isAbsolute(this.currentContext))
+      return this.currentContext
+    else
+      return path.join(FILES_PATH, this.currentContext)
   }
   
   setContext(ctx: string) {

@@ -47,7 +47,7 @@ export async function addSong(date: Date, type: WeekType, group: string, song: n
     },
   }
 
-  await uploadMedia(date, type, [songFile])
+  await uploadMedia(date, type, [songFile], true)
 
   const deleter = new Deleter()
   deleter.setContext(SONGS_CONTEXT)
