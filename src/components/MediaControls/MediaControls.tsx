@@ -20,9 +20,11 @@ interface Props {
   duration: number
   onSeek(position: number): void
   disableSeek?: boolean
+  isLooping: boolean
+  onToggleLoop(): void
 }
 
-export function MediaControls({ playing, type, playStatus, onPause, onPlay, onStop, speed: currentSpeed, onSetSpeed, currentTime, duration, onSeek, disableSeek = false }: Props) {
+export function MediaControls({ playing, type, playStatus, onPause, onPlay, onStop, speed: currentSpeed, onSetSpeed, currentTime, duration, onSeek, disableSeek = false, isLooping, onToggleLoop }: Props) {
   const playingMedia = playing && type !== 'image'
   const [speedOptsOpen, setSpeedOptsOpen] = useState(false)
 
@@ -60,6 +62,10 @@ export function MediaControls({ playing, type, playStatus, onPause, onPlay, onSt
         <button className={clsx(classes.controlButton, classes.speedsButton, speedOptsOpen && 'invisible pointer-events-none')} onClick={() => setSpeedOptsOpen(true)} disabled={(['image'] as Array<typeof type>).includes(type)}>
           <span className="font-semibold">{currentSpeed.toFixed(1)}x</span>
         </button>
+        <label className={clsx(classes.controlButton, 'flex items-center px-2 py-0 has-[input:enabled]:cursor-pointer')}>
+          <input type="checkbox" checked={isLooping} onChange={onToggleLoop} disabled={!type || !['video', 'audio'].includes(type)} className="cursor-pointer" style={{ appearance: 'checkbox' }} />
+          <span className="font-semibold text-sm -mb-1">Loop</span>
+        </label>
         {speedOptsOpen && (
           <div ref={clickOutsideRef} className={clsx(classes.container, 'absolute flex flex-col-reverse bottom-0 right-0 justify-between gap-2 p-2 rounded-md bg-zinc-950')}>
             {SPEED_OPTIONS.map(speed => (

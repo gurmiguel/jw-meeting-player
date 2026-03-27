@@ -11,6 +11,7 @@ export interface PlayerState {
   zoomLevel: number
   position: { top: number, left: number }
   displayCleaningGroup: boolean
+  isLooping: boolean
 }
 
 export type MediaItem = NonNullableObject<Pick<PlayerState, 'type' | 'file'>> & ({

@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('bridge', {
   ...eventHandler('player', 'setSpeed'),
   ...eventHandler('player', 'time'),
   ...eventHandler('player', 'seek'),
+  ...eventHandler('player', 'loop'),
   ...eventHandler('player', 'zoom'),
   ...eventHandler('player', 'toggleZoomScreen'),
   ...eventHandler('player', 'zoomScreenNotFound'),

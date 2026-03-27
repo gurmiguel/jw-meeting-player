@@ -13,6 +13,7 @@ export const initialState: PlayerState = {
   zoomLevel: 1,
   position: { top: 0, left: 0 },
   displayCleaningGroup: false,
+  isLooping: false,
 }
 
 export const playerSlice = createSlice({
@@ -47,6 +48,9 @@ export const playerSlice = createSlice({
     zoomLevel(state, action: PayloadAction<Pick<PlayerState, 'zoomLevel' | 'position'>>) {
       state.zoomLevel = action.payload.zoomLevel
       state.position = action.payload.position
+    },
+    loop(state, action: PayloadAction<boolean>) {
+      state.isLooping = action.payload
     },
     toggleZoomScreen() {
       //

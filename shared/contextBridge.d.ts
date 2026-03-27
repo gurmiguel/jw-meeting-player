@@ -27,6 +27,8 @@ declare global {
     onTime(callback: IpcRendererCallback<PlayerEvents.Time>): IpcRendererCallbackUnsubscriber
     seek(payload: PlayerEvents.Seek): void
     onSeek(callback: IpcRendererCallback<PlayerEvents.Seek>): IpcRendererCallbackUnsubscriber
+    loop(payload: PlayerEvents.Loop): void
+    onLoop(callback: IpcRendererCallback<PlayerEvents.Loop>): IpcRendererCallbackUnsubscriber
     zoom(payload: PlayerEvents.Zoom): void
     onZoom(callback: IpcRendererCallback<PlayerEvents.Zoom>): IpcRendererCallbackUnsubscriber
     toggleZoomScreen(): void

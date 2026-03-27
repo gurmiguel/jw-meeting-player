@@ -48,6 +48,13 @@ playerListener.startListening({
 })
 
 playerListener.startListening({
+  actionCreator: playerActions.loop,
+  effect({ payload }) {
+    bridge.loop({ isLooping: payload })
+  },
+})
+
+playerListener.startListening({
   actionCreator: playerActions.zoomLevel,
   effect({ payload }) {
     bridge.zoom({ zoomLevel: payload.zoomLevel, ...payload.position })

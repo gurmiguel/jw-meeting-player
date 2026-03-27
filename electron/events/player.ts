@@ -16,6 +16,7 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
   registerTwoWayEvent('setSpeed')
   registerTwoWayEvent('time')
   registerTwoWayEvent('seek')
+  registerTwoWayEvent('loop')
   registerTwoWayEvent('zoom')
   registerTwoWayEvent('toggleZoomScreen', () => {
     alwaysOnTopState.player = false
@@ -62,6 +63,10 @@ export namespace PlayerEvents {
 
   export interface Seek {
     position: number
+  }
+
+  export interface Loop {
+    isLooping: boolean
   }
 
   export interface Zoom {

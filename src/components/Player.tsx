@@ -25,6 +25,7 @@ function Player() {
   const [cleaningGroup, setCleaningGroup] = useState<{ group: number, withGeneral: boolean }>()
 
   const [currentSpeed, setCurrentSpeed] = useState(initialPlayer.playRate)
+  const [isLooping, setIsLooping] = useState(initialPlayer.isLooping)
 
   const [{ zoomLevel, position }, setZoomNPos] = useState({
     zoomLevel: initialPlayer.zoomLevel,
@@ -61,9 +62,14 @@ function Player() {
     setMedia(undefined)
     setCurrentSpeed(DEFAULT_SPEED)
     setCleaningGroup(undefined)
+    setIsLooping(false)
   }
 
   useBridgeEventHandler('stop', forceStop, [])
+
+  useBridgeEventHandler('loop', ({ isLooping }) => {
+    setIsLooping(isLooping)
+  }, [])
 
   useBridgeEventHandler('setSpeed', ({ speed }) => {
     setCurrentSpeed(speed)
@@ -260,6 +266,7 @@ function Player() {
                       onPlay={handlePlay}
                       onEnded={handleMediaEnded}
                       autoPlay
+                      loop={isLooping}
                     />
                   )}
                   {media?.file && media.type === 'audio' && (
@@ -274,6 +281,7 @@ function Player() {
                       onPause={handlePause}
                       onEnded={handleMediaEnded}
                       autoPlay
+                      loop={isLooping}
                     />
                   )}
                   {media?.file && media.type === 'image' && (
@@ -307,6 +315,7 @@ function Player() {
                           onEnded={handleMediaEnded}
                           onLoadedMetadata={handleLoadedMetadata}
                           preload="metadata"
+                          loop={isLooping}
                         />
                       )}
                       <div id="bible-reader" className={classes.bibleText} dangerouslySetInnerHTML={{ __html: media.content }} />

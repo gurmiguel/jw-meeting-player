@@ -17,6 +17,7 @@ export function PlayerInterface() {
     playState,
     content,
     displayCleaningGroup,
+    isLooping,
   } = useAppSelector(state => state.player)
   const playing = file !== null
 
@@ -44,6 +45,10 @@ export function PlayerInterface() {
   
   function handleSeek(position: number) {
     dispatch(playerActions.time({ currentTime: position }))
+  }
+
+  function handleToggleLoop() {
+    dispatch(playerActions.loop(!isLooping))
   }
   
   useEffect(() => {
@@ -94,6 +99,8 @@ export function PlayerInterface() {
         duration={duration}
         onSeek={handleSeek}
         disableSeek={content !== undefined}
+        isLooping={isLooping}
+        onToggleLoop={handleToggleLoop}
       />
 
       <FeedbackScreen
