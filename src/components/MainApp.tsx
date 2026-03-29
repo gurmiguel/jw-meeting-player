@@ -178,15 +178,15 @@ function MainApp() {
   }, [sortingId])
 
   const mediaGroups = useMemo(() => {
-    const groups = [...new Set(Object.values((sortingGroup ? sortingItems : null) ?? data?.items ?? []).map(it => it.group))]
+    if (isFetchingData) return []
+
+    const groups = ['Cânticos', ...new Set(Object.values((sortingGroup ? sortingItems : null) ?? data?.items ?? []).map(it => it.group))]
 
     const items = sortingItems ?? data?.items ?? []
-    return items.length || isFetchingData
-      ? groups.reduce((acc, group) => ({
-        ...acc,
-        [group]: items.filter(item => item.group === group),
-      }), {} as Record<string, ProcessedResult[]>)
-      : { 'Cânticos': [] }
+    return groups.reduce((acc, group) => ({
+      ...acc,
+      [group]: items.filter(item => item.group === group),
+    }), {} as Record<string, ProcessedResult[]>)
   }, [data?.items, isFetchingData, sortingGroup, sortingItems])
 
   const createWeekChangeHandler = (action: 'before' | 'after'): MouseEventHandler => async (e) => {

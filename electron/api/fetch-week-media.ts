@@ -82,8 +82,10 @@ async function fetchMidWeekMeetingMedia(url: string, downloader: Downloader) {
 
   const mwbUrl = await CrawlerUtils.parseHref($todayAnchor)
   
-  if (!mwbUrl)
-    throw new Error('Today mwb article element not found in the document.')
+  if (!mwbUrl) {
+    log.warn('Today mwb article element not found in the document.')
+    return []
+  }
 
   const handler = new CrawlerHandler(mwbUrl, downloader)
   
