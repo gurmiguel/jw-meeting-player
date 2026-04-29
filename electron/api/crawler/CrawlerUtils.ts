@@ -1,5 +1,4 @@
-import logger from 'electron-log'
-import { error, warn } from 'electron-log/main'
+import logger from 'electron-log/main'
 import { type JSDOM } from 'jsdom'
 import { MAX_VIDEO_DURATION } from '../../../shared/constants'
 import { JWApiUrlBuilder } from '../../utils/jw-api'
@@ -44,7 +43,7 @@ export class CrawlerUtils {
     const issue = params.get('issue')
 
     if ((!pub && !docid) || !track) {
-      error('Could not load video, data-video parameter not valid', dataVideo)
+      logger.error('Could not load video, data-video parameter not valid', dataVideo)
       return null
     }
 
@@ -74,7 +73,7 @@ export class CrawlerUtils {
     const duration = Number(files[0]?.duration ?? 0)
     
     if (duration > MAX_VIDEO_DURATION) {
-      warn('Video duration too long, will not download!', { downloadURL, title, duration })
+      logger.warn('Video duration too long, will not download!', { downloadURL, title, duration })
       return null
     }
 
