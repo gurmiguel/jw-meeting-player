@@ -15,11 +15,11 @@ export class WeekendParser extends CrawlerParser {
 
     if (!watchtowerArticleUrl) return null
 
-    const media = new Array<ParsingResult>()
+    const media = new Array<ParsingResult | Error>()
 
     media.push(...(await Promise.all([
       this.utils.fetchSongsMedia(watchtowerArticleUrl),
-      this.utils.fetchArticleMedia(watchtowerArticleUrl).then(results => results.map(media => ({
+      this.utils.fetchArticleMedia(watchtowerArticleUrl).then(results => results.map(media => media instanceof Error ? media : ({
         ...media,
         group: [WeekendParser.GROUP, watchtowerTitle ?? media.group].join(' :: '),
       }))),

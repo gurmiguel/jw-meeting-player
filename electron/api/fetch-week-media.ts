@@ -11,7 +11,7 @@ import { CrawlerUtils } from './crawler/CrawlerUtils'
 import { MidWeekMeeting } from './crawler/parsers/MidWeekMeeting'
 import { SongsParser } from './crawler/parsers/SongsParser'
 import { WeekendParser } from './crawler/parsers/WeekendParser'
-import { ParsedMedia, ProcessedResult } from './crawler/types'
+import { ParsedMedia, ParsingResult, ProcessedResult } from './crawler/types'
 
 // pnpm run -s script "./electron/api/fetch-week-media.ts" "fetchWeekMedia" "new Date('$(date)')" "0"
 
@@ -34,16 +34,18 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
     force = true
     loadedMetadata = await metadataLoader.loadMetadata(force)
   }
-  let parsingResult: ProcessedResult[] | null = loadedMetadata
+  let parsingResult: (ProcessedResult | Error)[] | null = loadedMetadata
   const shouldReload = !parsingResult || force
   try {
     if (shouldReload) {
+      const mapManual = (r: ParsingResult | Error) => 
+        r instanceof Error ? r : ({ ...r, manual: false })
       switch (type) {
         case WeekType.MIDWEEK:
-          parsingResult = (await fetchMidWeekMeetingMedia(jwURL, downloader)).map(r => ({ ...r, manual: false }))
+          parsingResult = (await fetchMidWeekMeetingMedia(jwURL, downloader)).map(mapManual)
           break
         case WeekType.WEEKEND:
-          parsingResult = (await fetchWeekendMeetingMedia(jwURL, downloader)).map(r => ({ ...r, manual: false }))
+          parsingResult = (await fetchWeekendMeetingMedia(jwURL, downloader)).map(mapManual)
           break
       }
     }
@@ -58,7 +60,8 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
     log.info(`Downloaded ${count} media items`)
   }
   parsingResult?.forEach(item => {
-    (item.media as ParsedMedia[]).forEach(media => {
+    if (item instanceof Error) return
+    ;(item.media as ParsedMedia[]).forEach(media => {
       media.downloadProgress = 100
     })
   })
@@ -67,16 +70,18 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
       unionWith(parsingResult, loadedMetadata, (a, b) => {
         return isEqual(a, b)
       }),
-      it => [it.group, it.type, it.label, (it.media as ParsedMedia[]).map(m => m.path)].flat().join('||')),
-    (it, i) => !shouldReload ? i : it.group.match(/c.ntico/i) ? '000' : it.group)
+      it => it instanceof Error ? 'errors' : [it.group, it.type, it.label, (it.media as ParsedMedia[]).map(m => m.path)].flat().join('||')),
+    (it, i) => !shouldReload ? i : it instanceof Error ? 'errors' : it.group.match(/c.ntico/i) ? '000' : it.group)
   if (mergedResults.length > 0)
-    await metadataLoader.saveMetadata(mergedResults)
+    await metadataLoader.saveMetadata(mergedResults.filter((it): it is Exclude<typeof it, Error> => it instanceof Error === false))
 
   return { items: mergedResults }
 }
 
 async function fetchMidWeekMeetingMedia(url: string, downloader: Downloader) {
   const doc = await CrawlerUtils.parseDocument(url)
+
+  if (doc instanceof Error) throw new Error('Unable to parse Mid Week Meeting content', { cause: doc })
 
   const $todayAnchor = doc.querySelector<HTMLAnchorElement>('a.today.pub-mwb')
 

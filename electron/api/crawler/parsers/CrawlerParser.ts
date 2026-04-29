@@ -13,5 +13,5 @@ export abstract class CrawlerParser {
     this.utils = utils
   }
   
-  abstract process(doc: Document): Promise<ParsingResult[] | null>
+  abstract process(doc: Document): Promise<(ParsingResult | Error)[] | null>
 }

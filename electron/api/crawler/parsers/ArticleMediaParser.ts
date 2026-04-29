@@ -16,15 +16,13 @@ export class ArticleMediaParser extends CrawlerParser {
 
     // new interstitial page for multiple publications citation
     if ($root.matches('.publicationCitation')) {
-      const media = new Array<ParsingResult>()
-
-      for (const $citation of $root.querySelectorAll<HTMLAnchorElement>('a.publicationCitation')) {
+      const media = await Promise.all(Array.from($root.querySelectorAll<HTMLAnchorElement>('a.publicationCitation')).map(async ($citation) => {
         const href = $citation.href
 
-        media.push(...await this.utils.fetchArticleMedia(href, this.types))
-      }
+        return await this.utils.fetchArticleMedia(href, this.types)
+      }))
 
-      return media
+      return media.flat(1)
     }
 
     const articleTitle = $root.querySelector('h1')?.textContent?.trim() ?? doc.title.split('—').shift()!.trim()

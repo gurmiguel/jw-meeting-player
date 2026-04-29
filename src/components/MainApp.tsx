@@ -63,7 +63,22 @@ function MainApp() {
   const isToday = useMemo(() => formatDate(date, 'yyyy-MM-dd') === formatDate(new Date(), 'yyyy-MM-dd') && type === todayType,[date, todayType, type])
 
   const [ refetchWeekData, { isFetching: isRefreshing } ] = useLazyRefetchWeekMediaQuery()
-  const { currentData: data, isFetching, isSuccess: hasFetchedWeekMedia } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type })
+  const { currentData: data, isFetching, isSuccess: hasFetchedWeekMedia } = useFetchWeekMediaQuery({ isoDate: currentWeekStart.toISOString(), type }, {
+    selectFromResult({ currentData, ...api }) {
+      if (currentData?.items.some(it => it instanceof Error)) {
+        toast('Ocorreram alguns erros ao buscar o conteúdo da reunião', {
+          id: 'fetch-contains-error',
+          duration: 5_000,
+        })
+      }
+      return {
+        ...api,
+        currentData: currentData ? {
+          items: currentData.items.filter((it): it is Exclude<typeof it, Error> => it instanceof Error === false),
+        } : currentData,
+      }
+    },
+  })
   const [preloadMeeting] = usePreloadMeetingMutation()
 
   const [sortingItems, setSortingItems] = useState<ProcessedResult[]>()

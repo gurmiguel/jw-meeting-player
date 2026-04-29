@@ -25,15 +25,19 @@ export class CrawlerHandler {
     return this
   }
 
-  async process(): Promise<ParsingResult[]> {
+  async process(): Promise<(ParsingResult | Error)[]> {
     log.info('Fetching from:', this.url)
 
     const doc = await CrawlerUtils.parseDocument(this.url)
+
+    if (doc instanceof Error) {
+      log.warn('Unable to parse url:', this.url)
+      return [doc]
+    }
     
     const pageId = await this.getPageId(doc, this.url)
     if (!await this.isElligible(pageId))
       return []
-
 
     this.loadedIds.push(pageId)
 
@@ -44,7 +48,10 @@ export class CrawlerHandler {
           throw err
         })
 
-      return parsedResult?.map(res => ({
+      if (parsedResult instanceof Error)
+        return parsedResult
+
+      return parsedResult?.map(res => res instanceof Error ? res : ({
         ...res,
         manual: false,
       }))

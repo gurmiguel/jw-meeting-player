@@ -18,7 +18,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       providesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
       transformResponse({ items }: APIEvents.FetchWeekMediaResponse) {
         return {
-          items: items.map(x => ({
+          items: items.map(x => x instanceof Error ? x : ({
             ...x,
             media: (x.media as ParsedMedia[]).map(media => ({
               ...media,
@@ -35,7 +35,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       }),
       transformResponse({ items }: APIEvents.FetchWeekMediaResponse) {
         return {
-          items: items.map(x => ({
+          items: items.map(x => x instanceof Error ? x : ({
             ...x,
             media: (x.media as ParsedMedia[]).map(media => ({
               ...media,
@@ -101,6 +101,7 @@ const weekApiEndpoints = electronApi.injectEndpoints({
         dispatch(
           weekApiEndpoints.util.updateQueryData('fetchWeekMedia', { isoDate, type }, data => {
             data?.items.forEach(item => {
+              if (item instanceof Error) return
               (item.media as ParsedMedia[]).forEach(media => {
                 if (getFilename(media.path) === mediaPath) {
                   media.downloadProgress = progress
