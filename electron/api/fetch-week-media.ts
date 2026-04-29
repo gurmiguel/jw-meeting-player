@@ -81,7 +81,7 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
 async function fetchMidWeekMeetingMedia(url: string, downloader: Downloader) {
   const doc = await CrawlerUtils.parseDocument(url)
 
-  if (doc instanceof Error) throw new Error('Unable to parse Mid Week Meeting content', { cause: doc })
+  if (doc instanceof Error) return [doc]
 
   const $todayAnchor = doc.querySelector<HTMLAnchorElement>('a.today.pub-mwb')
 

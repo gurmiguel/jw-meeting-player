@@ -31,7 +31,6 @@ export class CrawlerHandler {
     const doc = await CrawlerUtils.parseDocument(this.url)
 
     if (doc instanceof Error) {
-      log.warn('Unable to parse url:', this.url)
       return [doc]
     }
     

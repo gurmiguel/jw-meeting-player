@@ -1,4 +1,4 @@
-import logger from 'electron-log/main'
+import { error, warn } from 'electron-log/main'
 import { type JSDOM } from 'jsdom'
 import { MAX_VIDEO_DURATION } from '../../../shared/constants'
 import { JWApiUrlBuilder } from '../../utils/jw-api'
@@ -43,7 +43,7 @@ export class CrawlerUtils {
     const issue = params.get('issue')
 
     if ((!pub && !docid) || !track) {
-      logger.error('Could not load video, data-video parameter not valid', dataVideo)
+      error('Could not load video, data-video parameter not valid', dataVideo)
       return null
     }
 
@@ -73,7 +73,7 @@ export class CrawlerUtils {
     const duration = Number(files[0]?.duration ?? 0)
     
     if (duration > MAX_VIDEO_DURATION) {
-      logger.warn('Video duration too long, will not download!', { downloadURL, title, duration })
+      warn('Video duration too long, will not download!', { downloadURL, title, duration })
       return null
     }
 
@@ -108,7 +108,6 @@ export class CrawlerUtils {
     const abort = new AbortController()
     setTimeout(() => abort.abort(), 5_000)
 
-    const { JSDOM: jsdom } = await import('jsdom')
     const html = await fetch(url, {
       signal: abort.signal,
       keepalive: true,
@@ -120,13 +119,15 @@ export class CrawlerUtils {
       },
     }).then(res => res.text())
       .catch((err) => {
-        logger.error(`Failed to fetch url ${url}`, err)
+        error(`Failed to fetch url ${url}`, err)
         return err as Error
       })
 
     if (html instanceof Error) return html
 
-    const { window: { document } }: JSDOM = new jsdom(html, {
+    const { JSDOM: jsdom } = require('jsdom') as { JSDOM: typeof JSDOM }
+
+    const { window: { document } } = new jsdom(html, {
       url,
       contentType: 'text/html',
     })
