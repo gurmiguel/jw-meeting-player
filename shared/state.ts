@@ -12,6 +12,7 @@ export interface PlayerState {
   position: { top: number, left: number }
   displayCleaningGroup: boolean
   isLooping: boolean
+  sharingZoom: boolean
 }
 
 export type MediaItem = NonNullableObject<Pick<PlayerState, 'type' | 'file'>> & ({

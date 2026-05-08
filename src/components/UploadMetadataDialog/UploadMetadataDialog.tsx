@@ -29,7 +29,7 @@ export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGrou
             const label = (e.currentTarget.elements.namedItem('label') as HTMLInputElement).value
 
             onSubmit({ group, label })
-            onDismiss()
+            onDismiss?.()
           }}
           className={classes.container}
         >

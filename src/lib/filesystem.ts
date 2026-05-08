@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 export async function getSortedTransferFiles(files: File[]) {
   files.forEach(file => {
     file.path = common.getPathForFile(file) || file.path

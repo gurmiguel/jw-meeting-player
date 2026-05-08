@@ -15,7 +15,7 @@ export function ConfirmDialog({ onConfirm, cancelLabel = 'Não', confirmLabel = 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     onConfirm()
-    onDismiss()
+    onDismiss?.()
   }
 
   return (

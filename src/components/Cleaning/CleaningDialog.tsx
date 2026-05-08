@@ -22,7 +22,7 @@ export function CleaningDialog() {
 
     dispatch(playerActions.displayCleaningGroup({ group: previousGroup, withGeneral }))
 
-    onDismiss()
+    onDismiss?.()
   }
 
   return (

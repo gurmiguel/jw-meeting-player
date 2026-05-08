@@ -1,6 +1,6 @@
 import { RefObject, useLayoutEffect, useState } from 'react'
 
-export function useMeasure(elementRef: RefObject<HTMLElement> | null) {
+export function useMeasure(elementRef: RefObject<HTMLElement | null> | null) {
   const [{ width, height }, setDimensions] = useState({ width: -Infinity, height: -Infinity })
 
   const mode = width > height

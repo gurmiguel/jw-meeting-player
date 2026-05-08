@@ -24,25 +24,48 @@
   margin: -2.5vh -2vh;
 }
 
+.bibleTextBackground {
+  @apply absolute top-0 right-0 bottom-0 left-0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 .bibleTextWrapper {
   position: absolute;
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  @apply p-64 pl-0 w-11/12 max-h-full overflow-y-auto pointer-events-auto;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  @apply py-64 pr-96 pl-0 w-5/6 max-h-full overflow-y-auto pointer-events-auto;
 }
 
 .bibleText {
+  @apply text-6xl leading-snug;
+  color: #fff;
+  font-family: 'Athelas';
   --text-shadow-color: rgba(0,0,0,0.25);
   text-shadow: 1px 1px 2px var(--text-shadow-color);
-  @apply text-6xl font-normal leading-normal;
 
   h2 {
-    @apply mb-8 text-6xl text-black font-semibold;
+    @apply mb-6 text-6xl uppercase;
+    color: #8db2d9;
+    font-family: 'Wt-ClearText-Medium';
+
+    &:after {
+      content: '';
+      display: block;
+      height: 2px;
+      width: 100%;
+      @apply mt-6;
+      background-color: #fff6;
+    }
   }
 
   sup {
-    @apply ml-1 mr-3 font-semibold text-zinc-500;
+    @apply inline-block -top-2 ml-1 mr-3 font-medium font-sans text-4xl align-super;
   }
 
   h2 + sup,

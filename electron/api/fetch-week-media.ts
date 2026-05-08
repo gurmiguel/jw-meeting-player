@@ -34,6 +34,17 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
     force = true
     loadedMetadata = await metadataLoader.loadMetadata(force)
   }
+
+  if (!force) {
+    loadedMetadata = loadedMetadata?.map(it => ({
+      ...it,
+      media: it.media.map(m => ({
+        ...m,
+        downloadProgress: 100,
+      }))
+    })) as ProcessedResult[]
+  }
+
   let parsingResult: (ProcessedResult | Error)[] | null = loadedMetadata
   const shouldReload = !parsingResult || force
   try {
@@ -56,15 +67,11 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
     })
   } finally {
     log.info('Starting to download')
-    const count = await downloader.flush()
-    log.info(`Downloaded ${count} media items`)
-  }
-  parsingResult?.forEach(item => {
-    if (item instanceof Error) return
-    ;(item.media as ParsedMedia[]).forEach(media => {
-      media.downloadProgress = 100
+    // DO NOT await this, let it run in background
+    downloader.flush().then(count => {
+      log.info(`Downloaded ${count} media items`)
     })
-  })
+  }
   const mergedResults = sortBy(
     uniqBy(
       unionWith(parsingResult, loadedMetadata, (a, b) => {

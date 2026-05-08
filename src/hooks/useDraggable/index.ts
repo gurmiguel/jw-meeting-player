@@ -3,7 +3,7 @@ import { delay } from '../../../shared/utils'
 import { getContainerBoundaries } from '../../lib/utils'
 
 interface DragOptions {
-  container?: RefObject<HTMLElement>
+  container?: RefObject<HTMLElement | null>
   gutter?: number
   disabled?: boolean
   onDrag?: (top: number, left: number) => void
@@ -138,6 +138,7 @@ export function useDraggable<E extends HTMLElement>({ container, gutter = 0, dis
         await resetPosition()
       }
     }
+    onWindowResize()
     
     window.addEventListener('resize', onWindowResize)
     return () => window.removeEventListener('resize', onWindowResize)

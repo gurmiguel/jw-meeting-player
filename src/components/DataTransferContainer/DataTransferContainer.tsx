@@ -1,7 +1,7 @@
 import { Dispatch, bindActionCreators, createSlice } from '@reduxjs/toolkit'
 import clsx from 'clsx'
 import logger from 'electron-log/renderer'
-import { DragEvent, PropsWithChildren, useMemo, useReducer } from 'react'
+import { DragEvent, JSX, PropsWithChildren, useMemo, useReducer } from 'react'
 import { getSortedTransferFiles, getWebdataBase64Files } from '../../lib/filesystem'
 import { SliceActions } from '../../store/hooks'
 import { useConfirmDialog } from '../ConfirmDialog/hook'

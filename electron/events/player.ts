@@ -75,6 +75,10 @@ export namespace PlayerEvents {
     left: number
   }
 
+  export interface ToggleZoomScreen {
+    windowId: string | undefined
+  }
+
   export interface VerseChange {
     verse: number
     scroll?: boolean

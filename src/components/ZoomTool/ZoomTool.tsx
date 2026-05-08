@@ -102,8 +102,8 @@ export function ZoomTool({ gutter = 0, step = 0.05 }: Props) {
       left = boundaries.right - rect.width
     }
 
-    zoomBox.current.style.top = `${Math.round(top)}px`
-    zoomBox.current.style.left = `${Math.round(left)}px`
+    zoomBox.current.style.setProperty('top', `${Math.round(top)}px`)
+    zoomBox.current.style.setProperty('left', `${Math.round(left)}px`)
 
     sendZoomLevel(top, left, zoomLevel)
   }, [sendZoomLevel, zoomBox, zoomLevel])

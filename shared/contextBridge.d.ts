@@ -31,8 +31,8 @@ declare global {
     onLoop(callback: IpcRendererCallback<PlayerEvents.Loop>): IpcRendererCallbackUnsubscriber
     zoom(payload: PlayerEvents.Zoom): void
     onZoom(callback: IpcRendererCallback<PlayerEvents.Zoom>): IpcRendererCallbackUnsubscriber
-    toggleZoomScreen(): void
-    onToggleZoomScreen(callback: IpcRendererCallback<void>): IpcRendererCallbackUnsubscriber
+    toggleZoomScreen(payload: PlayerEvents.ToggleZoomScreen): void
+    onToggleZoomScreen(callback: IpcRendererCallback<PlayerEvents.ToggleZoomScreen>): IpcRendererCallbackUnsubscriber
     zoomScreenNotFound(): void
     onZoomScreenNotFound(callback: IpcRendererCallback<void>): IpcRendererCallbackUnsubscriber
     verseChange(payload: PlayerEvents.VerseChange): void

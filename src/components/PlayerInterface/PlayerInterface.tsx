@@ -71,18 +71,18 @@ export function PlayerInterface() {
   useBridgeEventHandler('stop', ({ propagate }) => {
     if (propagate)
       dispatch(playerActions.stop())
-  }, [])
+  })
 
   useBridgeEventHandler('time', ({ current, duration }) => {
     dispatch(playerActions.time({ currentTime: current, duration }))
-  }, [])
+  })
 
   useBridgeEventHandler('zoomScreenNotFound', () => {
     toast.error('A janela do Zoom não foi encontrada.', {
       duration: 5_000,
       dismissible: true,
     })
-  }, [])
+  })
 
   return (
     <>

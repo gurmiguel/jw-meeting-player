@@ -14,6 +14,7 @@ export const initialState: PlayerState = {
   position: { top: 0, left: 0 },
   displayCleaningGroup: false,
   isLooping: false,
+  sharingZoom: false,
 }
 
 export const playerSlice = createSlice({
@@ -52,8 +53,8 @@ export const playerSlice = createSlice({
     loop(state, action: PayloadAction<boolean>) {
       state.isLooping = action.payload
     },
-    toggleZoomScreen() {
-      //
+    toggleZoomScreen(state, action: PayloadAction<string | false>) {
+      state.sharingZoom = !!action.payload
     },
     verseChange(_, _action: PayloadAction<{ verse: number, scroll?: boolean }>) {
       //

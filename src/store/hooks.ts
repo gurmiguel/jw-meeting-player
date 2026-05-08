@@ -17,7 +17,6 @@ export const useAppDispatch = useDispatch<AppDispatch>
 export const useAppSelector: TypedUseSelectorHook<RootState> = (
   selector,
   equalityFn = shallowEqual,
-  // @ts-expect-error
 ) => useSelector(selector, equalityFn)
 
 export const useAppStore = useStore<RootState>

@@ -1,12 +1,16 @@
 import { MagnifyingGlassPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { addListener } from '@reduxjs/toolkit'
 import clsx from 'clsx'
-import { MouseEvent, useEffect, useRef, useState } from 'react'
+import { MouseEvent, useEffect, useRef, useState, useTransition } from 'react'
+import { toast } from 'sonner'
+import { APIEvents } from '../../../electron/events/api'
+import LoadingIcon from '../../assets/loading.svg?react'
 import zoomIcon from '../../assets/zoom-icon.png'
 import { useDraggable } from '../../hooks/useDraggable'
 import { useMeasure } from '../../hooks/useMeasure'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { initialState as initialPlayer, playerActions } from '../../store/player/slice'
+import { useDialog } from '../Dialog/DialogProvider'
 import { Resizer } from '../Resizer/Resizer'
 import { ZoomTool } from '../ZoomTool/ZoomTool'
 
@@ -31,6 +35,12 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
     file: state.player.file,
   }))
 
+  const isSharingZoom = useAppSelector(state => state.player.sharingZoom)
+
+  const [isFetchingZoomWindows, startFetchingZoomWindows] = useTransition()
+
+  const { show: showDialog, hide: hideDialog } = useDialog()
+  
   const [stream, setStream] = useState<MediaStream>()
 
   const [zoomMode, setZoomMode] = useState(false)
@@ -79,10 +89,51 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
     dispatch(playerActions.zoomLevel({ zoomLevel: initialPlayer.zoomLevel, position: initialPlayer.position }))
   }
 
-  function handleMirrorZoomScreen(e: MouseEvent) {
+  async function handleMirrorZoomScreen(e: MouseEvent) {
     e.preventDefault()
 
-    dispatch(playerActions.toggleZoomScreen())
+    if (isSharingZoom)
+      return dispatch(playerActions.toggleZoomScreen(false))
+
+    const windows = await new Promise<APIEvents.GetZoomScreenIdResponse | null>(resolve => {
+      startFetchingZoomWindows(async () => {
+        try {
+          resolve(await api.fetch<APIEvents.GetZoomScreenIdResponse>('get-zoom-screen', null))
+        } catch { resolve(null) }
+      })
+    })
+
+    if (!windows) {
+      return toast.warning('Não foi possível obter as janelas do Zoom', {
+        duration: 3_000,
+      })
+    }
+
+    const id = showDialog((
+      <div className="flex flex-col gap-4 items-center">
+        <h2 className="text-xl font-semibold">Selecione a janela do Zoom para espelhar:</h2>
+        <div className="flex justify-center gap-2 p-4">
+          {windows.map(win => (
+            <button key={win.id}
+              type="button"
+              className="flex flex-col pt-2 bg-slate-900/80 border border-white/20 rounded cursor-pointer hover:opacity-60 transition-opacity"
+              onClick={() => {
+                hideDialog(id)
+                dispatch(playerActions.toggleZoomScreen(win.id))
+              }}
+            >
+              <span className="text-sm">{win.name}</span>
+              <img src={URL.createObjectURL(new Blob([win.thumbnail as never], { type: 'image/png' }))} alt={win.name} className="object-contain aspect-video h-72" />
+            </button>
+          ))}
+        </div>
+        <button type="button" className="px-6 py-2 border border-white/20 bg-transparent hover:bg-white/10 transition" onClick={() => hideDialog(id)}>
+          Cancelar
+        </button>
+      </div>
+    ), {
+      className: 'max-w-[80vw]',
+    })
   }
 
   useEffect(() => {
@@ -150,7 +201,9 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
         <div className="controls absolute flex bottom-2 right-2 z-10">
           {!zoomMode && !media.type && (
             <button type="button" className="ml-auto p-2 icon-shadow transition bg-transparent" onClick={handleMirrorZoomScreen}>
-              <img src={zoomIcon} className="size-8" />
+              {!isFetchingZoomWindows
+                ? <img src={zoomIcon} className="size-8" />
+                : <LoadingIcon className="size-8" />}
             </button>
           )}
         </div>

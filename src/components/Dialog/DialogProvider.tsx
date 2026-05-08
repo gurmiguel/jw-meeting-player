@@ -9,7 +9,7 @@ import { Dialog, DialogProps } from './Dialog'
 import classes from './Dialog.module.css'
 
 export interface DialogContext {
-  show(content: DialogProps['children'], props: Omit<DialogProps, 'children' | 'id'>): string
+  show(content: DialogProps['children'], props?: Omit<DialogProps, 'children' | 'id'>): string
   hide(id: string): void
 }
 
@@ -35,7 +35,7 @@ export function DialogProvider({ children }: PropsWithChildren) {
   const actions = bindActionCreators(slice.actions, dispatch as Dispatch<SliceActions<typeof slice>>)
 
   const ctx = useMemo<DialogContext>(() => ({
-    show(content, props) {
+    show(content, props = {}) {
       const id = uniqueId('dialog_')
 
       actions.show({ ...props, children: content, id })

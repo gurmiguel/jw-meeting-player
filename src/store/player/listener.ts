@@ -63,15 +63,15 @@ playerListener.startListening({
 
 playerListener.startListening({
   actionCreator: playerActions.toggleZoomScreen,
-  effect() {
-    bridge.toggleZoomScreen()
+  effect({ payload: windowId }) {
+    bridge.stop({ propagate: false })
+    bridge.toggleZoomScreen({ windowId: windowId || undefined })
   },
 })
 
 playerListener.startListening({
   actionCreator: playerActions.verseChange,
   effect({ payload }) {
-    bridge.stop({ propagate: false })
     bridge.verseChange({ verse: payload.verse, scroll: payload.scroll })
   },
 })

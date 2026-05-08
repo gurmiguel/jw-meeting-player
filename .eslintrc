@@ -8,8 +8,10 @@
     "eol-last": ["warn", "always"],
     "quotes": ["warn", "single"],
     "comma-dangle": ["warn", "always-multiline"],
-    "object-curly-spacing": "off",
-    "@typescript-eslint/object-curly-spacing": ["warn", "always"],
+    "object-curly-spacing": ["warn", "always", {
+      "arraysInObjects": true,
+      "objectsInObjects": true
+    }],
     "@typescript-eslint/no-unused-vars": ["warn", {
       "varsIgnorePattern": "^_",
       "argsIgnorePattern": "^_"
@@ -36,7 +38,10 @@
       "rules": {
         "react-refresh/only-export-components": "warn",
         "@typescript-eslint/ban-ts-comment": "off",
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "react-hooks/preserve-manual-memoization": "off",
+        "react-hooks/set-state-in-effect": "off",
+        "react-hooks/refs": "off"
       }
     },
     {

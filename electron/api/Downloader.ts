@@ -1,8 +1,8 @@
 import $transliterate from '@sindresorhus/transliterate'
+import { net, session } from 'electron'
 import log from 'electron-log/main'
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
-import http from 'node:https'
 import path from 'node:path'
 import { getJWLibraryVideosDir } from '../utils/dirs'
 import { decideFileMediaType } from '../utils/file-type'
@@ -73,29 +73,57 @@ export class Downloader extends FileSystemService {
           log.debug('Using existing file from JW Library', filename)
         } catch {
           log.debug('Downloading from:', url.slice(0, 150))
-          const jwlibraryCopyFile = url.match(/(jw\.org|akamaihd\.net)/i)
+          const jwlibraryCopyFile = url.match(/(jw\.org|akamaihd\.net)/i) && thumbnail !== null
             ? fs.createWriteStream(path.join(getJWLibraryVideosDir(), filename))
             : null
+          
+          const start = performance.now()
+          const request = net.request({
+            method: 'GET',
+            url,
+            redirect: 'follow',
+            session: session.defaultSession,
+          })
+
+          await new Promise<void>((resolve, reject) => {
+            request.on('response', (response) => {
+              const { statusCode, statusMessage, headers } = response
+              if (statusCode >= 400)
+                return reject(new Error(`Failed to download media: ${statusCode} - ${statusMessage}`)) 
+              
+              const contentSize = parseInt(headers['content-length']?.toString() ?? '0')
+              const ttfb = performance.now() - start
+              log.info('TTFB:', url, ' - ', ttfb)
   
-          await new Promise<void>(resolve => http.get(url, response => {
-            const contentSize = parseInt(response.headers['content-length'] ?? '0')
-            if (jwlibraryCopyFile)
-              response.pipe(jwlibraryCopyFile)
-            response.pipe(file)
-  
-            if (contentSize) {
-              let downloadedSize = 0
-              response.on('data', (chunk: Buffer) => {
-                downloadedSize += chunk.byteLength
-                // during progress, only update until 98%, so thumbnail is sure to be loaded on 100%
-                updateProgress(filename, Math.min(98, downloadedSize * 100 / contentSize))
+              if (contentSize) {
+                let downloadedSize = 0
+                response.on('data', (chunk: Buffer) => {
+                  if (jwlibraryCopyFile)
+                    jwlibraryCopyFile.write(chunk)
+                  file.write(chunk)
+
+                  downloadedSize += chunk.byteLength
+                  updateProgress(filename, Math.min(98, downloadedSize * 100 / contentSize))
+                })
+              }
+
+              response.on('end', () => {
+                jwlibraryCopyFile?.end()
+                file.end()
+                updateProgress(filename, 100)
+                resolve()
               })
-            }
-            file.on('finish', async () => {
-              file.close()
-              resolve()
+
+              response.on('error', (err) => {
+                file.destroy()
+                jwlibraryCopyFile?.destroy()
+                reject(err)
+              })
             })
-          }))
+
+            request.on('error', reject)
+            request.end()
+          })
         }
       }
 

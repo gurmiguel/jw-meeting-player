@@ -1,5 +1,6 @@
 import { ArrowUturnLeftIcon, BookOpenIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ParsedText } from '../../../electron/api/crawler/types'
 import { APIEvents } from '../../../electron/events/api'
 import { BibleIndex, BookChapter } from '../../../shared/models/Bible'
@@ -131,12 +132,12 @@ export function BibleWidget() {
       const response = await api.fetch<APIEvents.FetchBibleVersesResponse>('bible/verses', {
         booknum: selectedBook?.id,
         chapter: selectedChapter?.chapter,
-        verses: selectedVerses,
+        verses: selectedVerses.toSorted((a, b) => a - b),
       })
 
       if (isPlaying) {
         dispatch(playerActions.stop())
-        await delay()
+        await delay(100)
       }
 
       const media = response.media[0]
@@ -200,6 +201,7 @@ export function BibleWidget() {
             dispatch(playerActions.time({
               currentTime: millisecondsFromString(markers[currentMarker].startTime) / 1000,
             }))
+            dispatch(playerActions.playRate(1))
             dispatch(playerActions.verseChange({ verse: markers[currentMarker].verseNumber, scroll: false }))
           }
         }
@@ -244,16 +246,16 @@ export function BibleWidget() {
         <div className="floating-icon-button floating-icon-button-label">Abrir texto da Bíblia</div>
       </button>
 
-      {openBible && (
-        <div className="fixed w-full h-full bg-black/70 flex items-center justify-center z-20" onClick={handleOverlayClick} role="presentation">
-          <div className="max-h-[800px] max-w-[760px] w-10/12 h-5/6 bg-zinc-900 p-6 pr-0 relative" onAuxClick={() => stepBack()}>
+      {openBible && createPortal(
+        <div className="fixed top-0 left-0 w-full h-full bg-black/70 flex items-center justify-center z-20" onClick={handleOverlayClick} onAuxClick={() => stepBack()} role="presentation">
+          <div className="max-h-[800px] max-w-[760px] w-10/12 h-5/6 bg-zinc-900 px-6 pr-0 relative">
             {isLoading && (
               <div className="absolute-fill bg-black/50">
                 <LoadingIcon className="absolute-center z-10 text-9xl" />
               </div>
             )}
             {index !== undefined && (
-              <div className="relative flex flex-col h-full overflow-y-auto pr-6">
+              <div className="relative flex flex-col h-full overflow-y-auto py-6 pr-6">
                 {selectedBook === undefined && (
                   <>
                     <div className="flex justify-between">
@@ -346,7 +348,8 @@ export function BibleWidget() {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

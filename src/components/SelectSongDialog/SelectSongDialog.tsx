@@ -22,7 +22,7 @@ export function SelectSongDialog({ songsAmount, onSubmit }: Props) {
     const song = parseInt($song.value)
 
     onSubmit(song)
-    onDismiss()
+    onDismiss?.()
   }
 
   const handleSelectChange = useDebounceCallback(useCallback(() => {

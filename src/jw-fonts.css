@@ -1,10 +1,28 @@
 @font-face {
-  font-family: Wt-ClearText-Bold;
+  font-family: 'Wt-ClearText-Bold';
   src: url("./assets/fonts/Wt-ClearText-Bold.woff2");
   font-weight: 700;
+}
+@font-face {
+  font-family: 'Wt-ClearText-Medium';
+  src: url("./assets/fonts/Wt-ClearText-Medium.woff2");
+  font-weight: 500;
 }
 
 @font-face {
   font-family: JW-Icons;
   src: url("./assets/fonts/jw-icons-external.woff2");
+}
+
+@font-face {
+  font-family: 'Athelas';
+  src: url('./assets/fonts/Athelas-Regular.woff2');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Athelas';
+  src: url('./assets/fonts/Athelas-Italic.woff2');
+  font-weight: 400;
+  font-style: italic;
 }
