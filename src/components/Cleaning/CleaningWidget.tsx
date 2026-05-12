@@ -4,7 +4,11 @@ import { playerActions } from '../../store/player/slice'
 import { useDialog } from '../Dialog/DialogProvider'
 import { CleaningDialog } from './CleaningDialog'
 
-export function CleaningWidget() {
+interface Props {
+  onOpen(): void
+}
+
+export function CleaningWidget({ onOpen }: Props) {
   const { show: showDialog } = useDialog()
 
   const dispatch = useAppDispatch()
@@ -16,6 +20,7 @@ export function CleaningWidget() {
       return dispatch(playerActions.hideCleaningGroup())
     }
 
+    onOpen()
     showDialog((
       <CleaningDialog />
     ), {

@@ -20,8 +20,8 @@ export function FloatingMenu() {
         </button>
 
         <div className={clsx('absolute bottom-[100%] left-0 flex flex-col-reverse gap-2', { 'hidden': !menuOpen })}>
-          <BibleWidget />
-          <CleaningWidget />
+          <BibleWidget onOpen={() => setMenuOpen(false)} />
+          <CleaningWidget onOpen={() => setMenuOpen(false)} />
         </div>
       </div>
     </>

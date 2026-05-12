@@ -22,7 +22,6 @@ export function attachPlayerEvents(main: BrowserWindow, player: BrowserWindow) {
     alwaysOnTopState.player = false
     trySetPlayerAlwaysOnTop()
   })
-  registerTwoWayEvent('zoomScreenNotFound')
   registerTwoWayEvent('verseChange')
   registerTwoWayEvent('displayCleaningGroup')
   registerTwoWayEvent('hideCleaningGroup')

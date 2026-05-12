@@ -9,7 +9,11 @@ import LoadingIcon from '../../assets/loading.svg?react'
 import { useAppDispatch, useAppStore } from '../../store/hooks'
 import { playerActions } from '../../store/player/slice'
 
-export function BibleWidget() {
+interface Props {
+  onOpen(): void
+}
+
+export function BibleWidget({ onOpen }: Props) {
   const store = useAppStore()
   const dispatch = useAppDispatch()
 
@@ -147,7 +151,7 @@ export function BibleWidget() {
       dispatch(playerActions.start({
         file: media.audioURL,
         type: audioOnly ? 'audio' : 'text',
-        content: `<h2>${selectedBook?.bookName} ${selectedChapter?.chapter}:${formatVerses(selectedVerses)}</h2>\n` + media.content,
+        content: `<h2>${selectedBook?.bookName} ${selectedChapter?.chapter}:${formatVerses(selectedVerses)}</h2>\n<div class="text-content">${media.content}</div>`,
       }))
 
       if (isPlaying)
@@ -237,7 +241,10 @@ export function BibleWidget() {
     <>
       <button
         type="button"
-        onClick={() => setOpenBible(state => !state)}
+        onClick={() => {
+          setOpenBible(state => !state)
+          if (!openBible) onOpen()
+        }}
         className="floating-icon-button-wrapper"
       >
         <div className="floating-icon-button">
@@ -349,7 +356,7 @@ export function BibleWidget() {
             )}
           </div>
         </div>,
-        document.body
+        document.body,
       )}
     </>
   )

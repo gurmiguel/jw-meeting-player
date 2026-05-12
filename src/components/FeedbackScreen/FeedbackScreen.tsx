@@ -103,9 +103,10 @@ export function FeedbackScreen({ sourceId, handleClose }: Props) {
       })
     })
 
-    if (!windows) {
-      return toast.warning('Não foi possível obter as janelas do Zoom', {
-        duration: 3_000,
+    if (!windows?.length) {
+      return toast.error('A janela do Zoom não foi encontrada.', {
+        duration: 5_000,
+        dismissible: true,
       })
     }
 
