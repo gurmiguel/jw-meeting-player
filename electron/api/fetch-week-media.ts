@@ -41,7 +41,7 @@ export async function fetchWeekMedia(date: Date, type: WeekType, force = false) 
       media: it.media.map(m => ({
         ...m,
         downloadProgress: 100,
-      }))
+      })),
     })) as ProcessedResult[]
   }
 

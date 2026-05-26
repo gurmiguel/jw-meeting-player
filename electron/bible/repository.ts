@@ -1,6 +1,6 @@
 import { app } from 'electron'
 import path from 'node:path'
-import sqlite from 'sqlite'
+import * as sqlite from 'sqlite'
 import sqlite3 from 'sqlite3'
 import { BibleIndex, BookChapter, Verse } from '../../shared/models/Bible'
 import { FileSystemService } from '../api/FileSystemService'
