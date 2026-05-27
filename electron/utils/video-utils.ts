@@ -1,11 +1,11 @@
 import log from 'electron-log/main'
-import { downloadBinaries } from 'ffbinaries'
 import ffmpeg, { ffprobe } from 'fluent-ffmpeg'
 import fs from 'fs'
 import path from 'path'
 import FALLBACK_VIDEO_THUMBNAIL from '../../shared/assets/video-placeholder.png'
 import { getJWLibraryVideosDir, getLibraryDir } from './dirs'
 import { getNameAndVersion, isDev } from './electron-utils'
+import { downloadBinaries } from './ffbinaries'
 
 const binariesPromise = new Promise<void>(async resolve => {
   const destination = isDev() ? __dirname : path.join(getLibraryDir(process.platform, getNameAndVersion().name), 'binaries')
@@ -16,8 +16,8 @@ const binariesPromise = new Promise<void>(async resolve => {
 
   downloadBinaries(['ffmpeg', 'ffprobe'], { destination }, (err, results) => {
     if (!err) {
-      const ffmpegPath = results.find(x => x.filename.includes('ffmpeg'))
-      const ffprobePath = results.find(x => x.filename.includes('ffprobe'))
+      const ffmpegPath = results.find((x: any) => x.filename.includes('ffmpeg'))
+      const ffprobePath = results.find((x: any) => x.filename.includes('ffprobe'))
       if (ffmpegPath) ffmpeg.setFfmpegPath(path.join(ffmpegPath.path, ffmpegPath.filename))
       if (ffprobePath) ffmpeg.setFfprobePath(path.join(ffprobePath.path, ffprobePath.filename))
     } else {
