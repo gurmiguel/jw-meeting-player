@@ -12,6 +12,10 @@ declare global {
   }
 
   type Overwrite<S, T> = Omit<S, keyof T> & T
+
+  interface File {
+    path?: string
+  }
 }
 
 export { }

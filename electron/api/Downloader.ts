@@ -4,6 +4,7 @@ import log from 'electron-log/main'
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
+import { delay } from '../../shared/utils'
 import { getJWLibraryVideosDir } from '../utils/dirs'
 import { decideFileMediaType } from '../utils/file-type'
 import { generateThumbnail, isVideoFile } from '../utils/video-utils'
@@ -77,7 +78,6 @@ export class Downloader extends FileSystemService {
             ? fs.createWriteStream(path.join(getJWLibraryVideosDir(), filename))
             : null
           
-          const start = performance.now()
           const request = net.request({
             method: 'GET',
             url,
@@ -92,8 +92,6 @@ export class Downloader extends FileSystemService {
                 return reject(new Error(`Failed to download media: ${statusCode} - ${statusMessage}`)) 
               
               const contentSize = parseInt(headers['content-length']?.toString() ?? '0')
-              const ttfb = performance.now() - start
-              log.info('TTFB:', url, ' - ', ttfb)
   
               if (contentSize) {
                 let downloadedSize = 0
@@ -110,8 +108,9 @@ export class Downloader extends FileSystemService {
               response.on('end', () => {
                 jwlibraryCopyFile?.end()
                 file.end()
-                updateProgress(filename, 100)
-                resolve()
+                delay(500)
+                  .then(() => updateProgress(filename, 100))
+                  .then(resolve)
               })
 
               response.on('error', (err) => {

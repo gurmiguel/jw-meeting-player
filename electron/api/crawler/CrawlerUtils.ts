@@ -1,3 +1,4 @@
+import { net } from 'electron'
 import { error, warn } from 'electron-log/main'
 import { type JSDOM } from 'jsdom'
 import { MAX_VIDEO_DURATION } from '../../../shared/constants'
@@ -108,14 +109,12 @@ export class CrawlerUtils {
     const abort = new AbortController()
     setTimeout(() => abort.abort(), 5_000)
 
-    const html = await fetch(url, {
+    const html = await net.fetch(url, {
       signal: abort.signal,
       keepalive: true,
       redirect: 'follow',
-      referrer: 'https://example.org',
       headers: {
         'accept': '*/*',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.1 Safari/537.36',
       },
     }).then(res => res.text())
       .catch((err) => {

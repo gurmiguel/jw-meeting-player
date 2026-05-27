@@ -13,7 +13,7 @@ export function trySetPlayerAlwaysOnTop() {
       windows.player.setPosition(x, y, false)
       windows.player.showInactive()
       windows.player.moveTop()
-      windows.player.setAlwaysOnTop(true, 'screen-saver')
+      windows.player.setAlwaysOnTop(true, 'screen-saver', 1)
       return
     }
   }

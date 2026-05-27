@@ -39,16 +39,6 @@ autoUpdater.disableWebInstaller = true
 autoUpdater.autoInstallOnAppQuit = true
 autoUpdater.autoDownload = false
 autoUpdater.autoRunAppAfterInstall = true
-autoUpdater.checkForUpdates()
-  .then(async (update) => {
-    if (!update) return
-
-    const { updateInfo } = update
-
-    if (autoUpdater.currentVersion.compare(updateInfo.version) > -1) return
-
-    windows.main.webContents.send('update-available', updateInfo)
-  })
 autoUpdater.on('download-progress', (info) => {
   windows.main.webContents.send('update-download-progress', info)
 })
@@ -122,6 +112,7 @@ async function createWindows() {
     x: playerDisplay?.bounds.x,
     y: playerDisplay?.bounds.y,
   })
+  windows.player.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
 
   if (os.platform() === 'win32')
     disablePeek(windows.player.getNativeWindowHandle())
@@ -129,10 +120,16 @@ async function createWindows() {
   await delay()
   trySetPlayerAlwaysOnTop()
 
-  if (displays.length > 1)
-    windows.player.maximize()
+  windows.player.addListener('ready-to-show', () => {
+    if (displays.length > 1) {
+      windows.player.setFullScreen(true)
+    }
+  })
+
   if (!isDebugMode)
     windows.main.maximize()
+  else
+    windows.player.minimize()
 
   screen.on('display-removed', trySetPlayerAlwaysOnTop)
   screen.on('display-added', trySetPlayerAlwaysOnTop)
@@ -146,6 +143,21 @@ async function createWindows() {
   })
 
   let updateCancelToken = new CancellationToken()
+  ipcMain.handle('check-update', async (e) => {
+    log.info(`Checking for update, current version: ${autoUpdater.currentVersion}`)
+    const sender = e.sender
+    autoUpdater.checkForUpdates()
+      .then(async (update) => {
+        if (!update) return
+
+        const { updateInfo } = update
+
+        if (autoUpdater.currentVersion.compare(updateInfo.version) > -1) return
+
+        sender.send('update-available', updateInfo)
+      })
+  })
+
   ipcMain.handle('update-download', async (_e, updateInfo: UpdateInfo) => {
     autoUpdater.downloadUpdate(updateCancelToken)
       .catch((err) => log.error('Error trying to update', err))
@@ -214,13 +226,11 @@ async function createWindows() {
     window?.webContents.devToolsWebContents?.focus()  
   })
   
-  windows.main.addListener('focus', () => {
-    commands.forEach((callback, shortcut) => globalShortcut.register(shortcut, callback))
-  })
+  windows.main.addListener('focus', () => commands
+    .forEach((callback, shortcut) => globalShortcut.register(shortcut, callback)))
 
-  windows.main.addListener('blur', () => {
-    commands.forEach((_, shortcut) => globalShortcut.unregister(shortcut))
-  })
+  windows.main.addListener('blur', () => commands
+    .forEach((_, shortcut) => globalShortcut.unregister(shortcut)))
 }
 
 async function cleanup() {

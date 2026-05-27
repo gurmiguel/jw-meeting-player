@@ -114,6 +114,10 @@ function MainApp() {
       .then(setSongsAmount)
   }, [])
 
+  useEffect(() => {
+    api.fetch('check-update')
+  }, [])
+
   useApiEventHandler<UpdateInfo>('update-available', updateInfo => {
     toast(`Uma atualização está disponível - Versão ${updateInfo.version}`, {
       id: 'update-toast',
@@ -267,7 +271,7 @@ function MainApp() {
             disableOverlayDismiss: true,
           })
         })
-        uploadingFiles.push({ file: { name: file.name, path: file.path }, group, label })
+        uploadingFiles.push({ file: { name: file.name, path: file.path! }, group, label })
         lastSelectedGroup.current = group
       }
 

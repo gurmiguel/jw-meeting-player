@@ -23,7 +23,7 @@ export default defineConfig(({ command }) => {
             },
             build: {
               rollupOptions: {
-                external: ['sqlite3', 'sqlite'],
+                external: ['sqlite3', 'sqlite', 'jsdom'],
               },
             },
             plugins: [

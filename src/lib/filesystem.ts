@@ -5,11 +5,11 @@ export async function getSortedTransferFiles(files: File[]) {
 
   if (files.some(it => !it.path)) return files
 
-  const filesOrder = await common.getFilesSorted(files.map(it => it.path))
+  const filesOrder = await common.getFilesSorted(files.map(it => it.path!))
 
-  return files.toSorted((a,b) => {
-    const aIndex = filesOrder.indexOf(a.path)
-    const bIndex = filesOrder.indexOf(b.path)
+  return files.toSorted((a, b) => {
+    const aIndex = filesOrder.indexOf(a.path!)
+    const bIndex = filesOrder.indexOf(b.path!)
     return aIndex - bIndex
   })
 }

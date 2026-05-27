@@ -1,5 +1,5 @@
 import * as childProcess from 'child_process'
-import * as extractZip from 'extract-zip'
+import extractZip from 'extract-zip'
 import * as fse from 'fs-extra'
 import * as lod from 'lodash'
 import * as os from 'os'
@@ -33,7 +33,7 @@ ensureDirSync(LOCAL_CACHE_DIR)
 /**
  * Resolves the platform key based on input string
  */
-function resolvePlatform(input: string) {
+export function resolvePlatform(input: string) {
   var rtn = null
 
   switch (input) {
@@ -90,7 +90,7 @@ function resolvePlatform(input: string) {
  *
  * @param {object} osinfo Contains "type" and "arch" properties
  */
-function detectPlatform(osinfo?: { type: string; arch: string }) {
+export function detectPlatform(osinfo?: { type: string; arch: string }) {
   var inputIsValid = typeof osinfo === 'object' && typeof osinfo?.type === 'string' && typeof osinfo?.arch === 'string'
   var type = ((inputIsValid ? osinfo?.type : null) ?? os.type()).toLowerCase()
   var arch = ((inputIsValid ? osinfo?.arch : null) ?? os.arch()).toLowerCase()
@@ -117,7 +117,7 @@ function detectPlatform(osinfo?: { type: string; arch: string }) {
  * @param {string} component "ffmpeg", "ffplay", "ffprobe" or "ffserver"
  * @param {platform} platform "ffmpeg", "ffplay", "ffprobe" or "ffserver"
  */
-function getBinaryFilename(component: string, platform: string) {
+export function getBinaryFilename(component: string, platform: string) {
   var platformCode = resolvePlatform(platform)
   if (platformCode === 'windows-32' || platformCode === 'windows-64') {
     return component + '.exe'
@@ -125,7 +125,7 @@ function getBinaryFilename(component: string, platform: string) {
   return component
 }
 
-function listPlatforms() {
+export function listPlatforms() {
   return ['osx-64', 'linux-32', 'linux-64', 'linux-armel', 'linux-armhf', 'linux-arm64', 'windows-32', 'windows-64']
 }
 
@@ -134,7 +134,7 @@ interface ErrCallback<T> {
   (err: string, result?: never): void
 }
 
-function listVersions(callback: ErrCallback<string[]>) {
+export function listVersions(callback: ErrCallback<string[]>) {
   if (RUNTIME_CACHE.versionsAll) {
     return callback(null, RUNTIME_CACHE.versionsAll as string[])
   }
@@ -154,7 +154,7 @@ function listVersions(callback: ErrCallback<string[]>) {
 /**
  * Gets full data set from ffbinaries.com
  */
-function getVersionData(version: string, callback: ErrCallback<any>) {
+export function getVersionData(version: string, callback: ErrCallback<any>) {
   if (RUNTIME_CACHE[version]) {
     return callback(null, RUNTIME_CACHE[version])
   }
@@ -324,7 +324,7 @@ function downloadUrls(components: string[], urls: Record<string, string>, opts: 
  * @param {object}   opts
  * @param {function} callback
  */
-function downloadBinaries(components: string | string[], opts: Record<string, unknown>, callback: ErrCallback<any>) {
+export function downloadBinaries(components: string | string[], opts: Record<string, unknown>, callback: ErrCallback<any>) {
   // only callback provided: assign blank components and opts
   if (!callback && !opts && typeof components === 'function') {
     callback = components
@@ -370,7 +370,7 @@ function downloadBinaries(components: string | string[], opts: Record<string, un
  * @param {array} components Components to look for (ffmpeg/ffplay/ffprobe/ffserver)
  * @param {object} opts { paths: [], ensureExecutable: bool }
  */
-function locateBinariesSync(components: string[], opts: any) {
+export function locateBinariesSync(components: string[], opts: any) {
   if (typeof components === 'string') {
     components = [components]
   }
@@ -452,12 +452,6 @@ function locateBinariesSync(components: string[], opts: any) {
   return rtn
 }
 
-function clearCache() {
+export function clearCache() {
   fse.emptyDirSync(LOCAL_CACHE_DIR)
 }
-
-export {
-  clearCache, detectPlatform, downloadBinaries,
-  downloadBinaries as downloadFiles, getBinaryFilename, getVersionData, listPlatforms, listVersions, locateBinariesSync, resolvePlatform,
-}
-
