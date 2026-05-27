@@ -1,3 +1,7 @@
+import { getNativeModulePath } from './util'
+
+export const WindowControl = require(getNativeModulePath('win-control')).Window as WindowStatic
+
 export interface WindowControl {
   setForeground(): boolean
   setPosition(insertAfter: number, X: number, Y: number, cx: number, cy: number, uFlags: number): void
@@ -27,8 +31,6 @@ export interface WindowStatic {
   getByClassName(className: string): WindowControl | undefined
   getWindow(hwnd: number): WindowControl
 }
-
-export const WindowControl = require('bindings')('win-control').Window as WindowStatic
 
 // Used when calling to setShowStatus as 2 argument. For more information see:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow

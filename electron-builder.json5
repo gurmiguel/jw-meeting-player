@@ -41,7 +41,7 @@
     "deleteAppDataOnUninstall": false
   },
   "asarUnpack":[
-    "*.{node,dll}",
+    "**/*.{node,dll}",
     "**/resources/*",
     "node_modules/ffmpeg-static/bin/${os}/${arch}/ffmpeg",
     "node_modules/ffmpeg-static/index.js",
