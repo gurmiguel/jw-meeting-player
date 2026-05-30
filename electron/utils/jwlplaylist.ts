@@ -4,6 +4,8 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import sqlite from 'sqlite3'
+import type Downloader from '../api/Downloader'
+import { CrawlerUtils } from '../api/crawler/CrawlerUtils'
 import { getTempDir } from './dirs'
 
 type MediaFile = {
@@ -13,7 +15,7 @@ type MediaFile = {
 
 const JWPUB_CONTEXT = 'jwpub-temp'
 
-export async function* extractMediaFromJWLPlaylist(playlistFile: string): AsyncGenerator<MediaFile> {
+export async function* extractMediaFromJWLPlaylist(playlistFile: string, downloader: Downloader): AsyncGenerator<MediaFile> {
   const targetDir = path.join(getTempDir(), JWPUB_CONTEXT)
   await fs.promises.mkdir(targetDir, { recursive: true })
 
@@ -24,9 +26,15 @@ export async function* extractMediaFromJWLPlaylist(playlistFile: string): AsyncG
   if (!dbfile)
     throw new Error('Could not load the database for the file')
 
-  const playlist = await getFilesPlaylistFromDB(dbfile)
+  const utils = new CrawlerUtils(downloader, [])
+  const playlist = await getFilesPlaylistFromDB(dbfile, utils)
 
   for (const item of playlist) {
+    if (item.downloaded) {
+      yield { path: item.path, name: item.label || path.basename(item.path) }
+      continue
+    }
+    
     const file = await unzipped.file(item.path)?.async('nodebuffer')
     if (!file) {
       log.error('Could not load file from playlist', { file: item.path })
@@ -41,7 +49,7 @@ export async function* extractMediaFromJWLPlaylist(playlistFile: string): AsyncG
   }
 }
 
-async function getFilesPlaylistFromDB(dbfile: Buffer) {
+async function getFilesPlaylistFromDB(dbfile: Buffer, utils: CrawlerUtils) {
   const tempfile = path.join(getTempDir(), JWPUB_CONTEXT, crypto.randomBytes(16).toString('hex') + '.db')
   try {
     await fs.promises.writeFile(tempfile, dbfile)
@@ -53,11 +61,20 @@ async function getFilesPlaylistFromDB(dbfile: Buffer) {
       label: string | null
       path: string
       mimeType: string
+      downloaded?: boolean
+    }
+
+    interface WebMultimedia {
+      id: number
+      mimeType: string
+      keySymbol: string
+      track: number | null
     }
 
     const mediaItems = await new Promise<Media[]>((resolve, reject) => {
       db.serialize(() => {
         const items = new Array<Media>()
+        let failed = false
         db.each<Media>(`
           SELECT DISTINCT
             pl.PlaylistItemId as id,
@@ -69,10 +86,34 @@ async function getFilesPlaylistFromDB(dbfile: Buffer) {
             INNER JOIN PlaylistItem pl ON map.PlaylistItemId = pl.PlaylistItemId
             INNER JOIN TagMap tag ON pl.PlaylistItemId = tag.PlaylistItemId
           ORDER BY tag.Position ASC
-        `, (err, row) => {
-          if (err) return reject(err)
+        `, (_, row) => {
           items.push(row)
-        }).wait(() => {
+        }, (err) => {
+          failed = !!err
+          if (err) return reject(err)
+        })
+        
+        if (failed) return
+        
+        db.each<WebMultimedia>(`
+          SELECT LocationId as id, 'video/mp4' as mimeType, KeySymbol as keySymbol, Track as track
+          FROM Location
+          WHERE KeySymbol IS NOT NULL AND KeySymbol != 'sjjm'
+            AND Track IS NOT NULL
+          ORDER BY LocationId
+        `, async (_, row) => {
+          const media = await utils.fetchPublicationVideo(utils.generateDataVideoURL(row.keySymbol, row.track ?? 1))
+          if (!media) return
+          items.push({
+            id: row.id,
+            label: media.title,
+            mimeType: row.mimeType,
+            path: media.path,
+            downloaded: true,
+          })
+        }, (err) => {
+          failed = !!err
+          if (err) return reject(err)
           resolve(items)
         })
       })

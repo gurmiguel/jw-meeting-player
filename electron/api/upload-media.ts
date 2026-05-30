@@ -35,38 +35,31 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
       const extension = filepath_l.split('.').pop()
 
       const processed = new Array<ProcessedResult>()
-      switch (extension) {
-        case 'jwpub':
-          const files = new Array<UploadingFile>()
-          for await (const item of extractMediaFromJWPUB(file.path, downloader)) {
-            files.push({
-              file: {
-                name: nodepath.basename(item.path),
-                path: item.path,
-              },
-              group,
-              label: item.name,
-            })
-          }
+      const processor: Record<string, (filepath: string, downloader: Downloader) => AsyncGenerator<{ path: string, name: string }>> = {
+        'jwpub': extractMediaFromJWPUB,
+        'jwlplaylist': extractMediaFromJWLPlaylist,
+      }
 
-          log.info('download flush')
-          await downloader.flush()
+      if (extension && Object.hasOwn(processor, extension)) {
+        const files = new Array<UploadingFile>()
+        const fn = processor[extension]
+        for await (const item of fn(file.path, downloader)) {
+          files.push({
+            file: {
+              name: nodepath.basename(item.path),
+              path: item.path,
+            },
+            group,
+            label: item.name,
+          })
+        }
 
-          for (const file of files)
-            processed.push(...await mapFiles.apply(this, [file]))
+        await downloader.flush()
 
-          return processed
-        case 'jwlplaylist':
-          for await (const item of extractMediaFromJWLPlaylist(file.path))
-            processed.push(...await mapFiles.apply(this, [{
-              file: {
-                name: nodepath.basename(item.path),
-                path: item.path,
-              },
-              group,
-              label: item.name,
-            }]))
-          return processed
+        for (const file of files)
+          processed.push(...await mapFiles.apply(this, [file]))
+
+        return processed
       }
 
       if (file.path.startsWith('data:')) {

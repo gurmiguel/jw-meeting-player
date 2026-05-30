@@ -74,17 +74,17 @@ async function* fetchMediaFilesFromDb(dbfile: Buffer, utils: CrawlerUtils, ignor
 
   const db = new sqlite.Database(tempfile)
 
-  interface Multimedia {
+  interface WebMultimedia {
     Id: number
     MimeType: string
     KeySymbol: string
     Track: number | null
   }
 
-  const mediaItems = await new Promise<Multimedia[]>((resolve, reject) => {
+  const mediaItems = await new Promise<WebMultimedia[]>((resolve, reject) => {
     db.serialize(() => {
-      const items = new Array<Multimedia>()
-      db.each<Multimedia>(`
+      const items = new Array<WebMultimedia>()
+      db.each<WebMultimedia>(`
         SELECT MultimediaId as Id, MimeType, KeySymbol, Track
         FROM Multimedia
         WHERE KeySymbol IS NOT NULL
