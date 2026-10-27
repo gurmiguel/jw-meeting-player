@@ -48,10 +48,10 @@ export function ContextMenu({ items, disabled = false, children }: ContextMenuPr
 
   const trigger = cloneElement(children, {
     onContextMenu: (e: MouseEvent) => {
-      children.props.onContextMenu?.(e)
+      (children.props as any).onContextMenu?.(e)
       openMenu(e)
     },
-  })
+  } as never)
 
   return (
     <>
