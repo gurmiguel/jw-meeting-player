@@ -46,7 +46,7 @@ export async function getS34TalksFromJWPUB(jwpubFile: string): Promise<JWPubTalk
 
     return talks.map(it => ({
       ...it,
-      title: it.title.replace(/^N\.º/g, '').trim(),
+      title: it.title.replace(/^N[.°º]+\s*/g, '').trim(),
     }))
   })
 }
