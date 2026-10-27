@@ -28,6 +28,20 @@ export class MidWeekMeeting extends ArticleMediaParser {
       if (!$articleElements.length) return
 
       const articleTitle = $header.textContent?.trim() ?? ''
+      const articleContents = (($ref: HTMLElement) => {
+        let contents = ''
+        let $next: HTMLElement | null = $ref
+        do {
+          $next = $next.nextElementSibling as HTMLElement | null
+          if (!$next || $next.tagName.toLowerCase() !== 'div' || Array.from($next.children).some(it => it.tagName.toLowerCase() === 'h2'))
+            break
+          const content = ($next.textContent ?? '').trim()
+          if (content.length)
+            contents += `\n${content}`
+        } while (true)
+
+        return contents
+      })($header)
 
       const $section = (($head: HTMLElement) => {
         let $section: HTMLElement | null = $head
@@ -37,7 +51,9 @@ export class MidWeekMeeting extends ArticleMediaParser {
         return $section
       })($header.closest('.bodyTxt > *') ?? $header)
 
-      if ($section?.textContent?.trim().match(/FA.A SEU MELHOR NO MINISTÉRIO/i)) return
+      if ($section?.textContent?.trim().match(/FA.A SEU MELHOR NO MINISTÉRIO/i)) {
+        if (!articleContents.normalize('NFC').match(/\bconsideração\b/i)) return
+      }
 
       if (articleTitle.match(/cântico \d+/i)) return
 
