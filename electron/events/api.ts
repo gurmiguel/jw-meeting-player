@@ -16,6 +16,7 @@ import { loadSongs } from '../api/load-songs'
 import { removeMedia } from '../api/remove-media'
 import { updateMetadata } from '../api/update-metadata'
 import { uploadMedia } from '../api/upload-media'
+import { getS34TalksFromJWPUB } from '../utils/jwpub'
 
 export function attachApiEvents() {
   createApiHandler('fetch-week-data', (_e, { isoDate, type, force }: APIEvents.FetchWeekMediaPayload) => {
@@ -57,6 +58,9 @@ export function attachApiEvents() {
   })
   createApiHandler('songs/load', () => {
     return loadSongs()
+  })
+  createApiHandler('jwpub/s34-talks', (_e, { filePath }: APIEvents.GetS34TalksPayload) => {
+    return getS34TalksFromJWPUB(filePath)
   })
 }
 
@@ -132,4 +136,10 @@ export namespace APIEvents {
   export type FetchBibleVersesResponse = PromiseType<ReturnType<typeof fetchBibleVerses>>
 
   export type LoadSongsResponse = PromiseType<ReturnType<typeof loadSongs>>
+
+  export interface GetS34TalksPayload {
+    filePath: string
+  }
+
+  export type GetS34TalksResponse = PromiseType<ReturnType<typeof getS34TalksFromJWPUB>>
 }

@@ -2,6 +2,7 @@ import { ProcessedResult } from '../../electron/api/crawler/types'
 import { WeekType } from './WeekType'
 
 export interface UploadingFile extends Pick<ProcessedResult, 'group' | 'label'> {
+  jwpubTalkDocumentId?: number
   file: {
     path: string
     name: string

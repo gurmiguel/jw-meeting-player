@@ -30,12 +30,12 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
 
   let uploadedItems: ProcessedResult[] = []
   try {
-    uploadedItems = Array.from(await Promise.all(files.flatMap<Promise<ProcessedResult[]>>(async function mapFiles({ file, group, label }): Promise<ProcessedResult[]> {
+    uploadedItems = Array.from(await Promise.all(files.flatMap<Promise<ProcessedResult[]>>(async function mapFiles({ file, group, label, jwpubTalkDocumentId }): Promise<ProcessedResult[]> {
       const filepath_l = file.path.toLowerCase()
       const extension = filepath_l.split('.').pop()
 
       const processed = new Array<ProcessedResult>()
-      const processor: Record<string, (filepath: string, downloader: Downloader) => AsyncGenerator<{ path: string, name: string }>> = {
+      const processor: Record<string, (filepath: string, downloader: Downloader, talkDocumentId?: number) => AsyncGenerator<{ path: string, name: string }>> = {
         'jwpub': extractMediaFromJWPUB,
         'jwlplaylist': extractMediaFromJWLPlaylist,
       }
@@ -43,7 +43,7 @@ export async function uploadMedia(date: Date, type: WeekType, files: UploadingFi
       if (extension && Object.hasOwn(processor, extension)) {
         const files = new Array<UploadingFile>()
         const fn = processor[extension]
-        for await (const item of fn(file.path, downloader)) {
+        for await (const item of fn(file.path, downloader, jwpubTalkDocumentId)) {
           files.push({
             file: {
               name: nodepath.basename(item.path),

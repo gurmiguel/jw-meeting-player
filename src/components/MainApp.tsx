@@ -30,6 +30,7 @@ import { ItemGroup, SortableItemGroup } from './ItemGroup/ItemGroup'
 import { MediaItem, SortableMediaItem } from './MediaItem/MediaItem'
 import { PlayerInterface } from './PlayerInterface/PlayerInterface'
 import { SelectSongDialog } from './SelectSongDialog/SelectSongDialog'
+import { SelectTalkDialog } from './SelectTalkDialog/SelectTalkDialog'
 import { UploadMetadataDialog } from './UploadMetadataDialog/UploadMetadataDialog'
 
 const noopModifier: Modifier = ({ transform }) => transform
@@ -256,6 +257,35 @@ function MainApp() {
     try {
       const uploadingFiles = new Array<UploadingFile>()
       for (const file of files) {
+        const talks = file.name.toLowerCase().endsWith('.jwpub')
+          ? await api.fetch<APIEvents.GetS34TalksResponse>('jwpub/s34-talks', { filePath: file.path! })
+          : null
+
+        if (talks !== null) {
+          if (!talks.length)
+            throw new Error('No talks with media were found in the selected JWPUB file')
+
+          const talk = await new Promise<NonNullable<APIEvents.GetS34TalksResponse>[number]>((resolve, reject) => {
+            showDialog((
+              <SelectTalkDialog talks={talks} onSubmit={resolve} />
+            ), {
+              onDismiss: reject,
+              disableOverlayDismiss: true,
+            })
+          })
+
+          const group = 'Discurso Público :: ' + talk.title
+
+          uploadingFiles.push({
+            file: { name: file.name, path: file.path! },
+            group,
+            label: talk.title,
+            jwpubTalkDocumentId: talk.documentId,
+          })
+          lastSelectedGroup.current = group
+          continue
+        }
+
         const { group, label } = await new Promise<Omit<UploadingFile, 'file'>>((resolve, reject) => {
           const filename_l = file.name.toLowerCase()
           showDialog((
