@@ -8,10 +8,12 @@ interface Props {
   defaultLabel?: string
   disableLabel?: boolean
   groups: string[]
+  title?: string
+  submitLabel?: string
   onSubmit(data: { group: string, label: string }): void
 }
 
-export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGroup, defaultLabel, disableLabel = false }: Props) {
+export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGroup, defaultLabel, disableLabel = false, title = 'Incluir Mídia', submitLabel = 'Confirmar' }: Props) {
   const groups = groupsProp.filter(group => group.toLowerCase() !== 'cânticos')
   const { onDismiss } = useDialogContent()
   const defaultGroupExists = !!defaultGroup && groups.includes(defaultGroup)
@@ -19,7 +21,7 @@ export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGrou
 
   return (
     <>
-      <DialogTitle>Incluir Mídia</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <form
           onSubmit={e => {
@@ -63,7 +65,7 @@ export function UploadMetadataDialog({ onSubmit, groups: groupsProp, defaultGrou
             <button
               type="submit"
               className="dialog-button dialog-button--submit"
-            >Confirmar</button>
+            >{submitLabel}</button>
           </div>
         </form>
       </DialogContent>

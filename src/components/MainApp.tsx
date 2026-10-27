@@ -279,6 +279,36 @@ function MainApp() {
     } catch { /* empty */ }
   }
 
+  async function handleMediaEdit(item: ProcessedResult) {
+    if (!data || /c.nticos/i.test(item.group)) return
+
+    try {
+      const { group, label } = await new Promise<Omit<UploadingFile, 'file'>>((resolve, reject) => {
+        showDialog((
+          <UploadMetadataDialog
+            title="Editar mídia"
+            submitLabel="Salvar"
+            onSubmit={resolve}
+            groups={Object.keys(mediaGroups)}
+            defaultGroup={item.group}
+            defaultLabel={item.label}
+          />
+        ), {
+          onDismiss: reject,
+          disableOverlayDismiss: true,
+        })
+      })
+
+      await updateMetadata({
+        isoDate: currentWeekStart.toISOString(),
+        type,
+        metadata: data.items.map(currentItem => currentItem.uid === item.uid
+          ? { ...currentItem, group, label, alt: label }
+          : currentItem),
+      }).unwrap()
+    } catch { /* empty */ }
+  }
+
   function handleRefreshData() {
     refetchWeekData({ isoDate: currentWeekStart.toISOString(), type })
   }
@@ -497,6 +527,7 @@ function MainApp() {
                                   type={type}
                                   currentWeekStart={currentWeekStart}
                                   placeholder={item.uid === 'placeholder'}
+                                  onEdit={handleMediaEdit}
                                 />
                             ))}
                             {/c.nticos/i.test(group) && (
