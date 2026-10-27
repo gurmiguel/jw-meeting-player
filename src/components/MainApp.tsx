@@ -10,7 +10,7 @@ import { ProgressInfo, type UpdateInfo } from 'electron-updater'
 import { groupBy } from 'lodash'
 import { MouseEventHandler, PropsWithChildren, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { ProcessedResult } from '../../electron/api/crawler/types'
+import { ParsedMedia, ProcessedResult } from '../../electron/api/crawler/types'
 import { type APIEvents } from '../../electron/events/api'
 import { UploadingFile } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
@@ -20,11 +20,13 @@ import loadingGif from '../assets/loading.gif?asset'
 import { useApiEventHandler } from '../hooks/useApiEventHandler'
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation'
 import { useStorageValue } from '../hooks/useStorageValue'
-import weekApiEndpoints, { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, usePreloadMeetingMutation, useUpdateMetadataMutation, useUploadMediaMutation } from '../store/api/week'
-import { useAppDispatch } from '../store/hooks'
+import weekApiEndpoints, { useAddSongMutation, useFetchWeekMediaQuery, useLazyRefetchWeekMediaQuery, usePreloadMeetingMutation, useRemoveGroupMutation, useUpdateMetadataMutation, useUploadMediaMutation } from '../store/api/week'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { playerActions } from '../store/player/slice'
+import { useConfirmDialog } from './ConfirmDialog/hook'
 import { DataTransferContainer } from './DataTransferContainer/DataTransferContainer'
 import { useDialog } from './Dialog/DialogProvider'
+import { EditGroupDialog } from './EditGroupDialog/EditGroupDialog'
 import { FloatingMenu } from './FloatingMenu/FloatingMenu'
 import { ItemGroup, SortableItemGroup } from './ItemGroup/ItemGroup'
 import { MediaItem, SortableMediaItem } from './MediaItem/MediaItem'
@@ -46,6 +48,10 @@ function MainApp() {
   const [,startTransition] = useTransition()
 
   const { show: showDialog } = useDialog()
+
+  const promptConfirm = useConfirmDialog()
+
+  const currentPlayingFile = useAppSelector(state => state.player.file)
 
   useKeyboardNavigation()
 
@@ -105,6 +111,7 @@ function MainApp() {
   const [ uploadMedia, { isLoading: isUploading } ] = useUploadMediaMutation()
   const [ addSong, { isLoading: isAddingSong } ] = useAddSongMutation()
   const [ updateMetadata ] = useUpdateMetadataMutation()
+  const [ removeGroup ] = useRemoveGroupMutation()
 
   const lastSelectedGroup = useRef('Outros')
 
@@ -339,6 +346,47 @@ function MainApp() {
     } catch { /* empty */ }
   }
 
+  async function handleGroupEdit(group: string) {
+    if (!data || /c.nticos/i.test(group)) return
+
+    try {
+      const newGroup = await new Promise<string>((resolve, reject) => {
+        showDialog((
+          <EditGroupDialog defaultLabel={group} onSubmit={resolve} />
+        ), {
+          onDismiss: reject,
+          disableOverlayDismiss: true,
+        })
+      })
+
+      if (!newGroup || newGroup === group || /c.nticos/i.test(newGroup)) return
+
+      await updateMetadata({
+        isoDate: currentWeekStart.toISOString(),
+        type,
+        metadata: data.items.map(item => item.group === group
+          ? { ...item, group: newGroup }
+          : item),
+      }).unwrap()
+    } catch { /* empty */ }
+  }
+
+  async function handleGroupRemove(group: string) {
+    const items = data?.items.filter(item => item.group === group) ?? []
+    if (!items.length || /c.nticos/i.test(group)) return
+
+    if (await promptConfirm(`Deseja realmente excluir todos os itens do grupo "${group}"?`)) {
+      const playing = items.some(item =>
+        (item.media as ParsedMedia[]).some(media => media.path === currentPlayingFile),
+      )
+
+      await removeGroup({ isoDate: currentWeekStart.toISOString(), type, group }).unwrap()
+
+      if (playing)
+        dispatch(playerActions.stop())
+    }
+  }
+
   function handleRefreshData() {
     refetchWeekData({ isoDate: currentWeekStart.toISOString(), type })
   }
@@ -544,45 +592,49 @@ function MainApp() {
                       </h4>
                     )}
 
-                    {Object.entries(mediaGroups).map(([ group, items ]) => (
-                      <SortableItemGroup group={group} key={group} open disableSorting={/c.nticos/i.test(group)}>
-                        <SortableContext items={items.map(it => ({ ...it, id: it.uid }))} id={group}>
-                          <Droppable group={group}>
-                            {items.map(item => (
-                              item.uid === 'placeholder'
-                                ? <SortablePlaceholder className="w-[180px] h-[200px]" />
-                                : <SortableMediaItem
-                                  key={item.uid}
-                                  item={item}
-                                  type={type}
-                                  currentWeekStart={currentWeekStart}
-                                  placeholder={item.uid === 'placeholder'}
-                                  onEdit={handleMediaEdit}
-                                />
-                            ))}
-                            {/c.nticos/i.test(group) && (
-                              <button
-                                type="button"
-                                className={clsx(
-                                  'relative flex items-center justify-center',
-                                  'w-[180px] aspect-square',
-                                  'rounded-md border border-dashed border-zinc-900 dark:border-zinc-300 bg-transparent',
-                                  !isAddingSong && 'cursor-pointer hover:bg-zinc-300/30 transition-colors',
-                                  'disabled:opacity-80',
-                                )}
-                                title="Adicionar Cântico"
-                                onClick={createAddSongHandler(group)}
-                                disabled={isAddingSong}
-                              >
-                                {isAddingSong
-                                  ? <img src={loadingGif} className="w-full aspect-square object-cover" />
-                                  : <PlusIcon className="w-20" />}
-                              </button>
-                            )}
-                          </Droppable>
-                        </SortableContext>
-                      </SortableItemGroup>
-                    ))}
+                    {Object.entries(mediaGroups).map(([ group, items ]) => {
+                      const hasGroupMenu = !/c.nticos/i.test(group) && items.length > 0 && items.every(item => item.manual)
+
+                      return (
+                        <SortableItemGroup group={group} key={group} open disableSorting={/c.nticos/i.test(group)} onEdit={hasGroupMenu ? handleGroupEdit : undefined} onRemove={hasGroupMenu ? handleGroupRemove : undefined}>
+                          <SortableContext items={items.map(it => ({ ...it, id: it.uid }))} id={group}>
+                            <Droppable group={group}>
+                              {items.map(item => (
+                                item.uid === 'placeholder'
+                                  ? <SortablePlaceholder className="w-[180px] h-[200px]" />
+                                  : <SortableMediaItem
+                                    key={item.uid}
+                                    item={item}
+                                    type={type}
+                                    currentWeekStart={currentWeekStart}
+                                    placeholder={item.uid === 'placeholder'}
+                                    onEdit={handleMediaEdit}
+                                  />
+                              ))}
+                              {/c.nticos/i.test(group) && (
+                                <button
+                                  type="button"
+                                  className={clsx(
+                                    'relative flex items-center justify-center',
+                                    'w-[180px] aspect-square',
+                                    'rounded-md border border-dashed border-zinc-900 dark:border-zinc-300 bg-transparent',
+                                    !isAddingSong && 'cursor-pointer hover:bg-zinc-300/30 transition-colors',
+                                    'disabled:opacity-80',
+                                  )}
+                                  title="Adicionar Cântico"
+                                  onClick={createAddSongHandler(group)}
+                                  disabled={isAddingSong}
+                                >
+                                  {isAddingSong
+                                    ? <img src={loadingGif} className="w-full aspect-square object-cover" />
+                                    : <PlusIcon className="w-20" />}
+                                </button>
+                              )}
+                            </Droppable>
+                          </SortableContext>
+                        </SortableItemGroup>
+                      )
+                    })}
                   </div>
                 </Droppable>
               </SortableContext>

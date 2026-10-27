@@ -4,6 +4,7 @@ import { type APIEvents } from '../../../electron/events/api'
 import { AddSongRequest } from '../../../shared/models/AddSong'
 import { FetchWeekDataRequest } from '../../../shared/models/FetchWeekData'
 import { RemoveMediaRequest } from '../../../shared/models/RemoveMedia'
+import { RemoveGroupRequest } from '../../../shared/models/RemoveGroup'
 import { UploadMediaRequest } from '../../../shared/models/UploadMedia'
 import { fileLocalPath, fileURL } from '../../../shared/utils'
 import { getFilename } from '../../lib/utils'
@@ -88,6 +89,14 @@ const weekApiEndpoints = electronApi.injectEndpoints({
       }),
       invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
     }),
+    removeGroup: build.mutation<APIEvents.RemoveGroupResponse, RemoveGroupRequest>({
+      query: ({ isoDate, type, group }) => ({
+        url: 'remove-group',
+        body: { isoDate, type, group },
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_, __, { isoDate, type }) => [{ type: 'Date', id: isoDate }, { type: 'WeekType', id: type }],
+    }),
     addSong: build.mutation<APIEvents.AddSongResponse, AddSongRequest>({
       query: ({ isoDate, type, group, song }) => ({
         url: 'add-song',
@@ -145,6 +154,7 @@ export const {
   usePreloadMeetingMutation,
   useUploadMediaMutation,
   useRemoveMediaMutation,
+  useRemoveGroupMutation,
   useAddSongMutation,
   useLazyRefetchWeekMediaQuery,
   useUpdateMediaProgressMutation,

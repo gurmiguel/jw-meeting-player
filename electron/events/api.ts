@@ -3,6 +3,7 @@ import log from 'electron-log/main'
 import { AddSongRequest } from '../../shared/models/AddSong'
 import { BibleIndex, BookChapter, Verse } from '../../shared/models/Bible'
 import { RemoveMediaRequest } from '../../shared/models/RemoveMedia'
+import { RemoveGroupRequest } from '../../shared/models/RemoveGroup'
 import { UploadMediaRequest } from '../../shared/models/UploadMedia'
 import { WeekType } from '../../shared/models/WeekType'
 import { addSong } from '../api/add-song'
@@ -14,6 +15,7 @@ import { getYearText } from '../api/get-year-text'
 import { getZoomScreen } from '../api/get-zoom-screen'
 import { loadSongs } from '../api/load-songs'
 import { removeMedia } from '../api/remove-media'
+import { removeGroup } from '../api/remove-group'
 import { updateMetadata } from '../api/update-metadata'
 import { uploadMedia } from '../api/upload-media'
 import { getS34TalksFromJWPUB } from '../utils/jwpub'
@@ -33,6 +35,11 @@ export function attachApiEvents() {
     const date = new Date(isoDate)
 
     return removeMedia(item, date, type)
+  })
+  createApiHandler('remove-group', (_e, { isoDate, type, group }: APIEvents.RemoveGroupPayload) => {
+    const date = new Date(isoDate)
+
+    return removeGroup(group, date, type)
   })
   createApiHandler('add-song', (_e, { isoDate, type, group, song }: APIEvents.AddSongPayload) => {
     const date = new Date(isoDate)
@@ -94,6 +101,10 @@ export namespace APIEvents {
   export interface RemoveMediaPayload extends RemoveMediaRequest {}
 
   export type RemoveMediaResponse = PromiseType<ReturnType<typeof removeMedia>>
+
+  export interface RemoveGroupPayload extends RemoveGroupRequest {}
+
+  export type RemoveGroupResponse = PromiseType<ReturnType<typeof removeGroup>>
 
   export interface AddSongPayload extends AddSongRequest {}
 
